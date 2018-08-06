@@ -3,12 +3,13 @@ package jackzheng.study.com.wechat.sscManager;
 import java.util.ArrayList;
 
 import jackzheng.study.com.wechat.regular.DateBean;
+import jackzheng.study.com.wechat.regular.DateBean2;
 
 public class Sscbean {
     private static int ID=0;
     private int id;
     String message;
-    ArrayList<DateBean> mList;
+    ArrayList<DateBean2> mList;
     int count = 0;
     public Sscbean(String message){
         ID++;
@@ -24,11 +25,11 @@ public class Sscbean {
         this.message = message;
     }
 
-    public ArrayList<DateBean> getmList() {
+    public ArrayList<DateBean2> getmList() {
         return mList;
     }
 
-    public void setmList(ArrayList<DateBean> mList) {
+    public void setmList(ArrayList<DateBean2> mList) {
         this.mList = mList;
     }
 
@@ -39,8 +40,12 @@ public class Sscbean {
         StringBuilder b = new StringBuilder();
         b.append("Sscbean id="+id+" 下注数据\n");
         if(mList != null && mList.size() >0 ){
-            for(DateBean data : mList){
-                b.append("count "+data.mCount );
+            for(DateBean2 data : mList){
+                b.append("count [" );
+                for(Integer count : data.mCountList){
+                    b.append(""+count+" ");
+                }
+                b.append("]" );
                 b.append(" locla=[");
                 for(Integer[] local : data.local){
                     b.append("["+local[0]+"]["+local[1]+"]");
@@ -71,8 +76,8 @@ public class Sscbean {
             return  0;
         }
         if(count == 0){
-            for(DateBean data :mList){
-                count += data.mCount*data.mLastData.size()*data.local.size();
+            for(DateBean2 data :mList){
+                count += data.allCount;
             }
         }
         return count;

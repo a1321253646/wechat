@@ -14,14 +14,12 @@ import jackzheng.study.com.wechat.HtmlParse;
 import jackzheng.study.com.wechat.MessageDeal;
 import jackzheng.study.com.wechat.StroeAdateManager;
 import jackzheng.study.com.wechat.regular.DateBean;
+import jackzheng.study.com.wechat.regular.DateBean2;
 import jackzheng.study.com.wechat.regular.RegularUtils;
+import jackzheng.study.com.wechat.regular.RegularUtils2;
 
 public class ServerManager {
 
-    private static String DELETE_SIGN_1 = "退：";
-    private static String DELETE_SIGN_2 = "退:";
-    private static String ANNOUNCE_SIGN = "开奖：";
-    private static String CHECK_SIGN = "id：";
 
     Map <String, ArrayList<Sscbean>> mAllData = new HashMap<>();
    ArrayList<SscBeanWithUser> mErrorList = new ArrayList<>();
@@ -56,7 +54,7 @@ public class ServerManager {
             StroeAdateManager.getmIntance().setmSPGuanliId(data.TakerId);
             sendMessageToGuanli("你已经是这个的仓管，请查看命令");
         }else  if(data.type == MessageDeal.SHE_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-               /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())*/ && !TextUtils.isEmpty(data.groupID)){
+                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
             build.append("设分："+str);
             String fenStr = data.message.replace(MessageDeal.SHE_FEN_STR,"");
             try {
@@ -71,7 +69,7 @@ public class ServerManager {
 
             }
         }else  if(data.type == MessageDeal.SHANG_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-               /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){
+                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
             build.append("上分："+str);
             String fenStr = data.message.replace(MessageDeal.SHANG_FEN_STR,"");
             try {
@@ -87,7 +85,7 @@ public class ServerManager {
             }
 
         }else  if(data.type == MessageDeal.XIA_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                /*&& data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){
+                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
             build.append("下分："+str);
             String fenStr = data.message.replace(MessageDeal.XIA_FEN_STR,"");
             try {
@@ -137,7 +135,7 @@ public class ServerManager {
 //                sendMessageToCheck(null,str+" 格式错误",-1);
 //            }
         }else if(data.type == MessageDeal.TUI_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
+               /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){
             build.append("删除下注："+str);
             String message = data.message.replace(MessageDeal.TUI_STR,"");
             boolean suuccess = deleteMessage(data.groupID,message);
@@ -200,8 +198,8 @@ public class ServerManager {
         if(data != null && data.size() > 0 ){
             for(Sscbean bean : data){
                 if(bean.mList != null && bean.mList.size() > 0){
-                    for(DateBean tmp : bean.mList){
-                        count += tmp.mCount*tmp.local.size()*tmp.mLastData.size();
+                    for(DateBean2 tmp : bean.mList){
+                        count += tmp.allCount;
                     }
                 }
             }
@@ -323,13 +321,18 @@ public class ServerManager {
         if(!TextUtils.isEmpty(oldMessage)){
             bean.message = oldMessage;
         }
-        bean.mList = RegularUtils.regularStr(message);
+        bean.mList = RegularUtils2.regularStr(message);
         if(bean.mList != null){
             userData.add(bean);
             xiazjianfen(bean,userId);
             build.append("    "+bean.toString());
+            StringBuilder builder2 = new StringBuilder();
+            builder2.append(message+"\n");
+            for(DateBean2 date : bean.mList){
+                builder2.append("解析："+date.toString()+"\n");
+            }
+            sendMessage(userId,builder2.toString());
         }else{
-            ArrayList<Sscbean> errorList ;
             SscBeanWithUser error = new SscBeanWithUser(bean,userId);
             mErrorList.add(error);
             build.append("格式不对");
@@ -343,8 +346,8 @@ public class ServerManager {
     private void xiazjianfen(Sscbean bean,String groupId){
         if(bean.mList !=null && bean.mList.size() >0){
             int count = 0;
-            for(DateBean data : bean.mList){
-                count+= data.mLastData.size()*data.mCount*data.local.size();
+            for(DateBean2 data : bean.mList){
+                count+= data.allCount;
             }
             StroeAdateManager.getmIntance().changeFen(groupId,-count);
         }
@@ -423,12 +426,12 @@ public class ServerManager {
                    if(sscbeans != null && sscbeans.size() > 0){
                        for(Sscbean bean : sscbeans){
                            if(bean != null && bean.mList != null && bean.mList.size() >0){
-                               for(DateBean data : bean.mList){
-                                   if(data.mLastData != null && data.mLastData.size() >0 && data.mCount >0 && data.local != null && data.local.size() >0){
-                                       for(Integer[] local : data.local){
+                               for(DateBean2 data : bean.mList){
+                                   if(data.mLastData != null && data.mLastData.size() >0 && data.local != null && data.local.size() >0){
+                                       for(int i = 0; i<data.local.size();i++){
                                            for(Integer[] num : data.mLastData){
-                                               if(num[0] == targetNumber[local[0]-1] && num[1] == targetNumber[local[1]-1]){
-                                                   count += data.mCount;
+                                               if(num[0] == targetNumber[data.local.get(i)[0]-1] && num[1] == targetNumber[data.local.get(i)[1]-1]){
+                                                   count += data.mCountList.get(i);
                                                }
                                            }
                                        }

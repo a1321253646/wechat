@@ -14,7 +14,7 @@ public class MessageDeal {
     public static final String QUN_KAI_STR = "裙开:";
     public static final String TING_STR = "停:";
     public static final String KAISHI_STR = "开始:";
-    public static final String TUI_STR = "退:";
+    public static final String TUI_STR = "退";
     public static final String SHANG_FEN_STR = "尚芬:";
     public static final String XIA_FEN_STR = "夏芬:";
     public static final String GUAN_LI_STR = "馆里:";

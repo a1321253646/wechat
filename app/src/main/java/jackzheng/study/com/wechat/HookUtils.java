@@ -95,7 +95,7 @@ public class HookUtils implements IXposedHookLoadPackage {
             int msecond =calendar.get(Calendar.MILLISECOND);
             XposedBridge.log("Calendar获取当前日期"+year+"年"+month+"月"+day+"日"+hour+":"+minute+":"+second+"."+msecond);
             long delay = 0;
-            if(second < 2) {
+            if(second < 8) {
                 mIndexMax = getIndex(hour, minute);
                 if (isOpen) {
                     ServerManager.getIntance().setFalseByAuto(mIndexMax);
@@ -157,7 +157,7 @@ public class HookUtils implements IXposedHookLoadPackage {
 
             XposedBridge.log("延时为:"+hour+":"+minute+":"+second+"-"+msecond);
             mHandler.removeCallbacks(mTimeRun);
-            mHandler.postDelayed(mTimeRun,delay);
+            mHandler.postDelayed(mTimeRun,delay+6000);
 //                boolean isOpen = false;
 //                if(hour == 9 && minute== 50 || hour == 1 && minute== 15 || hour == 1 && minute== 00){
 //                    isOpen = true;
@@ -206,7 +206,6 @@ public class HookUtils implements IXposedHookLoadPackage {
     }
     public void handleLoadPackage(LoadPackageParam loadPackageParam) throws Throwable {
 
-        XposedBridge.log("wechat version" + loadPackageParam.packageName);
         mLoad = loadPackageParam;
         if (loadPackageParam.packageName.equals("com.tencent.mm")) {
             XposedBridge.log("wechat version" + loadPackageParam.processName);

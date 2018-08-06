@@ -1,12 +1,13 @@
 package jackzheng.study.com.wechat.regular;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import jackzheng.study.com.wechat.sscManager.ServerManager;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
 
 public class RegularUtilsTest {
 
@@ -17,6 +18,31 @@ public class RegularUtilsTest {
             mIntance =  new RegularUtilsTest(contex);
         }
         return mIntance;
+    }
+
+    public void test1() throws Exception {
+        File file = new File("/sdcard/test.txt");
+        FileReader m=new FileReader(file);
+        BufferedReader reader=new BufferedReader(m);
+
+        while(true) {
+            String nextline=reader.readLine();
+            if(nextline==null) break;
+            nextline = nextline.replace("\\n","\n");
+            Log.d("zsbin"," 下注原话 \n"+nextline);
+            ArrayList<DateBean2> dateBean2s = RegularUtils2.regularStr(nextline);
+            if(dateBean2s == null){
+                Log.d("zsbin"," 解析出来的数据 不识别，转交管理员处理");
+            }else{
+                for(DateBean2 date :dateBean2s){
+                    Log.d("zsbin"," 解析出来的数据 "+date.toString());
+                }
+            }
+
+            Log.d("zsbin","---------------------------------------------------------\n\n");
+        }
+        reader.close();
+
     }
 
 
