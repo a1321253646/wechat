@@ -53,6 +53,26 @@ public class ServerManager {
         }else if(data.type == MessageDeal.SP_GL_INT && TextUtils.isEmpty(data.groupID)){//注册管理员：管理员私发命令
             StroeAdateManager.getmIntance().setmSPGuanliId(data.TakerId);
             sendMessageToGuanli("你已经是这个的仓管，请查看命令");
+        }else if(data.type == MessageDeal.SET_CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){//设量
+            String all = data.message.replace(MessageDeal.SET_CHECK_STR,"");
+            try {
+                Integer allInt = Integer.parseInt(all);
+                if(allInt !=null){
+                    StroeAdateManager.getmIntance().setAllForGroup(data.groupID,allInt);
+                    StroeAdateManager.GroupData groupData= StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
+                    sendMessage(data.groupID," 今天量设置为 "+groupData.all);
+                }
+            }catch (Exception e){
+
+            }
+        }else if(data.type == MessageDeal.CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){//查量
+            StroeAdateManager.GroupData groupData = StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
+            sendMessage(data.groupID,"今天共吓： "+groupData.all);
+        }else if(data.type == MessageDeal.CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && TextUtils.isEmpty(data.groupID)){//清量
+            StroeAdateManager.getmIntance().clearAllForAllGroup();
         }else  if(data.type == MessageDeal.SHE_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
             build.append("设分："+str);
@@ -176,7 +196,7 @@ public class ServerManager {
 
     public void setFalseByAuto(int index){
         isTime = false;
-        String strBase =" "+index+"欺停止瞎足-----------------\n" ;
+        String strBase ="\n\n\n      "+index+"期结束\n" ;
         Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
         if(groupDate.size() > 0){
             Set<String> strings = groupDate.keySet();
@@ -187,7 +207,7 @@ public class ServerManager {
                 if(groupDate.get(s).isEnable){
                     data = mAllData.get(s);
                     count = getGroupDeal(data);
-                    sendMessage(s,strBase+index+" 欺共瞎足"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen);
+                    sendMessage(s,strBase+index+" 欺共吓注"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen);
                 }
             }
         }
@@ -247,9 +267,8 @@ public class ServerManager {
                 int count = map.get(id);
                 int menoy = count * data.pei;
                 StroeAdateManager.getmIntance().changeFen(id,menoy);
-                sendMessage(id,index+" 欺开 "+str+" 重："+count+"祝"+" 上芬 ："+menoy+" 剩余："+data.fen+
-                "\n---------------------------------------\n"+
-                        (index+1)+" 欺开始瞎足");
+                sendMessage(id,"\n\n\n\n"+index+" 期开 "+str+" 重："+count+"祝"+" 上芬 ："+menoy+" 剩余："+data.fen+
+                        "      "+(index+1)+" 欺开始吓注");
             }
         }
         mAllData.clear();
@@ -262,6 +281,11 @@ public class ServerManager {
      * @param error 错误的原因
      * @param id 对应该字符串的id
      */
+    private void sendMessageToGroup(String userid,Sscbean bean,String error,int id){
+        sendMessageToGuanli("id:"+bean.getId()+":"+bean.message);
+        sendMessage(userid,"无法识别\n"+bean.message);
+    }
+
     private void sendMessageToCheck(Sscbean bean,String error,int id){
         sendMessageToGuanli("id:"+bean.getId()+":"+bean.message);
     }
@@ -337,6 +361,7 @@ public class ServerManager {
             mErrorList.add(error);
             build.append("格式不对");
             sendMessageToCheck(bean,"格式不对",-1);
+            sendMessageToGroup(userId,bean,"",-1);
         }
         XposedBridge.log(build.toString());
         DebugLog.saveLog(build.toString());
@@ -349,7 +374,7 @@ public class ServerManager {
             for(DateBean2 data : bean.mList){
                 count+= data.allCount;
             }
-            StroeAdateManager.getmIntance().changeFen(groupId,-count);
+            StroeAdateManager.getmIntance().changeFen(groupId,-count,true);
         }
     }
 
@@ -467,7 +492,7 @@ public class ServerManager {
             if( userData.get(i).message.equals(str)){
                 Sscbean bean= userData.get(i);
                 int count = bean.getCount();
-                StroeAdateManager.getmIntance().changeFen(userId,count);
+                StroeAdateManager.getmIntance().changeFen(userId,count,true);
                 userData.remove(i);
                 return true;
             }

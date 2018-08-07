@@ -95,6 +95,7 @@ public class StroeAdateManager {
                 js.put("fen",date.fen);
                 js.put("enable",date.isEnable);
                 js.put("pei",date.pei);
+                js.put("all",date.all);
                 JSONArray array;
                 if(mJson.has("list")){
                    array = mJson.getJSONArray("list");
@@ -170,6 +171,7 @@ public class StroeAdateManager {
                                 String id = "";
                                 int fen = 0;
                                 int pei = 97;
+                                int all = 0;
                                 boolean enable = false;
                                 if(ob.has("name")){
                                     name = ob.getString("name");
@@ -186,10 +188,14 @@ public class StroeAdateManager {
                                 if(ob.has("enable")){
                                     enable = ob.getBoolean("enable");
                                 }
+                                if(ob.has("all")){
+                                    all = ob.getInt("all");
+                                }
                                 GroupData data = new GroupData(name,id);
                                 data.fen = fen;
                                 data.pei = pei;
                                 data.isEnable = enable;
+                                data.all = all;
                                 mGroupList.put(data.id,data);
                             }
                         }
@@ -228,11 +234,52 @@ public class StroeAdateManager {
         writeFileToSDCard(mJson.toString().getBytes());
     }
 
-    public void changeFen(String groupID, int fen) {
+    public void setAllForGroup(String groupId,int all){
+        GroupData groupData;
+        if(mGroupList.containsKey(groupId)){
+            groupData = mGroupList.get(groupId);
+            groupData.all  = all;
+        }else{
+            return;
+        }
+        JSONObject jsonByGroupId = findJsonByGroupId(groupId);
+        if(jsonByGroupId == null){
+            return;
+        }
+        try {
+            jsonByGroupId.put("all",groupData.all);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+        writeFileToSDCard(mJson.toString().getBytes());
+    }
+
+    public void clearAllForAllGroup(){
+        if(mGroupList != null && mGroupList.size() > 0){
+            Set<String> strings = mGroupList.keySet();
+            for(String s : strings){
+                GroupData groupData = mGroupList.get(s);
+                groupData.all = 0;
+                JSONObject jsonByGroupId = findJsonByGroupId(groupData.id);
+                try {
+                    jsonByGroupId.put("all",groupData.all);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            writeFileToSDCard(mJson.toString().getBytes());
+        }
+    }
+
+    public void changeFen(String groupID, int fen , boolean isDown){
         GroupData groupData;
         if(mGroupList.containsKey(groupID)){
             groupData = mGroupList.get(groupID);
             groupData.fen = groupData.fen+fen;
+            if(isDown){
+                groupData.all = groupData.all-fen;
+            }
         }else{
             return;
         }
@@ -242,13 +289,18 @@ public class StroeAdateManager {
         }
         try {
             jsonByGroupId.put("fen",groupData.fen);
-            JSONArray list = mJson.getJSONArray("list");
-       //     list.put(jsonByGroupId);
+            if(isDown){
+                jsonByGroupId.put("all",groupData.all);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
         writeFileToSDCard(mJson.toString().getBytes());
+    }
+
+    public void changeFen(String groupID, int fen) {
+        changeFen(groupID,fen,false);
     }
     public void setFen(String groupID, int fen) {
         GroupData groupData;
@@ -301,6 +353,7 @@ public class StroeAdateManager {
         public int fen = 0;
         public boolean isEnable = false;
         public int pei =90;
+        public int all = 0;
         public GroupData(String name,String id){
             this.name = name;
             this.id = id;

@@ -41,11 +41,15 @@ public class StringDealFactory {
         ArrayList<String> list =   spileString(str);
         for(int i= 0;i< list.size() ;i++){
             String s = list.get(i);
-            if(s.contains("下奖")){
+            if(s.contains("下奖") || s.contains("上奖") ){
                 String str1 = "";
                 String str2 = "";
                 list.remove(i);
-                s = s.replace("下奖",StringDealFactory.NEW_SPILE_SIGN);
+                if(s.contains("下奖")){
+                    s = s.replace("下奖",StringDealFactory.NEW_SPILE_SIGN);
+                }else if(s.contains("上奖")){
+                    s = s.replace("上奖",StringDealFactory.NEW_SPILE_SIGN);
+                }
                 char[] cs = s.toCharArray();
                 StringBuilder builder = new StringBuilder();
                 int index = 0;

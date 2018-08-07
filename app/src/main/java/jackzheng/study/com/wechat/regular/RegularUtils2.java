@@ -167,10 +167,20 @@ public class RegularUtils2 {
     //整理位置和注数
     private static ArrayList<DateBean2> dealDate(ArrayList<DateBean2>  list){
         getLocal(list);
-
         boolean isgetCont = getCount(list);
         if(!isgetCont){
             return null;
+        }
+        for(DateBean2 date : list){
+            if(date.mCountList.size() == 0){
+                continue;
+            }else{
+                for(Integer count : date.mCountList){
+                    if(count > 900){
+                        return null;
+                    }
+                }
+            }
         }
         duplicateRemove(list);
         return list;

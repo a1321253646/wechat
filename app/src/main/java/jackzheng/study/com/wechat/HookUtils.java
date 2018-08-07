@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.storage.StorageManager;
 import android.text.TextUtils;
 
 import com.ydscience.fakemomo.utils.f;
@@ -39,8 +40,8 @@ public class HookUtils implements IXposedHookLoadPackage {
             {19,0},{19,10},{19,20},{19,30},{19,40},{19,50},
             {20,0},{20,10},{20,20},{20,30},{20,40},{20,50},
             {21,0},{21,10},{21,20},{21,30},{21,40},{21,50},
-            {22,0},{22,5},{22,10},{22,15},{1,20},{22,25},{22,30},{22,35},{22,40},{22,45},{22,50},{22,55},
-            {23,0},{23,5},{23,10},{23,15},{1,20},{23,25},{23,30},{23,35},{23,40},{23,45},{23,50},{23,55},{24,0},
+            {22,0},{22,5},{22,10},{22,15},{22,20},{22,25},{22,30},{22,35},{22,40},{22,45},{22,50},{22,55},
+            {23,0},{23,5},{23,10},{23,15},{22,20},{23,25},{23,30},{23,35},{23,40},{23,45},{23,50},{23,55},{24,0},
     } ;
 
     private static String a = "";
@@ -62,14 +63,35 @@ public class HookUtils implements IXposedHookLoadPackage {
             Thread thread= new Thread(){
                 @Override
                 public void run() {
-                    mCurrentResult = HtmlParse.parse();
-                    XposedBridge.log(" HtmlParse.MaxIndexResult index = "+mCurrentResult.index+":"+mCurrentResult.str+"----currentIndex"+mIndexMax);
-                    if(mCurrentResult.index >= mIndexMax){
-                        mHandler.removeCallbacks(mTimeRun);
-                        mHandler.postDelayed(mTimeRun,2000);
-                    }else{
-                        mHandler.removeCallbacks(mRequitRun);
-                        mHandler.postDelayed(mRequitRun,15000);
+                    while(true){
+                        mCurrentResult = HtmlParse.parseQuite();
+                        if(mCurrentResult  == null){
+                            XposedBridge.log("parseQuite 没数据");
+                        }else{
+                            XposedBridge.log("mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
+                        }
+                        if(mCurrentResult != null && mCurrentResult.index >= mIndexMax){
+                            mHandler.removeCallbacks(mTimeRun);
+                            mHandler.postDelayed(mTimeRun,2000);
+                            break;
+                        }else{
+                            mCurrentResult = HtmlParse.parse();
+                            if(mCurrentResult  == null){
+                                XposedBridge.log("parse 没数据");
+                            }else{
+                                XposedBridge.log("mIndexMax ="+mIndexMax+" parse mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
+                            }
+                            if(mCurrentResult != null && mCurrentResult.index >= mIndexMax){
+                                mHandler.removeCallbacks(mTimeRun);
+                                mHandler.postDelayed(mTimeRun,2000);
+                            }else{
+                                try {
+                                    Thread.sleep(2000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
                     }
                 }
             };
@@ -95,7 +117,7 @@ public class HookUtils implements IXposedHookLoadPackage {
             int msecond =calendar.get(Calendar.MILLISECOND);
             XposedBridge.log("Calendar获取当前日期"+year+"年"+month+"月"+day+"日"+hour+":"+minute+":"+second+"."+msecond);
             long delay = 0;
-            if(second < 8) {
+            if(second < 11) {
                 mIndexMax = getIndex(hour, minute);
                 if (isOpen) {
                     ServerManager.getIntance().setFalseByAuto(mIndexMax);
@@ -157,7 +179,7 @@ public class HookUtils implements IXposedHookLoadPackage {
 
             XposedBridge.log("延时为:"+hour+":"+minute+":"+second+"-"+msecond);
             mHandler.removeCallbacks(mTimeRun);
-            mHandler.postDelayed(mTimeRun,delay+6000);
+            mHandler.postDelayed(mTimeRun,delay+9000);
 //                boolean isOpen = false;
 //                if(hour == 9 && minute== 50 || hour == 1 && minute== 15 || hour == 1 && minute== 00){
 //                    isOpen = true;
@@ -181,8 +203,15 @@ public class HookUtils implements IXposedHookLoadPackage {
         }
     };
     private boolean isOpen;
-    private int getIndex(int hour, int min){
+    private int getIndex(int hour , int min){
         Integer[] time;
+        if(hour == 0 && min == 0){
+            isOpen =true;
+            return mTimeLsit.length;
+        }
+        if(hour == 3 && min == 0){
+            StroeAdateManager.getmIntance().clearAllForAllGroup();
+        }
         for(int i = 0 ; i<mTimeLsit.length;i++){
             time = mTimeLsit[i];
             if(time[0]  == hour  || (time[0] ==24 && hour ==0) ){
