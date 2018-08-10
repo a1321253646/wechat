@@ -105,7 +105,7 @@ public class RegularUtils2 {
                         spile1 = bean2.spilStrList.get(0);
                     }
                     if(bean2.numberCountList.get(0) !=2){
-                        if((stringCount >1 && spile1.equals("/") || spile1.equals("，") ) ||spile1.equals("-") || spile1.equals("—") || spile1.equals("一") || spile1.equals("。") || spile1.equals(".")){
+                        if((stringCount >1 && spile1.equals("/") || spile1.equals("，") ) ||spile1.equals("-") || spile1.equals("—") || spile1.equals("一") || spile1.equals("。") /*|| spile1.equals(".")*/){
                             date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
                             date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
                             bean2.mLocalCount.add(0);
@@ -115,7 +115,7 @@ public class RegularUtils2 {
                             bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
                         }
                     }else{
-                        if( (stringCount >1 && spile1.equals("/") || spile1.equals("，") ) || spile1.equals("-") || spile1.equals("—")){
+                        if( (stringCount >1 && spile1.equals("/") || spile1.equals("，") ) || spile1.equals("-") || spile1.equals("—")|| spile1.equals("一") ){
                             date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
                             date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
                             bean2.mLocalCount.add(0);
@@ -314,6 +314,12 @@ public class RegularUtils2 {
             for(int ii : second){
                 if(i == ii && isNoSame){
                     continue;
+                }else if(bean.isHe != null){
+                    if(bean.isHe && i+ii != bean.heNumber){
+                        continue;
+                    }else if(!bean.isHe && i+ii == bean.heNumber){
+                        continue;
+                    }
                 }
                 Integer[] tar = new Integer[]{i,ii};
                 bean.mLastData.add(tar);

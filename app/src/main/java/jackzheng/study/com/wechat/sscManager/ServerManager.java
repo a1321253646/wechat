@@ -1,6 +1,7 @@
 package jackzheng.study.com.wechat.sscManager;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,8 +49,24 @@ public class ServerManager {
             sendMessageToGuanli(data.message+"您已关闭"+StroeAdateManager.getmIntance().getGroupDatById(data.groupID).name+"");
             sendMessage(data.groupID,"已关闭捅记");
         }else if(data.type == MessageDeal.GUAN_LI_INT && TextUtils.isEmpty(data.groupID)){//注册管理员：管理员私发命令
-            StroeAdateManager.getmIntance().setmGuanliId(data.TakerId);
-            sendMessageToGuanli("你已经是这个的管理员，请查看命令");
+            String msg = data.message.replace(MessageDeal.GUAN_LI_STR,"");
+            String[] msgs = msg.split("@");
+            if(msgs != null){
+                for(String s :msgs){
+                    XposedBridge.log("msgs item ="+s);
+                }
+            }else{
+                XposedBridge.log("msgs  = null");
+            }
+            if(msgs != null && msgs.length ==2 && !TextUtils.isEmpty(msgs[0]) &&  !TextUtils.isEmpty(msgs[1]) &&
+                    msgs[0].equals(StroeAdateManager.getmIntance().getGuanliPassword())){
+                sendMessageToGuanli("已经有人替代，如不知情请查看是谁");
+                StroeAdateManager.getmIntance().setmGuanliId(data.TakerId,msgs[1]);
+                sendMessageToGuanli("你已经是这个的管理员，请查看命令");
+            }else{
+                sendMessage(data.TakerId,"指令出错或者密码错误");
+            }
+
         }else if(data.type == MessageDeal.SP_GL_INT && TextUtils.isEmpty(data.groupID)){//注册管理员：管理员私发命令
             StroeAdateManager.getmIntance().setmSPGuanliId(data.TakerId);
             sendMessageToGuanli("你已经是这个的仓管，请查看命令");
@@ -70,9 +87,10 @@ public class ServerManager {
                 /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){//查量
             StroeAdateManager.GroupData groupData = StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
             sendMessage(data.groupID,"今天共吓： "+groupData.all);
-        }else if(data.type == MessageDeal.CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+        }else if(data.type == MessageDeal.CLEAR_CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
                  && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && TextUtils.isEmpty(data.groupID)){//清量
-            StroeAdateManager.getmIntance().clearAllForAllGroup();
+            XposedBridge.log("收到清空所有量的指令");
+            clearAllForAllGroup();
         }else  if(data.type == MessageDeal.SHE_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
             build.append("设分："+str);
@@ -119,6 +137,10 @@ public class ServerManager {
             }catch (Exception e){
 
             }
+        }else if(data.type == MessageDeal.CHECK_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){//查分
+            StroeAdateManager.GroupData groupData = StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
+            sendMessage(data.groupID,"剩余： "+groupData.fen);
         }else if(data.type == MessageDeal.TING_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmSPGuanliId())
                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmSPGuanliId()) && TextUtils.isEmpty(data.groupID)){
             build.append("暂停下注"+str);
@@ -193,10 +215,56 @@ public class ServerManager {
         DebugLog.saveLog(build.toString());
     }
 
+    public void clearAllForAllGroup(){
+        StroeAdateManager.getmIntance().clearAllForAllGroup();
+        String strBase ="当前量为0，芬为0" ;
+        Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
+        if(groupDate.size() > 0){
+            Set<String> strings = groupDate.keySet();
+            for(String s :strings){
+                if(groupDate.get(s).isEnable){
+                    sendMessage(s,strBase);
+                }
+            }
+        }
+    }
+
+    public void setTrueByDayStrartNoNotification(){
+        isTime = true;
+    }
+    public void setTrueByDayStrart(){
+        isTime = true;
+        String strBase ="\n\n\n      "+"024期下注开始\n" ;
+        Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
+        if(groupDate.size() > 0){
+            Set<String> strings = groupDate.keySet();
+            for(String s :strings){
+                if(groupDate.get(s).isEnable){
+                    sendMessage(s,strBase);
+                }
+            }
+        }
+    }
+    public void setFalseByDayEndNoNotification(){
+        isTime = false;
+    }
+    public void setFalseByDayEnd(){
+        isTime = false;
+        String strBase ="\n\n\n      "+"今天下注结束\n凌晨3点将进行清芬清量，请提前做好统计" ;
+        Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
+        if(groupDate.size() > 0){
+            Set<String> strings = groupDate.keySet();
+            for(String s :strings){
+                if(groupDate.get(s).isEnable){
+                    sendMessage(s,strBase);
+                }
+            }
+        }
+    }
 
     public void setFalseByAuto(int index){
         isTime = false;
-        String strBase ="\n\n\n      "+index+"期结束\n" ;
+        String strBase ="\n\n\n[玫瑰][玫瑰]"+index+"期结束[玫瑰] [玫瑰] \n" ;
         Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
         if(groupDate.size() > 0){
             Set<String> strings = groupDate.keySet();
@@ -266,13 +334,27 @@ public class ServerManager {
             if(data != null && data.isEnable){
                 int count = map.get(id);
                 int menoy = count * data.pei;
+                int indexNext = index+1;
+                if(indexNext == 121){
+                    indexNext = 1;
+                }
                 StroeAdateManager.getmIntance().changeFen(id,menoy);
-                sendMessage(id,"\n\n\n\n"+index+" 期开 "+str+" 重："+count+"祝"+" 上芬 ："+menoy+" 剩余："+data.fen+
-                        "      "+(index+1)+" 欺开始吓注");
+                if(index != 23){
+                    sendMessage(id,"\n\n\n\n[玫瑰][玫瑰]"+index+"期开 "+str+"[玫瑰][玫瑰]\n "
+                            +" 重："+count+"祝"+" 上芬 ："+menoy+" 剩余："+data.fen+
+                            "\n[玫瑰][玫瑰]"+indexNext+" 欺开始吓注[玫瑰][玫瑰]");
+                }else{
+                    sendMessage(id,"\n\n\n\n[玫瑰][玫瑰]"+index+" 期开 "+str+"[玫瑰] [玫瑰] "
+                            +" 重："+count+"祝"+" 上芬 ："+menoy+" 剩余："+data.fen);
+                }
+
             }
         }
         mAllData.clear();
         mErrorList.clear();
+        if(index == 23){
+            setFalseByDayEnd();
+        }
     }
 
     /**
@@ -471,8 +553,9 @@ public class ServerManager {
                }
            }
        }
-       sendMessageToSuccess(str,successCountUser,index);
        isTime = true;
+       sendMessageToSuccess(str,successCountUser,index);
+
    }
     /**
      * 撤销下注内容

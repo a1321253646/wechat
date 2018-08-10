@@ -190,20 +190,36 @@ public class StringDealFactory {
 
     //特殊字符替代
     //处理了位置信息，XX位 前 后 前二 后二 王千百十个，在位置前面添加了一个特殊字符
-    //处理了杀，直接替换出来是字符
     //处理了全 单 双 大 小
     //处理了合 将其数字符号转化为中文数字
+    //不要 直接替代为啥
     private static String repalace(String str){
         char[] cs = str.toCharArray();
         String newStr;
         StringBuilder builder = new StringBuilder();
         for(int i =0 ; i<cs.length ;i++){
-              if(cs[i] == '平' || cs[i] == '双'){
+              if(cs[i] == '平' || cs[i] == '双' ){
                   if(i< cs.length-1 && (cs[i+1] == '重' || cs[i+1] == '从')){
                       i = i+1;
                       builder.append("死00 11 22 33 44 55 66 77 88 99死");
                       continue;
                   }
+              }else if(cs[i] == '不' &&   i< cs.length-1  && cs[i+1] == '要'){
+                  i = i+1;
+                  builder.append("杀");
+                  continue;
+              }else if(cs[i] == '对' &&   i< cs.length-1  && cs[i+1] == '子'){
+                  i = i+1;
+                  builder.append("死00 11 22 33 44 55 66 77 88 99死");
+                  continue;
+              }else if(cs[i] == '合' && i< cs.length-1 ){
+                  if( cs[i+1] == '单'){
+                      builder.append("死13579-02468,02468-13579死");
+                  }else if( cs[i+1] == '双'){
+                      builder.append("死02468-02468,13579-13579死");
+                  }
+                  i = i+1;
+                  continue;
               }
               newStr = repalaceAAssociation(cs[i]);
              if(newStr != null){

@@ -31,6 +31,7 @@ public class StroeAdateManager {
     private static String FOLDER_NAME = "group_data.json";
     private JSONObject mJson;
     private String mGuanliId ;
+    private String glPassword;
     private String mSpGuanliId ;
     private Map<String,GroupData>  mGroupList= new HashMap<>();
 
@@ -40,7 +41,10 @@ public class StroeAdateManager {
     public String getmSPGuanliId() {
         return mSpGuanliId;
     }
-
+    public String getGuanliPassword() {
+        XposedBridge.log("glPassword = "+glPassword);
+        return glPassword;
+    }
     public  Map<String,GroupData> getGroupDate(){
         return mGroupList;
     }
@@ -48,10 +52,12 @@ public class StroeAdateManager {
         return mGroupList.get(id);
     }
 
-    public void setmGuanliId(String mGuanliId) {
+    public void setmGuanliId(String mGuanliId,String password) {
         this.mGuanliId = mGuanliId;
+        this.glPassword = password;
         try {
             mJson.put("guanli",mGuanliId);
+            mJson.put("password",glPassword);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
@@ -157,6 +163,12 @@ public class StroeAdateManager {
                     mGuanliId = mJson.getString("guanli");
                     XposedBridge.log("guanli id = "+mGuanliId);
                 }
+                if(mJson.has("password")){
+                    glPassword = mJson.getString("password");
+                    XposedBridge.log("guanli password = "+glPassword);
+                }else{
+                    glPassword = "1234567";
+                }
                 if(mJson.has("spguanli")){
                     mSpGuanliId = mJson.getString("spguanli");
                     XposedBridge.log("guanli id = "+mGuanliId);
@@ -261,9 +273,11 @@ public class StroeAdateManager {
             for(String s : strings){
                 GroupData groupData = mGroupList.get(s);
                 groupData.all = 0;
+                groupData.fen = 0;
                 JSONObject jsonByGroupId = findJsonByGroupId(groupData.id);
                 try {
                     jsonByGroupId.put("all",groupData.all);
+                    jsonByGroupId.put("fen",groupData.fen);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

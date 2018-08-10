@@ -42,7 +42,7 @@ public class DateBean2 {
         if(isHe !=null){
             builder.append((isHe?"":"不")+"合 "+heNumber);
         }
-        builder.append("共 "+allCount+"元");
+        builder.append("共 "+allCount);
         return builder.toString();
     }
 }
