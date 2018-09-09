@@ -25,11 +25,12 @@ public class MessageDeal {
     public static final String CLEAR_CHECK_STR = "清所有量";
     public static final String SET_CHECK_STR = "设量";
     public static final String CHECK_FEN_STR  = "查芬";
-
+    public static final String RECEVI_ZU_STR  = "robat接受";
+    public static final String SEND_ZU_STR  = "robat发送";
     public static final String[] ORDER_LIST = {KAIJIANG_STR,CHANGE_STR,QUN_NAME_STR,
             QUN_QIAN_STR,QUN_KAI_STR,TING_STR,KAISHI_STR,TUI_STR,SHANG_FEN_STR,
             XIA_FEN_STR,GUAN_LI_STR,YING_STR,SHE_FEN_STR,SP_GL_STR,CHECK_STR,CLEAR_CHECK_STR,SET_CHECK_STR,
-            CHECK_FEN_STR
+            CHECK_FEN_STR,RECEVI_ZU_STR,SEND_ZU_STR
     };
 
     public static final int KAIJIANG_INT = 1;
@@ -51,11 +52,13 @@ public class MessageDeal {
     public static final int CLEAR_CHECK_INT = 17;
     public static final int SET_CHECK_INT = 18;
     public static final int CHECK_FEN_INT = 19;
+    public static final int RECEVI_ZU_INT  = 20;
+    public static final int SEND_ZU_INT  = 21;
 
     public static final int[] ORDER_TYPE_LIST = {KAIJIANG_INT,CHANGE_INT,QUN_NAME_INT,
             QUN_QIAN_INT,QUN_KAI_INT,TING_INT,KAISHI_INT,TUI_INT,SHANG_FEN_INT,
             XIA_FEN_INT,GUAN_LI_INT,YING_INT,SHE_FEN_INT,SP_GL_INT,CHECK_INT,CLEAR_CHECK_INT,SET_CHECK_INT,
-            CHECK_FEN_INT
+            CHECK_FEN_INT,RECEVI_ZU_INT,SEND_ZU_INT
     };
 
     public  static final String GROUP_END = "@chatroom";

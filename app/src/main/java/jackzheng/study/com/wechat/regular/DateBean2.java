@@ -16,33 +16,34 @@ public class DateBean2 {
     public String toString() {
         StringBuilder builder = new StringBuilder();
          if(mDataList.size() >0){
-            builder.append("头尾 = ");
-            for(ArrayList<Integer> ss : mDataList){
-                for(Integer inte : ss){
-                    builder.append(""+inte);
-                }
-                builder.append("-");
-            }
+             for(int i = 0;i <mDataList.size() ;i++){
+                 ArrayList<Integer> ss = mDataList.get(i);
+                 for(Integer inte : ss){
+                     builder.append(""+inte);
+                 }
+                 if(i <mDataList.size() -1){
+                     builder.append("-");
+                 }
+             }
         }else if(mLastData.size() >0){
-             builder.append("单吊 = ");
              for(Integer[] data : mLastData){
-                 builder.append("["+data[0]+data[1]+"] ");
+                 builder.append("["+data[0]+data[1]+"]");
              }
          }
-        builder.append("    位置 = ");
+        builder.append("位");
         for(Integer[] localitem : local ){
-            builder.append("["+localitem[0]+"，"+localitem[1]+"] ");
+            builder.append("["+localitem[0]+localitem[1]+"]");
         }
-        builder.append("注数 = ");
+        builder.append("注");
         for(Integer count : mCountList ){
-            builder.append("["+count+"] ");
+            builder.append("["+count+"]");
         }
 
-        builder.append((isNoSame?"排":"")+"重 ");
+        builder.append(isNoSame?"排":"重");
         if(isHe !=null){
-            builder.append((isHe?"":"不")+"合 "+heNumber);
+            builder.append((isHe?"":"不")+"合"+heNumber);
         }
-        builder.append("共 "+allCount);
+        builder.append("共"+allCount);
         return builder.toString();
     }
 }

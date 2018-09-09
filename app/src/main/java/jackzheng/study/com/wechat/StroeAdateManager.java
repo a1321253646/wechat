@@ -338,6 +338,42 @@ public class StroeAdateManager {
         }
         writeFileToSDCard(mJson.toString().getBytes());
     }
+
+    public void saveReceviDate(String key,String groupID){
+        try {
+            mJson.put(key,groupID);
+            writeFileToSDCard(mJson.toString().getBytes());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public void saveSendDate(String groupID,String key){
+        try {
+            mJson.put(groupID,key);
+            writeFileToSDCard(mJson.toString().getBytes());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getReceviDate(String group){
+        try {
+           String key = mJson.getString(group);
+           if(TextUtils.isEmpty(key)){
+               return  null;
+           }
+           String send =  mJson.getString(key);
+           if(TextUtils.isEmpty(key)){
+                return  null;
+            }else{
+               return send;
+           }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return  null;
+    }
+
     public void setPei(String groupID, int pei) {
         GroupData groupData;
         if(mGroupList.containsKey(groupID)){

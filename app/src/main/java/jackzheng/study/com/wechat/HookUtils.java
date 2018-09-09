@@ -154,7 +154,7 @@ public class HookUtils implements IXposedHookLoadPackage {
 
             XposedBridge.log("延时为:"+hour+":"+minute+":"+second+"-"+msecond);
             mHandler.removeCallbacks(mTimeRun);
-            mHandler.postDelayed(mTimeRun,delay+9000);
+            mHandler.postDelayed(mTimeRun,delay+5000);
         }
     };
     private void dealOther(long hour ,long min){

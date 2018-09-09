@@ -145,6 +145,20 @@ public class ServerManager {
                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmSPGuanliId()) && TextUtils.isEmpty(data.groupID)){
             build.append("暂停下注"+str);
             setEnable(false);
+        }else if(data.type == MessageDeal.RECEVI_ZU_INT &&  !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) &&  !TextUtils.isEmpty(data.groupID)){
+            String fenStr = data.message.replace(MessageDeal.RECEVI_ZU_STR,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveReceviDate(fenStr,data.groupID);
+                sendMessage(data.groupID,"该裙为接受裙");
+            }
+        }else if(data.type == MessageDeal.SEND_ZU_INT &&  !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())  && !TextUtils.isEmpty(data.groupID)){
+            String fenStr = data.message.replace(MessageDeal.SEND_ZU_STR,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveSendDate(data.groupID,fenStr);
+                sendMessage(data.groupID,"该裙为发送裙");
+            }
         }else if(data.type == MessageDeal.KAISHI_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && TextUtils.isEmpty(data.groupID)){
             build.append("开始下注"+str);
@@ -207,8 +221,13 @@ public class ServerManager {
                 build.append(groupData.name+" 下注：isTime ="+isTime+" isenable="+groupData.isEnable);
                 return;
             }
-            build.append("下注："+str);
-            saveMassege(group,str);
+            if(StroeAdateManager.getmIntance().getReceviDate(data.groupID)!= null){
+                sendMessage(StroeAdateManager.getmIntance().getReceviDate(data.groupID),str);
+            }else{
+                build.append("下注："+str);
+                saveMassege(group,str);
+            }
+
         }
         XposedBridge.log(build.toString());
         build.append("\n------------------------------------------------\n");
@@ -435,7 +454,7 @@ public class ServerManager {
             StringBuilder builder2 = new StringBuilder();
             builder2.append(message+"\n");
             for(DateBean2 date : bean.mList){
-                builder2.append("解析："+date.toString()+"\n");
+                builder2.append("解"+date.toString()+"\n");
             }
             sendMessage(userId,builder2.toString());
         }else{
