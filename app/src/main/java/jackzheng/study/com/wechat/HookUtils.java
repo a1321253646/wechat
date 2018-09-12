@@ -56,6 +56,10 @@ public class HookUtils implements IXposedHookLoadPackage {
     private boolean  isHook = false;
     Handler mHandler ;
     int mIndexMax = 0;
+
+    public Handler getHandler(){
+        return mHandler;
+    }
     HtmlParse.MaxIndexResult mCurrentResult;
     Runnable mRequitRun = new Runnable() {
         @Override

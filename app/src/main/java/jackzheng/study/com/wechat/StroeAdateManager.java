@@ -35,6 +35,15 @@ public class StroeAdateManager {
     private String mSpGuanliId ;
     private Map<String,GroupData>  mGroupList= new HashMap<>();
 
+    public String getJsonString(){
+        return mJson.toString();
+    }
+
+    public void setJson(String str){
+            getJson(str);
+            writeFileToSDCard(mJson.toString().getBytes());
+    }
+
     public String getmGuanliId() {
         return mGuanliId;
     }
@@ -42,6 +51,9 @@ public class StroeAdateManager {
         return mSpGuanliId;
     }
     public String getGuanliPassword() {
+        if(TextUtils.isEmpty(glPassword)){
+            glPassword = "123456";
+        }
         XposedBridge.log("glPassword = "+glPassword);
         return glPassword;
     }
@@ -142,9 +154,25 @@ public class StroeAdateManager {
         }
         return null;
     }
-
-
-
+    public String getGuanliQunId(){
+        try {
+            if(mJson.has("guanliquan")){
+                return mJson.getString("guanliquan");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+    public void setGuanliqunID(String id){
+        try {
+            mJson.put("guanliquan",id);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+        writeFileToSDCard(mJson.toString().getBytes());
+    }
 
     private static StroeAdateManager mIntance = new StroeAdateManager();
     public static StroeAdateManager getmIntance(){
@@ -154,6 +182,10 @@ public class StroeAdateManager {
 
         String s = readFile();
         XposedBridge.log("readFile:\n"+s+"\n---------------------------\n");
+        getJson(s);
+    }
+
+    private void getJson(String s){
         if(TextUtils.isEmpty(s)){
             mJson  = new JSONObject();
         }else{

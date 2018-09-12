@@ -1,5 +1,7 @@
 package jackzheng.study.com.wechat.sscManager;
 
+import android.os.Handler;
+import android.os.storage.StorageManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -9,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import jackzheng.study.com.wechat.DebugLog;
 import jackzheng.study.com.wechat.HookUtils;
 import jackzheng.study.com.wechat.HtmlParse;
@@ -25,6 +28,9 @@ public class ServerManager {
     Map <String, ArrayList<Sscbean>> mAllData = new HashMap<>();
    ArrayList<SscBeanWithUser> mErrorList = new ArrayList<>();
 
+   private int mMyId = -1;
+   private int mCurrentMaxId = -1;
+
     boolean isTime;
 
     public void receiveMessage(String str,String userId,String group){
@@ -34,10 +40,32 @@ public class ServerManager {
         if(data == null){
             return;
         }
+
+        if(qunLiMessage(data)){
+            return;
+        }
         if(data.type == MessageDeal.QUN_NAME_INT && !TextUtils.isEmpty(data.groupID)){//注册群：必须是管理员在群里发送命令
             data.message = data.message.replace(MessageDeal.QUN_NAME_STR,"");
             StroeAdateManager.getmIntance().addGroup(data.message,data.groupID);
             sendMessageToGuanli(data.message+"已经进行注册,请留意它的开/关操作");
+        }else if(data.type == MessageDeal.GUAN_LI_QUN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())&& !TextUtils.isEmpty(data.groupID)){//管理群信息，已经有群记录的进行发自己身份ID，没有的等待5s进行确认身份ID
+            String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
+            if(TextUtils.isEmpty(quunId) || mMyId == -1){
+                StroeAdateManager.getmIntance().setGuanliqunID(data.groupID);
+                queRenShenFen(data.groupID);
+            }else{
+                final String id = data.groupID;
+                final String idstr = MessageDeal.SEND_SHENFEN+mMyId;
+                HookUtils.getIntance().getHandler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        HookUtils.getIntance().sendMeassageBy(id,idstr);
+                        HookUtils.getIntance().sendMeassageBy(id,MessageDeal.GENG_XIN_JSON+StroeAdateManager.getmIntance().getJsonString());
+                    }
+                },500);
+
+            }
         }else if(data.type == MessageDeal.QUN_KAI_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())){//使能群:：必须是管理员在群里发送的命令
             StroeAdateManager.getmIntance().setGroupEnable(data.groupID,true);
@@ -66,7 +94,6 @@ public class ServerManager {
             }else{
                 sendMessage(data.TakerId,"指令出错或者密码错误");
             }
-
         }else if(data.type == MessageDeal.SP_GL_INT && TextUtils.isEmpty(data.groupID)){//注册管理员：管理员私发命令
             StroeAdateManager.getmIntance().setmSPGuanliId(data.TakerId);
             sendMessageToGuanli("你已经是这个的仓管，请查看命令");
@@ -294,7 +321,8 @@ public class ServerManager {
                 if(groupDate.get(s).isEnable){
                     data = mAllData.get(s);
                     count = getGroupDeal(data);
-                    sendMessage(s,strBase+index+" 欺共吓注"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen);
+                    sendMessage(s,/*strBase+*/index+" 欺共吓注"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen);
+                    sendMessage(s, "\n\n\n[玫瑰][玫瑰]"+index+"期结束[玫瑰] [玫瑰] \n");
                 }
             }
         }
@@ -359,12 +387,14 @@ public class ServerManager {
                 }
                 StroeAdateManager.getmIntance().changeFen(id,menoy);
                 if(index != 23){
-                    sendMessage(id,"\n\n\n\n[玫瑰][玫瑰]"+index+"期开 "+str+"[玫瑰][玫瑰]\n "
-                            +" 重："+count+"祝"+" 上芬 ："+menoy+" 剩余："+data.fen+
-                            "\n[玫瑰][玫瑰]"+indexNext+" 欺开始吓注[玫瑰][玫瑰]");
+                    sendMessage(id,""+index+"期： "+str+"\n "
+                            +" 重："+count+" "+" 上 ："+menoy+" 余："+data.fen);
+
+                    sendMessage(id, indexNext+" 欺开始");
                 }else{
-                    sendMessage(id,"\n\n\n\n[玫瑰][玫瑰]"+index+" 期开 "+str+"[玫瑰] [玫瑰] "
-                            +" 重："+count+"祝"+" 上芬 ："+menoy+" 剩余："+data.fen);
+                    sendMessage(id,"]"+index+" 期 "+str+"] "
+                            +" 重："+count+"，"+" 上 ："+menoy+"余："+data.fen);
+                    sendMessage(id, "晚安");
                 }
 
             }
@@ -392,14 +422,22 @@ public class ServerManager {
     }
 
     private void sendMessageToGuanli(String str){
-        sendMessage(StroeAdateManager.getmIntance().getmGuanliId(),str);
+        if(!TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())){
+            sendMessage(StroeAdateManager.getmIntance().getmGuanliId(),str);
+        }
+
     }
 
     private void sendMessage(String userId,String str){
-        if(HookUtils.getIntance() != null){
-            XposedBridge.log("userid:"+userId+" str="+str);
-            HookUtils.getIntance().sendMeassageBy(userId,str);
+        if(mMyId == 0 ){
+            if(HookUtils.getIntance() != null){
+                XposedBridge.log("userid:"+userId+" str="+str);
+                HookUtils.getIntance().sendMeassageBy(userId,str);
+            }
+        }else{
+            addWairMessage(userId,str);
         }
+
     }
 
     private boolean isFiveNumber(String str){
@@ -611,5 +649,176 @@ public class ServerManager {
         isTime = true;
         StroeAdateManager.getmIntance();
     }
+    /*
+    * 身份管理相关的业务处理
+    * */
+    private ArrayList<String> mRobotIds = new ArrayList<>();
+    private ArrayList<WaitSendMessage> mWaitSend =new  ArrayList<>();
+    class WaitSendMessage{
+        public String sendId;
+        public String message;
+        public long time;
+    }
 
+    private void addWairMessage(String sendId,String message){
+        WaitSendMessage a= new WaitSendMessage();
+        long timeStamp = System.currentTimeMillis();
+        a.time = timeStamp+mMyId*5000;
+        a.sendId = sendId;
+        a.message = message;
+        mWaitSend.add(a);
+    }
+
+    private boolean qunLiMessage( MessageDeal.MessagerDealDate data){
+        String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
+        if(!TextUtils.isEmpty(quunId) && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                && !TextUtils.isEmpty(data.groupID) && !quunId.equals(data.groupID) && isRobot(data.TakerId)){//在非管理裙中接受到其他机器人的信息
+            if(mMyId == 0){//主号重新确认身份
+                mMyId = -1;
+                initShengfen();
+
+            }else{//备号移出相同的待发送信息
+                for(int i= 0; i < mWaitSend.size() ;i++){
+                    if(mWaitSend.get(i).message.equals(data.message)){
+                        mWaitSend.remove(i);
+                        break;
+                    }
+                }
+            }
+            return true;
+        }else if(!TextUtils.isEmpty(quunId) && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
+                && !TextUtils.isEmpty(data.groupID) &&quunId.equals(data.groupID)){//如果是在管理裙中接受到其他机器人的信息
+            if(data.type == MessageDeal.SHANG_XIAN_INT ) {//上线命令
+                HookUtils.getIntance().sendMeassageBy(data.groupID,MessageDeal.SEND_SHENFEN+mMyId);
+                return true;
+            }else if(data.type == MessageDeal.SHENG_FEN_INT){
+
+                boolean  isHave = false;
+                for(String id : mRobotIds){
+                    if(id.equals(data.TakerId)){
+                        isHave = true;
+                        break;
+                    }
+                }
+                if(!isHave){
+                    mRobotIds.add(data.TakerId);
+                }
+                try {
+                    Integer id = Integer.parseInt(data.message.replace(MessageDeal.SEND_SHENFEN, ""));
+                    if (id != null && id >= mCurrentMaxId) {
+                        mCurrentMaxId = id;
+                        return true;
+                    }
+                } catch (Exception e) {
+
+                }
+
+            }else if(data.type == MessageDeal.SHANG_WEI_INT){
+//                String replace = data.message.replace(MessageDeal.SHANG_WEI_QUN, "");
+//                try {
+//
+//                    Integer id = Integer.parseInt(replace);
+//                    XposedBridge.log("接收到最大身份 "+id+" mCurrentMaxId="+mCurrentMaxId);
+//                    if (mMyId == mCurrentMaxId) {
+//                        mMyId = id;
+//                        return true;
+//                    }
+//                } catch (Exception e) {
+//
+//                }
+            }else if(data.type == MessageDeal.GENG_XIN_INT){
+                String replace = data.message.replace(MessageDeal.GENG_XIN_JSON, "");
+                StroeAdateManager.getmIntance().setJson(replace);
+                return true;
+            }
+        }
+        return false;
+    }
+    private boolean  isRobot(String id){
+        for(String ids : mRobotIds){
+            if(ids.equals(id)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void init(){
+        initShengfen();
+    }
+
+    private void initShengfen(){
+        final  String guanliQunId = StroeAdateManager.getmIntance().getGuanliQunId();
+        if(!TextUtils.isEmpty(guanliQunId)){
+            HookUtils.getIntance().sendMeassageBy(guanliQunId,MessageDeal.SHANG_XIAN);
+            queRenShenFen(guanliQunId);
+        }
+    }
+
+    private void queRenShenFen(final String qun){
+        mCurrentMaxId = -1;
+        XposedBridge.log("确定身份 "+mCurrentMaxId);
+        Handler handler = HookUtils.getIntance().getHandler();
+        if(handler != null){
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {//确定身份
+                    XposedBridge.log("确定身份 "+mCurrentMaxId);
+                    mMyId = mCurrentMaxId +1;
+                    HookUtils.getIntance().sendMeassageBy(qun,MessageDeal.SEND_SHENFEN+mMyId);
+                    if(mMyId > 0){
+                        startLoop();
+                    }else{
+                        stopLoop();
+                    }
+                }
+            },5000);
+        }
+    }
+    public int loopDelay = 500;
+    Runnable mLoopRun = new Runnable() {
+        @Override
+        public void run() {
+            if(mMyId == 0 && mWaitSend.size() == 0){
+                stopLoop();
+            }else if( mMyId == 0 && mWaitSend.size()  > 0){
+                WaitSendMessage waitSendMessage = mWaitSend.get(0);
+                HookUtils.getIntance().sendMeassageBy(waitSendMessage.sendId,waitSendMessage.message);
+                mWaitSend.remove(0);
+                startLoop();
+            }else if( mMyId != 0 && mWaitSend.size()  > 0){
+                long timeStamp = System.currentTimeMillis();
+                for(WaitSendMessage wait : mWaitSend){
+                    if(timeStamp > wait.time){
+                        toBeZeroId();
+                        HookUtils.getIntance().sendMeassageBy(wait.sendId,wait.message);
+                        startLoop();
+                        break;
+                    }
+                }
+                startLoop();
+            }else{
+                startLoop();
+            }
+        }
+    };
+
+    private void toBeZeroId(){
+        HookUtils.getIntance().sendMeassageBy(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.SHANG_WEI_QUN+mMyId);
+        mMyId = 0;
+    }
+
+    private void startLoop(){
+        Handler handler = HookUtils.getIntance().getHandler();
+        if(handler != null){
+            handler.removeCallbacks(mLoopRun);
+            handler.postDelayed(mLoopRun,loopDelay);
+        }
+    }
+    private void stopLoop(){
+        Handler handler = HookUtils.getIntance().getHandler();
+        if(handler != null){
+            handler.removeCallbacks(mLoopRun);
+        }
+    }
 }
