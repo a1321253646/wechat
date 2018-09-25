@@ -3,11 +3,13 @@ package jackzheng.study.com.wechat.sscManager;
 import android.os.Handler;
 import android.os.storage.StorageManager;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import de.robv.android.xposed.XposedBridge;
@@ -27,100 +29,76 @@ public class ServerManager {
 
     Map <String, ArrayList<Sscbean>> mAllData = new HashMap<>();
    ArrayList<SscBeanWithUser> mErrorList = new ArrayList<>();
-
+   ArrayList<MessageDeal.MessagerDealDate> mRecList = new ArrayList<>();
+   Map<Integer,Long> mHeartList = new HashMap<>();
    private int mMyId = -1;
    private int mCurrentMaxId = -1;
 
     boolean isTime;
 
-    public void receiveMessage(String str,String userId,String group){
-        MessageDeal.MessagerDealDate data = MessageDeal.getMessageDealData(str,userId,group);
-        StringBuilder build = new StringBuilder();
-        build.append("\n---------------------------------------------------\n"+"message = "+str+" user id = "+userId);
-        if(data == null){
-            return;
-        }
-
-        if(qunLiMessage(data)){
-            return;
-        }
-        if(data.type == MessageDeal.QUN_NAME_INT && !TextUtils.isEmpty(data.groupID)){//注册群：必须是管理员在群里发送命令
+    private boolean qunGuanLiCommon( MessageDeal.MessagerDealDate data){//普通群中的管理员命令
+        if(data.type == MessageDeal.QUN_NAME_INT){//注册群：必须是管理员在群里发送命令
             data.message = data.message.replace(MessageDeal.QUN_NAME_STR,"");
             StroeAdateManager.getmIntance().addGroup(data.message,data.groupID);
             sendMessageToGuanli(data.message+"已经进行注册,请留意它的开/关操作");
-        }else if(data.type == MessageDeal.GUAN_LI_QUN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())&& !TextUtils.isEmpty(data.groupID)){//管理群信息，已经有群记录的进行发自己身份ID，没有的等待5s进行确认身份ID
-            String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
-            if(TextUtils.isEmpty(quunId) || mMyId == -1){
-                StroeAdateManager.getmIntance().setGuanliqunID(data.groupID);
-                queRenShenFen(data.groupID);
-            }else{
-                final String id = data.groupID;
-                final String idstr = MessageDeal.SEND_SHENFEN+mMyId;
-                HookUtils.getIntance().getHandler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        HookUtils.getIntance().sendMeassageBy(id,idstr);
-                        HookUtils.getIntance().sendMeassageBy(id,MessageDeal.GENG_XIN_JSON+StroeAdateManager.getmIntance().getJsonString());
-                    }
-                },500);
-
-            }
-        }else if(data.type == MessageDeal.QUN_KAI_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())){//使能群:：必须是管理员在群里发送的命令
+            return true;
+        }else if(data.type == MessageDeal.QUN_KAI_INT ){//使能群:：必须是管理员在群里发送的命令
             StroeAdateManager.getmIntance().setGroupEnable(data.groupID,true);
             sendMessageToGuanli(data.message+"您已开启"+StroeAdateManager.getmIntance().getGroupDatById(data.groupID).name+"");
             sendMessage(data.groupID,"已开启\"捅记");
-        }else if(data.type == MessageDeal.QUN_QIAN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())){//关闭群：：必须是管理员在群里发送的命令
+            return true;
+        }else if(data.type == MessageDeal.QUN_QIAN_INT ){//关闭群：：必须是管理员在群里发送的命令
             StroeAdateManager.getmIntance().setGroupEnable(data.groupID,false);
             sendMessageToGuanli(data.message+"您已关闭"+StroeAdateManager.getmIntance().getGroupDatById(data.groupID).name+"");
             sendMessage(data.groupID,"已关闭捅记");
-        }else if(data.type == MessageDeal.GUAN_LI_INT && TextUtils.isEmpty(data.groupID)){//注册管理员：管理员私发命令
-            String msg = data.message.replace(MessageDeal.GUAN_LI_STR,"");
-            String[] msgs = msg.split("@");
-            if(msgs != null){
-                for(String s :msgs){
-                    XposedBridge.log("msgs item ="+s);
-                }
-            }else{
-                XposedBridge.log("msgs  = null");
+            return true;
+        }else if(data.type == MessageDeal.RECEVI_ZU_INT ){
+            String fenStr = data.message.replace(MessageDeal.RECEVI_ZU_STR,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveReceviDate(fenStr,data.groupID);
+                sendMessage(data.groupID,"该裙为"+fenStr+"接受裙");
             }
-            if(msgs != null && msgs.length ==2 && !TextUtils.isEmpty(msgs[0]) &&  !TextUtils.isEmpty(msgs[1]) &&
-                    msgs[0].equals(StroeAdateManager.getmIntance().getGuanliPassword())){
-                sendMessageToGuanli("已经有人替代，如不知情请查看是谁");
-                StroeAdateManager.getmIntance().setmGuanliId(data.TakerId,msgs[1]);
-                sendMessageToGuanli("你已经是这个的管理员，请查看命令");
-            }else{
-                sendMessage(data.TakerId,"指令出错或者密码错误");
+            return true;
+        }else if(data.type == MessageDeal.SEND_ZU_INT ){
+            String fenStr = data.message.replace(MessageDeal.SEND_ZU_STR,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveSendDate(data.groupID,fenStr);
+                sendMessage(data.groupID,"该裙为"+fenStr+"发送裙");
             }
-        }else if(data.type == MessageDeal.SP_GL_INT && TextUtils.isEmpty(data.groupID)){//注册管理员：管理员私发命令
-            StroeAdateManager.getmIntance().setmSPGuanliId(data.TakerId);
-            sendMessageToGuanli("你已经是这个的仓管，请查看命令");
-        }else if(data.type == MessageDeal.SET_CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){//设量
-            String all = data.message.replace(MessageDeal.SET_CHECK_STR,"");
+            return true;
+        }else if(data.type == MessageDeal.QUN_FUZHE_INT ){
+            String fenStr = data.message.replace(MessageDeal.QUN_FUZHE_JSON,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveFuzheDate(fenStr,data.groupID);
+                sendMessage(data.groupID,"该裙为"+fenStr+"负责裙");
+            }
+            return true;
+        }else if(data.type == MessageDeal.QUN_BEIFUZHE_INT ){
+            String fenStr = data.message.replace(MessageDeal.QUN_BEIFUZHE_JSON,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveBeFuzheDate(data.groupID,fenStr);
+                sendMessage(data.groupID,"该裙被"+fenStr+"负责裙");
+            }
+            return true;
+        }
+        return  false;
+    }
+    private boolean qunFuzherenCommon(MessageDeal.MessagerDealDate data){//普通群中的负责员命令
+        if(data.type == MessageDeal.SHANG_FEN_INT ){
+            String fenStr = data.message.replace(MessageDeal.SHANG_FEN_STR,"");
             try {
-                Integer allInt = Integer.parseInt(all);
-                if(allInt !=null){
-                    StroeAdateManager.getmIntance().setAllForGroup(data.groupID,allInt);
+                Integer fen = Integer.parseInt(fenStr);
+                if(fen !=null){
+                    StroeAdateManager.getmIntance().changeFen(data.groupID,fen);
                     StroeAdateManager.GroupData groupData= StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
-                    sendMessage(data.groupID," 今天量设置为 "+groupData.all);
+                    sendMessage(data.groupID,"尚芬"+fen+" 剩下共 "+groupData.fen);
+
                 }
             }catch (Exception e){
 
             }
-        }else if(data.type == MessageDeal.CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){//查量
-            StroeAdateManager.GroupData groupData = StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
-            sendMessage(data.groupID,"今天共吓： "+groupData.all);
-        }else if(data.type == MessageDeal.CLEAR_CHECK_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                 && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && TextUtils.isEmpty(data.groupID)){//清量
-            XposedBridge.log("收到清空所有量的指令");
-            clearAllForAllGroup();
-        }else  if(data.type == MessageDeal.SHE_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
-            build.append("设分："+str);
+            return true;
+        }else  if(data.type == MessageDeal.SHE_FEN_INT){
             String fenStr = data.message.replace(MessageDeal.SHE_FEN_STR,"");
             try {
                 Integer fen = Integer.parseInt(fenStr);
@@ -133,25 +111,35 @@ public class ServerManager {
             }catch (Exception e){
 
             }
-        }else  if(data.type == MessageDeal.SHANG_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
-            build.append("上分："+str);
-            String fenStr = data.message.replace(MessageDeal.SHANG_FEN_STR,"");
+            return true;
+        }else if(data.type == MessageDeal.SET_CHECK_INT){//设量
+            String all = data.message.replace(MessageDeal.SET_CHECK_STR,"");
             try {
-                Integer fen = Integer.parseInt(fenStr);
-                if(fen !=null){
-                    StroeAdateManager.getmIntance().changeFen(data.groupID,fen);
+                Integer allInt = Integer.parseInt(all);
+                if(allInt !=null){
+                    StroeAdateManager.getmIntance().setAllForGroup(data.groupID,allInt);
                     StroeAdateManager.GroupData groupData= StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
-                    sendMessage(data.groupID,"尚芬"+fen+" 剩下共 "+groupData.fen);
-                 //   sendMessageToGuanli(groupData.name+"尚芬"+fen+" 剩下共 "+groupData.fen);
+                    sendMessage(data.groupID," 今天量设置为 "+groupData.all);
                 }
             }catch (Exception e){
 
             }
+            return true;
+        }else if(data.type == MessageDeal.YING_INT){
+            String pei = data.message.replace(MessageDeal.YING_STR,"");
+            try {
+                Integer fen = Integer.parseInt(pei);
+                if(fen !=null){
+                    StroeAdateManager.getmIntance().setPei(data.groupID,fen);
+                    StroeAdateManager.GroupData groupData= StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
+                    sendMessage(data.groupID,"设置为："+fen);
+                    // sendMessageToGuanli(groupData.name+"设置为："+fen);
+                }
+            }catch (Exception e){
 
-        }else  if(data.type == MessageDeal.XIA_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
-            build.append("下分："+str);
+            }
+            return true;
+        }else  if(data.type == MessageDeal.XIA_FEN_INT){
             String fenStr = data.message.replace(MessageDeal.XIA_FEN_STR,"");
             try {
                 Integer fen = Integer.parseInt(fenStr);
@@ -164,68 +152,84 @@ public class ServerManager {
             }catch (Exception e){
 
             }
-        }else if(data.type == MessageDeal.CHECK_FEN_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){//查分
-            StroeAdateManager.GroupData groupData = StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
-            sendMessage(data.groupID,"剩余： "+groupData.fen);
-        }else if(data.type == MessageDeal.TING_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmSPGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmSPGuanliId()) && TextUtils.isEmpty(data.groupID)){
-            build.append("暂停下注"+str);
-            setEnable(false);
-        }else if(data.type == MessageDeal.RECEVI_ZU_INT &&  !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) &&  !TextUtils.isEmpty(data.groupID)){
-            String fenStr = data.message.replace(MessageDeal.RECEVI_ZU_STR,"");
-            if(!TextUtils.isEmpty(fenStr)){
-                StroeAdateManager.getmIntance().saveReceviDate(fenStr,data.groupID);
-                sendMessage(data.groupID,"该裙为接受裙");
-            }
-        }else if(data.type == MessageDeal.SEND_ZU_INT &&  !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId())  && !TextUtils.isEmpty(data.groupID)){
-            String fenStr = data.message.replace(MessageDeal.SEND_ZU_STR,"");
-            if(!TextUtils.isEmpty(fenStr)){
-                StroeAdateManager.getmIntance().saveSendDate(data.groupID,fenStr);
-                sendMessage(data.groupID,"该裙为发送裙");
-            }
-        }else if(data.type == MessageDeal.KAISHI_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && TextUtils.isEmpty(data.groupID)){
-            build.append("开始下注"+str);
-            setEnable(true);
-        }else if(data.type == MessageDeal.YING_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && !TextUtils.isEmpty(data.groupID)){
-            XposedBridge.log("设置赔率："+str);
-            build.append("设置赔率："+str);
-            String pei = data.message.replace(MessageDeal.YING_STR,"");
-            try {
-                Integer fen = Integer.parseInt(pei);
-                if(fen !=null){
-                    StroeAdateManager.getmIntance().setPei(data.groupID,fen);
-                    StroeAdateManager.GroupData groupData= StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
-                    sendMessage(data.groupID,"设置为："+fen);
-                   // sendMessageToGuanli(groupData.name+"设置为："+fen);
-                }
-            }catch (Exception e){
+            return true;
+        }
+        return false;
+    }
 
+    private boolean commomPersonCommon(MessageDeal.MessagerDealDate data) {
+        if (data.type == MessageDeal.CHECK_INT) {//查量
+            StroeAdateManager.GroupData groupData = StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
+            sendMessage(data.groupID, "今天共吓： " + groupData.all);
+            return true;
+        } else if (data.type == MessageDeal.CHECK_FEN_INT ) {//查分
+            StroeAdateManager.GroupData groupData = StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
+            sendMessage(data.groupID, "剩余： " + groupData.fen);
+            return true;
+        }else if(data.type == MessageDeal.TUI_INT && isTime){
+            String message = data.message.replace(MessageDeal.TUI_STR,"");
+            String mess = deleteMessage(data.groupID,message);
+            String mes;
+            if(mess == null){
+                mes =  "退 "+message+" 失败";
+            }else{
+                mes = "退 "+message+":\n"+mess+"\n成功";
             }
-        }else if(data.type == MessageDeal.KAIJIANG_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && TextUtils.isEmpty(data.groupID)){
+            sendMessage(data.groupID,mes);
+            String rec = StroeAdateManager.getmIntance().getReceviDate(data.groupID);
+            if(!TextUtils.isEmpty(rec) && StroeAdateManager.getmIntance().getGroupDatById(rec).isEnable){
+                sendMessage(rec,mes);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public void receiveMessage(String str,String userId,String group){
+        MessageDeal.MessagerDealDate data = MessageDeal.getMessageDealData(str,userId,group);
+        StringBuilder build = new StringBuilder();
+        build.append("\n---------------------------------------------------\n"+"message = "+str+" user id = "+userId);
+        if(data == null){
+            return;
+        }
+
+        if(qunLiMessage(data)){
+            return;
+        }if(  data.groupID != null&& !data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId())){
+            if(StroeAdateManager.getmIntance().isGuanliYuan(data.TakerId)){
+                if(qunGuanLiCommon(data)){
+                    return;
+                }else if(qunFuzherenCommon(data)){
+                    return;
+                }
+            }
+            if(isInit && commomPersonCommon(data)){
+                return;
+            }
+        }
+        if(data.type == MessageDeal.GUAN_LI_QUN_INT && !TextUtils.isEmpty(data.groupID)){//管理群信息，已经有群记录的进行发自己身份ID，没有的等待5s进行确认身份ID
+            String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
+            if(TextUtils.isEmpty(quunId) || mMyId == -1){
+                StroeAdateManager.getmIntance().setGuanliqunID(data.groupID);
+                initShengfen();
+            }else{
+                final String id = data.groupID;
+                final String idstr = MessageDeal.SEND_SHENFEN+mMyId;
+                HookUtils.getIntance().getHandler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendMessage(id,idstr,true);
+                        if(mMyId == 0){
+                            sendMessage(id,MessageDeal.GENG_XIN_JSON+StroeAdateManager.getmIntance().getJsonString(),true);
+                        }
+                    }
+                },500);
+            }
+        }else if(data.type == MessageDeal.KAIJIANG_INT &&StroeAdateManager.getmIntance().isGuanliYuan(data.TakerId) && TextUtils.isEmpty(data.groupID)){
             String num = data.message.replace(MessageDeal.KAIJIANG_STR,"");
             build.append("开奖："+str);
-//            if(!TextUtils.isEmpty(num)&& isFiveNumber(num)){
-//                build.append(" 号码为："+num);
-//                announceByMessage(num,999);
-//            }else{
-//                build.append(" 格式错误");
-//                sendMessageToCheck(null,str+" 格式错误",-1);
-//            }
-        }else if(data.type == MessageDeal.TUI_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-               /* && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) */&& !TextUtils.isEmpty(data.groupID)){
-            build.append("删除下注："+str);
-            String message = data.message.replace(MessageDeal.TUI_STR,"");
-            boolean suuccess = deleteMessage(data.groupID,message);
-            sendMessage(data.groupID,"推："+message+(suuccess?" 成功":" 失败"));
-            build.append(" "+suuccess);
-        }else if(data.type == MessageDeal.CHANGE_INT && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && data.TakerId.equals(StroeAdateManager.getmIntance().getmGuanliId()) && TextUtils.isEmpty(data.groupID)){
+
+        }else if(data.type == MessageDeal.CHANGE_INT &&StroeAdateManager.getmIntance().isGuanliYuan(data.TakerId) && TextUtils.isEmpty(data.groupID)){
             build.append("修改下注："+str);
             try {
                 data.message = data.message.replace(MessageDeal.CHANGE_STR,"");
@@ -238,7 +242,15 @@ public class ServerManager {
             }catch (Exception e){
 
             }
-        }else if(haveNumber(str) && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())&& ! TextUtils.isEmpty(data.groupID)){
+        }else if(data.message.equals("故意出错")&& ! TextUtils.isEmpty(StroeAdateManager.getmIntance().getGuanliQunId()) &&
+                ! TextUtils.isEmpty(data.groupID) &&!data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId()) &&
+                !isRobot(data.TakerId)){
+                if(mMyId != 0){
+                    sendMessage(data.groupID,"出错");
+                }
+        }else if(haveNumber(str) && ! TextUtils.isEmpty(StroeAdateManager.getmIntance().getGuanliQunId()) &&
+                ! TextUtils.isEmpty(data.groupID) &&!data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId()) &&
+                !isRobot(data.TakerId) && isInit){
             StroeAdateManager.GroupData groupData= StroeAdateManager.getmIntance().getGroupDatById(data.groupID);
             if(groupData == null){
                 build.append("该群未注册");
@@ -248,13 +260,8 @@ public class ServerManager {
                 build.append(groupData.name+" 下注：isTime ="+isTime+" isenable="+groupData.isEnable);
                 return;
             }
-            if(StroeAdateManager.getmIntance().getReceviDate(data.groupID)!= null){
-                sendMessage(StroeAdateManager.getmIntance().getReceviDate(data.groupID),str);
-            }else{
-                build.append("下注："+str);
-                saveMassege(group,str);
-            }
-
+            build.append("下注："+str);
+            saveMassege(group,str);
         }
         XposedBridge.log(build.toString());
         build.append("\n------------------------------------------------\n");
@@ -280,7 +287,8 @@ public class ServerManager {
     }
     public void setTrueByDayStrart(){
         isTime = true;
-        String strBase ="\n\n\n      "+"024期下注开始\n" ;
+        String strBase ="024期下注开始" ;
+        Sscbean.resetID();
         Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
         if(groupDate.size() > 0){
             Set<String> strings = groupDate.keySet();
@@ -296,7 +304,7 @@ public class ServerManager {
     }
     public void setFalseByDayEnd(){
         isTime = false;
-        String strBase ="\n\n\n      "+"今天下注结束\n凌晨3点将进行清芬清量，请提前做好统计" ;
+        String strBase ="今天下注结束\n凌晨3点将进行清芬清量，请提前做好统计" ;
         Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
         if(groupDate.size() > 0){
             Set<String> strings = groupDate.keySet();
@@ -310,7 +318,6 @@ public class ServerManager {
 
     public void setFalseByAuto(int index){
         isTime = false;
-        String strBase ="\n\n\n[玫瑰][玫瑰]"+index+"期结束[玫瑰] [玫瑰] \n" ;
         Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
         if(groupDate.size() > 0){
             Set<String> strings = groupDate.keySet();
@@ -321,8 +328,13 @@ public class ServerManager {
                 if(groupDate.get(s).isEnable){
                     data = mAllData.get(s);
                     count = getGroupDeal(data);
-                    sendMessage(s,/*strBase+*/index+" 欺共吓注"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen);
-                    sendMessage(s, "\n\n\n[玫瑰][玫瑰]"+index+"期结束[玫瑰] [玫瑰] \n");
+                    sendMessage(s,index+" 欺共吓注"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen+"\n\n"+
+                            "[玫瑰][玫瑰]"+index+"期结束[玫瑰][玫瑰]\n-----------------------------");
+                    if(mMyId != -1  ){
+                        startHeart();
+                        sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
+                    }
+                    Sscbean.resetID();
                 }
             }
         }
@@ -387,14 +399,13 @@ public class ServerManager {
                 }
                 StroeAdateManager.getmIntance().changeFen(id,menoy);
                 if(index != 23){
-                    sendMessage(id,""+index+"期： "+str+"\n "
-                            +" 重："+count+" "+" 上 ："+menoy+" 余："+data.fen);
-
-                    sendMessage(id, indexNext+" 欺开始");
+                    sendMessage(id,""+index+"期： "+str+"\n\n "
+                            +" 重："+count+" "+" 上 ："+menoy+" 余："+data.fen+"\n\n"+
+                            "[玫瑰][玫瑰]"+indexNext+" 欺开始[玫瑰][玫瑰]\n-----------------------------"
+                    );
                 }else{
-                    sendMessage(id,"]"+index+" 期 "+str+"] "
-                            +" 重："+count+"，"+" 上 ："+menoy+"余："+data.fen);
-                    sendMessage(id, "晚安");
+                    sendMessage(id,+index+" 期 "+str+" "
+                            +" 重："+count+"，"+" 上 ："+menoy+"余："+data.fen+"\n"+ "晚安") ;
                 }
 
             }
@@ -413,31 +424,35 @@ public class ServerManager {
      * @param id 对应该字符串的id
      */
     private void sendMessageToGroup(String userid,Sscbean bean,String error,int id){
-        sendMessageToGuanli("id:"+bean.getId()+":"+bean.message);
         sendMessage(userid,"无法识别\n"+bean.message);
+        String fuzhe = StroeAdateManager.getmIntance().getFuzheData(userid);
+        if(!TextUtils.isEmpty( fuzhe) && StroeAdateManager.getmIntance().getGroupDatById(fuzhe).isEnable){
+            sendMessage(fuzhe,StroeAdateManager.getmIntance().getGroupDatById(userid).name+" 无法识别\n"+bean.message);
+        }
     }
 
     private void sendMessageToCheck(Sscbean bean,String error,int id){
-        sendMessageToGuanli("id:"+bean.getId()+":"+bean.message);
+       // sendMessageToGuanli("id:"+bean.getId()+":"+bean.message);
     }
 
     private void sendMessageToGuanli(String str){
-        if(!TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())){
-            sendMessage(StroeAdateManager.getmIntance().getmGuanliId(),str);
+        if(!TextUtils.isEmpty(StroeAdateManager.getmIntance().getGuanliQunId())){
+            sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),str,true);
         }
 
     }
 
-    private void sendMessage(String userId,String str){
-        if(mMyId == 0 ){
-            if(HookUtils.getIntance() != null){
-                XposedBridge.log("userid:"+userId+" str="+str);
-                HookUtils.getIntance().sendMeassageBy(userId,str);
-            }
+    private void sendMessage(String userId,String str,boolean isNow){
+        XposedBridge.log("userid:"+userId+" str="+str+" isnow"+isNow);
+        if(isNow){
+            HookUtils.getIntance().sendMeassageBy(userId,str);
         }else{
             addWairMessage(userId,str);
         }
+    }
 
+    private void sendMessage(String userId,String str){
+        sendMessage(userId,str,false);
     }
 
     private boolean isFiveNumber(String str){
@@ -488,13 +503,32 @@ public class ServerManager {
         if(bean.mList != null){
             userData.add(bean);
             xiazjianfen(bean,userId);
-            build.append("    "+bean.toString());
+
             StringBuilder builder2 = new StringBuilder();
+
             builder2.append(message+"\n");
-            for(DateBean2 date : bean.mList){
-                builder2.append("解"+date.toString()+"\n");
+
+            for(int i = 0;i< bean.mList.size();i++){
+                DateBean2 date = bean.mList.get(i);
+                builder2.append("解"+date.toString());
+                if(i != bean.mList.size() -1){
+                    builder2.append("\n");
+                }
             }
+            builder2.append("   (退"+bean.getId()+")");
             sendMessage(userId,builder2.toString());
+            String rec = StroeAdateManager.getmIntance().getReceviDate(userId);
+            if(rec!= null && StroeAdateManager.getmIntance().getGroupDatById(rec).isEnable){
+                sendMessage(rec,builder2.toString());
+                xiazjianfen(bean,rec);
+                if(!mAllData.containsKey(rec)){
+                    ArrayList<Sscbean> recData = new ArrayList<>();
+                    mAllData.put(rec,recData);
+                    mAllData.get(rec).add(bean);
+                }else{
+                    mAllData.get(rec).add(bean);
+                }
+            }
         }else{
             SscBeanWithUser error = new SscBeanWithUser(bean,userId);
             mErrorList.add(error);
@@ -620,24 +654,51 @@ public class ServerManager {
      * @param str
      * @return
      */
-    private boolean deleteMessage(String userId,String str){
+    private String deleteMessage(String userId,String str){
+        Integer id ;
+        try{
+            id = Integer.parseInt(str);
+        }catch (Exception e){
+            return null;
+        }
+        if(id == 0){
+            return null;
+        }
         ArrayList<Sscbean> userData  =null;
+        ArrayList<Sscbean> recData  =null;
         if(mAllData.containsKey(userId)){
             userData = mAllData.get(userId);
         }
         if(userData == null){
-            return false;
+            return null;
         }
+        String rec = StroeAdateManager.getmIntance().getReceviDate(userId);
+        if(rec!= null && StroeAdateManager.getmIntance().getGroupDatById(rec).isEnable){
+            recData = mAllData.get(rec);
+        }
+        String mess = null;
         for(int i = 0; i < userData.size();i++){
-            if( userData.get(i).message.equals(str)){
+            if( userData.get(i).getId()== id){
                 Sscbean bean= userData.get(i);
+                mess = bean.getMessage();
                 int count = bean.getCount();
                 StroeAdateManager.getmIntance().changeFen(userId,count,true);
                 userData.remove(i);
-                return true;
+                break;
             }
         }
-        return false;
+        if(recData != null && mess != null){
+            for(int i = 0; i < recData.size();i++){
+                if( recData.get(i).getId()== id){
+                    Sscbean bean= recData.get(i);
+                    int count = bean.getCount();
+                    StroeAdateManager.getmIntance().changeFen(rec,count,true);
+                    recData.remove(i);
+                    break;
+                }
+            }
+        }
+        return mess;
     }
 
     private static ServerManager mIntance = new ServerManager();
@@ -651,6 +712,7 @@ public class ServerManager {
     }
     /*
     * 身份管理相关的业务处理
+    * 处理相关的代码直接发送
     * */
     private ArrayList<String> mRobotIds = new ArrayList<>();
     private ArrayList<WaitSendMessage> mWaitSend =new  ArrayList<>();
@@ -661,79 +723,174 @@ public class ServerManager {
     }
 
     private void addWairMessage(String sendId,String message){
+        String b = message.replaceAll(" ","").replace("\n","").split("\\(")[0];
+        for(int i = 0;i<mRecList.size();i++){
+            MessageDeal.MessagerDealDate date = mRecList.get(i);
+            String a = date.message.replaceAll(" ","").replace("\n","").split("\\(")[0];
+            if(b.equals(a) && date.groupID.equals(sendId)){
+                mRecList.remove(date);
+                return;
+            }
+        }
+        XposedBridge.log("huangna: add userid:"+sendId+" message="+message);
         WaitSendMessage a= new WaitSendMessage();
         long timeStamp = System.currentTimeMillis();
-        a.time = timeStamp+mMyId*5000;
         a.sendId = sendId;
         a.message = message;
         mWaitSend.add(a);
+        if(mMyId == 0 && !isWorkLoop){
+            startLoop();
+        }
     }
 
-    private boolean qunLiMessage( MessageDeal.MessagerDealDate data){
-        String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
-        if(!TextUtils.isEmpty(quunId) && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && !TextUtils.isEmpty(data.groupID) && !quunId.equals(data.groupID) && isRobot(data.TakerId)){//在非管理裙中接受到其他机器人的信息
-            if(mMyId == 0){//主号重新确认身份
-                mMyId = -1;
-                initShengfen();
-
-            }else{//备号移出相同的待发送信息
-                for(int i= 0; i < mWaitSend.size() ;i++){
-                    if(mWaitSend.get(i).message.equals(data.message)){
-                        mWaitSend.remove(i);
-                        break;
-                    }
-                }
+    private boolean guanLiQunGuanLiCommon( MessageDeal.MessagerDealDate data){//管理群中的管理命令
+        if(data.type == MessageDeal.GUAN_LI_INT) {//注册管理员：管理员私发命令
+            int error = StroeAdateManager.getmIntance().addGuanliId(data.TakerId);
+            if(error == 0){
+                sendMessage(data.groupID,"注册管理员成功",true);
+            }else if(error == 1){
+                sendMessage(data.groupID,"你已经是管理员无需重新注册",true);
+            }else if(error == 2){
+                sendMessage(data.groupID,"注册失败",true);
             }
             return true;
-        }else if(!TextUtils.isEmpty(quunId) && !TextUtils.isEmpty(StroeAdateManager.getmIntance().getmGuanliId())
-                && !TextUtils.isEmpty(data.groupID) &&quunId.equals(data.groupID)){//如果是在管理裙中接受到其他机器人的信息
-            if(data.type == MessageDeal.SHANG_XIAN_INT ) {//上线命令
-                HookUtils.getIntance().sendMeassageBy(data.groupID,MessageDeal.SEND_SHENFEN+mMyId);
-                return true;
-            }else if(data.type == MessageDeal.SHENG_FEN_INT){
+        }else if(data.type == MessageDeal.TING_INT ){
+            setEnable(false);
+            return true;
+        }else if(data.type == MessageDeal.KAISHI_INT ){
+            setEnable(true);
+            return true;
+        }else if(data.type == MessageDeal.CLEAR_CHECK_INT ){//清量
+            sendMessage(data.groupID,"已清空所有量",true);
+            clearAllForAllGroup();
+            return true;
+        }
+        return  false;
+    }
+    private boolean guanLiRobotCommon(MessageDeal.MessagerDealDate data){
+        String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
+        if(data.type == MessageDeal.SHANG_XIAN_INT  && mMyId  != -1) {//上线命令
+            sendMessage(data.groupID,MessageDeal.SEND_SHENFEN+mMyId,true);
+            if(mMyId == 0){
+                sendMessage(quunId,MessageDeal.GENG_XIN_JSON+StroeAdateManager.getmIntance().getJsonString(),true);
+            }
+            return true;
+        }else if(data.type == MessageDeal.SHENG_FEN_INT) {
 
-                boolean  isHave = false;
-                for(String id : mRobotIds){
-                    if(id.equals(data.TakerId)){
-                        isHave = true;
-                        break;
-                    }
+            boolean isHave = false;
+            for (String id : mRobotIds) {
+                if (id.equals(data.TakerId)) {
+                    isHave = true;
+                    break;
                 }
-                if(!isHave){
-                    mRobotIds.add(data.TakerId);
+            }
+            if (!isHave) {
+                mRobotIds.add(data.TakerId);
+            }
+            try {
+                Integer id = Integer.parseInt(data.message.replace(MessageDeal.SEND_SHENFEN, ""));
+                if (id != null && id >= mCurrentMaxId) {
+                    mCurrentMaxId = id;
+                    XposedBridge.log("mCurrentMaxId ="+mCurrentMaxId);
                 }
+            } catch (Exception e) {
+
+            }
+            return true;
+        }else if(data.type == MessageDeal.XIN_TIAO_INT){
+            try{
+                Integer id = Integer.parseInt(data.message.replace(MessageDeal.XIN_TIAO_STR, ""));
+                mHeartList.put(id,System.currentTimeMillis());
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }else if(data.type == MessageDeal.SHANG_WEI_INT && isInit ){
+            String replace = data.message.replace(MessageDeal.SHANG_WEI_QUN, "");
+            String[] list = null;
+            if(!TextUtils.isEmpty(replace)){
+                list = replace.split(",");
+            }else{
+                return true;
+            }
+            if(list != null && list.length == 2){
                 try {
-                    Integer id = Integer.parseInt(data.message.replace(MessageDeal.SEND_SHENFEN, ""));
-                    if (id != null && id >= mCurrentMaxId) {
-                        mCurrentMaxId = id;
-                        return true;
+                    Integer oldWei = Integer.parseInt(list[0]);
+                    Integer newWei = Integer.parseInt(list[1]);
+                    XposedBridge.log("oldWei ="+oldWei+" newWei="+newWei);
+                    if(mMyId >  0){
+                        int index = -1;
+                        if(mMyId > newWei && mMyId < oldWei ){
+                            index = mMyId- newWei;
+                        }else  if(mMyId > oldWei ){
+                            index = mMyId- newWei -1;
+                        }else if(mMyId == newWei ){
+                            mMyId = -1;
+                        }
+                        if(mMyId == -1){
+                            index = 0;
+                        }
+                        if(index != -1){
+                            Handler handler = HookUtils.getIntance().getHandler();
+                            if(handler != null){
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        initShengfen();
+                                    }
+                                },5000*index);
+                            }
+                        }
+                    }else{
+                        initShengfen();
                     }
                 } catch (Exception e) {
 
                 }
-
-            }else if(data.type == MessageDeal.SHANG_WEI_INT){
-//                String replace = data.message.replace(MessageDeal.SHANG_WEI_QUN, "");
-//                try {
-//
-//                    Integer id = Integer.parseInt(replace);
-//                    XposedBridge.log("接收到最大身份 "+id+" mCurrentMaxId="+mCurrentMaxId);
-//                    if (mMyId == mCurrentMaxId) {
-//                        mMyId = id;
-//                        return true;
-//                    }
-//                } catch (Exception e) {
-//
-//                }
-            }else if(data.type == MessageDeal.GENG_XIN_INT){
-                String replace = data.message.replace(MessageDeal.GENG_XIN_JSON, "");
-                StroeAdateManager.getmIntance().setJson(replace);
-                return true;
             }
+            return true;
+        }else if(data.type == MessageDeal.GENG_XIN_INT){
+            String replace = data.message.replace(MessageDeal.GENG_XIN_JSON, "");
+            StroeAdateManager.getmIntance().setJson(replace);
+            return true;
         }
         return false;
     }
+
+    private boolean qunLiMessage( MessageDeal.MessagerDealDate data){
+        String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
+        String b = data.message.replaceAll(" ","").replace("\n","").split("\\(")[0];
+        if(!TextUtils.isEmpty(quunId) && !TextUtils.isEmpty(data.groupID) && !quunId.equals(data.groupID) && isRobot(data.TakerId)){//在非管理裙中接受到其他机器人的信息
+            XposedBridge.log("zsbin: add deal:"+data.groupID+" message="+data.message);
+            boolean isDeal = false;
+            if(mMyId == 0){//主号重新确认身份
+                mMyId = -1;
+            }
+            XposedBridge.log("huangna: add deal rec after :"+b+ "mWaitSend size ="+mWaitSend.size() );
+            for(int i= 0; i < mWaitSend.size() ;i++){
+                String a = mWaitSend.get(i).message.replaceAll(" ","").replace("\n","").split("\\(")[0];;
+                XposedBridge.log("zsbin: add deal my after :"+a  );
+                if(a.equals(b) && data.groupID.equals(mWaitSend.get(i).sendId)){
+                    XposedBridge.log("zsbin: remove" );
+                    mWaitSend.remove(i);
+                    isDeal = true;
+                    break;
+                }
+            }
+            if(!isDeal){
+                mRecList.add(data);
+            }
+            return true;
+        }
+
+        if(!TextUtils.isEmpty(quunId) && !TextUtils.isEmpty(data.groupID) && quunId.equals(data.groupID)){
+            if( !guanLiRobotCommon(data)){
+                 guanLiQunGuanLiCommon(data);
+            }
+            return true;
+        }
+        return false;
+    }
+
     private boolean  isRobot(String id){
         for(String ids : mRobotIds){
             if(ids.equals(id)){
@@ -746,11 +903,11 @@ public class ServerManager {
     public void init(){
         initShengfen();
     }
-
+    private boolean isInit = false;
     private void initShengfen(){
         final  String guanliQunId = StroeAdateManager.getmIntance().getGuanliQunId();
         if(!TextUtils.isEmpty(guanliQunId)){
-            HookUtils.getIntance().sendMeassageBy(guanliQunId,MessageDeal.SHANG_XIAN);
+            sendMessage(guanliQunId,MessageDeal.SHANG_XIAN,true);
             queRenShenFen(guanliQunId);
         }
     }
@@ -758,43 +915,101 @@ public class ServerManager {
     private void queRenShenFen(final String qun){
         mCurrentMaxId = -1;
         XposedBridge.log("确定身份 "+mCurrentMaxId);
-        Handler handler = HookUtils.getIntance().getHandler();
+        final Handler handler = HookUtils.getIntance().getHandler();
         if(handler != null){
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {//确定身份
                     XposedBridge.log("确定身份 "+mCurrentMaxId);
                     mMyId = mCurrentMaxId +1;
-                    HookUtils.getIntance().sendMeassageBy(qun,MessageDeal.SEND_SHENFEN+mMyId);
-                    if(mMyId > 0){
-                        startLoop();
+                    isInit = true;
+                    sendMessage(qun,MessageDeal.SEND_SHENFEN+mMyId,true);
+               //     sendMessage(qun,MessageDeal.XIN_TIAO_STR+mMyId,true);
+                    startLoop();
+                    if(mMyId == 0){
+                        startHeart();
                     }else{
-                        stopLoop();
+                        long timeStamp = System.currentTimeMillis();
+                        for(int i = 0;i<mMyId;i++){
+                            mHeartList.put(i,timeStamp);
+                        }
+                        startHeart();
                     }
                 }
             },5000);
         }
     }
-    public int loopDelay = 500;
-    Runnable mLoopRun = new Runnable() {
+    public int heartLoop = 240000;
+
+    Runnable mHeartLoop = new Runnable() {
         @Override
         public void run() {
-            if(mMyId == 0 && mWaitSend.size() == 0){
-                stopLoop();
-            }else if( mMyId == 0 && mWaitSend.size()  > 0){
+            Handler handler = HookUtils.getIntance().getHandler();
+            if(handler != null){
+                sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
+                startHeart();
+            }
+        }
+    };
+    private void startHeart(){
+        Handler handler = HookUtils.getIntance().getHandler();
+        if(handler != null){
+            handler.removeCallbacks(mHeartLoop);
+            handler.postDelayed(mHeartLoop,heartLoop);
+        }
+
+    }
+//    Runnable mLoopRun = new Runnable() {
+//        @Override
+//        public void run() {
+//            if(mMyId == 0 && mWaitSend.size() == 0){
+//                stopLoop();
+//            }else if( mMyId == 0 && mWaitSend.size()  > 0){
+//                WaitSendMessage waitSendMessage = mWaitSend.get(0);
+//                sendMessage(waitSendMessage.sendId,waitSendMessage.message,true);
+//                mWaitSend.remove(0);
+//                startLoop();
+//            }else if( mMyId != 0 && mWaitSend.size()  > 0){
+//                long timeStamp = System.currentTimeMillis();
+//                for(int i = 0;i < mWaitSend.size() ;i++){
+//                    WaitSendMessage wait = mWaitSend.get(i);
+//                    if(timeStamp > wait.time){
+//                        toBeZeroId();
+//                        sendMessage(wait.sendId,wait.message,true);
+//                        mWaitSend.remove(i);
+//                        startLoop();
+//                        break;
+//                    }
+//                }
+//                startLoop();
+//            }else{
+//                startLoop();
+//            }
+//        }
+//    };
+    Runnable mWorkRun = new Runnable() {
+        @Override
+        public void run() {
+
+
+            if( mMyId == 0 && mWaitSend.size()  > 0){
                 WaitSendMessage waitSendMessage = mWaitSend.get(0);
-                HookUtils.getIntance().sendMeassageBy(waitSendMessage.sendId,waitSendMessage.message);
+                sendMessage(waitSendMessage.sendId,waitSendMessage.message,true);
                 mWaitSend.remove(0);
                 startLoop();
-            }else if( mMyId != 0 && mWaitSend.size()  > 0){
-                long timeStamp = System.currentTimeMillis();
-                for(WaitSendMessage wait : mWaitSend){
-                    if(timeStamp > wait.time){
-                        toBeZeroId();
-                        HookUtils.getIntance().sendMeassageBy(wait.sendId,wait.message);
-                        startLoop();
+            }else if( mMyId > 0 ){
+                long timeStamp = System.currentTimeMillis() - heartLoop -15000;
+                Set<Integer> integers = mHeartList.keySet();
+                boolean isShangwei  = true;
+                for(Integer id : integers){
+                    if(id < mMyId  && mHeartList.get(id) > timeStamp){
+                        isShangwei = false;
                         break;
                     }
+                }
+                if(isShangwei){
+                    sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.SHANG_WEI_QUN+mMyId+","+0,true);
+                    mMyId = 0;
                 }
                 startLoop();
             }else{
@@ -802,23 +1017,28 @@ public class ServerManager {
             }
         }
     };
-
     private void toBeZeroId(){
-        HookUtils.getIntance().sendMeassageBy(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.SHANG_WEI_QUN+mMyId);
-        mMyId = 0;
+        mRecList.clear();
     }
 
+    public int loopDelay = 400;
+    private boolean isWorkLoop = false;
     private void startLoop(){
+        isWorkLoop = true;
         Handler handler = HookUtils.getIntance().getHandler();
         if(handler != null){
-            handler.removeCallbacks(mLoopRun);
-            handler.postDelayed(mLoopRun,loopDelay);
+            Random random = new Random();
+            int i = random.nextInt(100);
+            i =loopDelay+i;
+            handler.removeCallbacks(mWorkRun);
+            handler.postDelayed(mWorkRun,i);
         }
     }
-    private void stopLoop(){
-        Handler handler = HookUtils.getIntance().getHandler();
-        if(handler != null){
-            handler.removeCallbacks(mLoopRun);
-        }
-    }
+//    private void stopLoop(){
+//        isWorkLoop = false;
+//        Handler handler = HookUtils.getIntance().getHandler();
+//        if(handler != null){
+//            handler.removeCallbacks(mWorkRun);
+//        }
+//    }
 }

@@ -60,6 +60,7 @@ public class HookUtils implements IXposedHookLoadPackage {
     public Handler getHandler(){
         return mHandler;
     }
+
     HtmlParse.MaxIndexResult mCurrentResult;
     Runnable mRequitRun = new Runnable() {
         @Override
@@ -258,6 +259,12 @@ public class HookUtils implements IXposedHookLoadPackage {
 
                 mHandler = new Handler();
                 mHandler.post(mTimeRun);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        ServerManager.getIntance().init();
+                    }
+                },60000);
             }
             mInstance = this;
             Context context = (Context) XposedHelpers.callMethod(XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", null), "currentActivityThread", new Object[0]), "getSystemContext", new Object[0]);

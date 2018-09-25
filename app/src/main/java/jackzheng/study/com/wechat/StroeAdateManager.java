@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,11 +31,8 @@ public class StroeAdateManager {
     private static String FILE_NAME = "group_data.json";
     private static String FOLDER_NAME = "group_data.json";
     private JSONObject mJson;
-    private String mGuanliId ;
-    private String glPassword;
-    private String mSpGuanliId ;
     private Map<String,GroupData>  mGroupList= new HashMap<>();
-
+    private ArrayList<String> mGuanliList = new ArrayList<>();
     public String getJsonString(){
         return mJson.toString();
     }
@@ -44,19 +42,6 @@ public class StroeAdateManager {
             writeFileToSDCard(mJson.toString().getBytes());
     }
 
-    public String getmGuanliId() {
-        return mGuanliId;
-    }
-    public String getmSPGuanliId() {
-        return mSpGuanliId;
-    }
-    public String getGuanliPassword() {
-        if(TextUtils.isEmpty(glPassword)){
-            glPassword = "123456";
-        }
-        XposedBridge.log("glPassword = "+glPassword);
-        return glPassword;
-    }
     public  Map<String,GroupData> getGroupDate(){
         return mGroupList;
     }
@@ -64,28 +49,6 @@ public class StroeAdateManager {
         return mGroupList.get(id);
     }
 
-    public void setmGuanliId(String mGuanliId,String password) {
-        this.mGuanliId = mGuanliId;
-        this.glPassword = password;
-        try {
-            mJson.put("guanli",mGuanliId);
-            mJson.put("password",glPassword);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return;
-        }
-        writeFileToSDCard(mJson.toString().getBytes());
-    }
-    public void setmSPGuanliId(String mGuanliId) {
-        this.mGuanliId = mGuanliId;
-        try {
-            mJson.put("spguanli",mSpGuanliId);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return;
-        }
-        writeFileToSDCard(mJson.toString().getBytes());
-    }
     public void addGroup(String name, String id){
 
         if(mGroupList.containsKey(id)){
@@ -191,19 +154,12 @@ public class StroeAdateManager {
         }else{
             try {
                 mJson = new JSONObject(s);
-                if(mJson.has("guanli")){
-                    mGuanliId = mJson.getString("guanli");
-                    XposedBridge.log("guanli id = "+mGuanliId);
-                }
-                if(mJson.has("password")){
-                    glPassword = mJson.getString("password");
-                    XposedBridge.log("guanli password = "+glPassword);
-                }else{
-                    glPassword = "1234567";
-                }
-                if(mJson.has("spguanli")){
-                    mSpGuanliId = mJson.getString("spguanli");
-                    XposedBridge.log("guanli id = "+mGuanliId);
+                if(mJson.has("guanlis")){
+                    JSONArray array = mJson.getJSONArray("guanlis");
+                    for(int i = 0;i<array.length();i++){
+                        mGuanliList.add(array.getJSONObject(i).getString("id"));
+                        XposedBridge.log("guanli id= "+mGuanliList.get(i));
+                    }
                 }
                 if(mJson.has("list")){
                     JSONArray array = mJson.getJSONArray("list");
@@ -362,8 +318,6 @@ public class StroeAdateManager {
         }
         try {
             jsonByGroupId.put("fen",groupData.fen);
-            JSONArray list = mJson.getJSONArray("list");
-            //     list.put(jsonByGroupId);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
@@ -387,6 +341,39 @@ public class StroeAdateManager {
             e.printStackTrace();
         }
     }
+    public void saveFuzheDate(String key,String groupID){
+        try {
+            mJson.put(key+"服",groupID);
+            writeFileToSDCard(mJson.toString().getBytes());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public void saveBeFuzheDate(String groupID,String key){
+        try {
+            mJson.put(groupID+"服",key+"服");
+            writeFileToSDCard(mJson.toString().getBytes());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public String getFuzheData(String group){
+        try {
+            String key = mJson.getString(group+"服");
+            if(TextUtils.isEmpty(key)){
+                return  null;
+            }
+            String send =  mJson.getString(key);
+            if(TextUtils.isEmpty(key)){
+                return  null;
+            }else{
+                return send;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return  null;
+    }
 
     public String getReceviDate(String group){
         try {
@@ -406,6 +393,7 @@ public class StroeAdateManager {
         return  null;
     }
 
+
     public void setPei(String groupID, int pei) {
         GroupData groupData;
         if(mGroupList.containsKey(groupID)){
@@ -420,13 +408,56 @@ public class StroeAdateManager {
         }
         try {
             jsonByGroupId.put("pei",pei);
-            JSONArray list = mJson.getJSONArray("list");
-      //      list.put(jsonByGroupId);
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
         writeFileToSDCard(mJson.toString().getBytes());
+    }
+
+    public boolean isGuanliYuan(String takerId){
+        for(String id : mGuanliList){
+            if(takerId.equals(id)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int addGuanliId(String takerId) {
+        if(mJson.has("guanlis")){
+            try {
+                JSONArray array = mJson.getJSONArray("guanlis");
+                for(int i = 0;i < array.length();i++){
+                    JSONObject js = array.getJSONObject(i);
+                    if(takerId.equals(js.getString("id"))){
+                        return 1;
+                    }
+                }
+                mGuanliList.add(takerId);
+                JSONObject js2 = new JSONObject();
+                js2.put("id",takerId);
+                array.put(js2);
+                writeFileToSDCard(mJson.toString().getBytes());
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return 2;
+            }
+        }else{
+            try {
+                JSONObject js2 = new JSONObject();
+                js2.put("id",takerId);
+                JSONArray array = new JSONArray();
+                array.put(js2);
+                mGuanliList.add(takerId);
+                mJson.put("guanlis",array);
+                writeFileToSDCard(mJson.toString().getBytes());
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return 2;
+            }
+        }
+        return 0;
     }
 
     public static class GroupData{

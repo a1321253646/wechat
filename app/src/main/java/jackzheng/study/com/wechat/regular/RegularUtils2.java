@@ -4,6 +4,8 @@ import android.text.TextUtils;
 
 import java.util.ArrayList;
 
+import de.robv.android.xposed.XposedBridge;
+
 public class RegularUtils2 {
 
     public static ArrayList<DateBean2> regularStr(String str){
@@ -22,7 +24,7 @@ public class RegularUtils2 {
             DateBean2 date = new DateBean2();
             SingleStrDealBean bean2 = new SingleStrDealBean();
             getLocalAnOther(data,numberCount,bean2);
-         //   Log.d("zsbin",data +" getLocalAnOther =\n"+bean2);
+        //      XposedBridge.log(data +" getLocalAnOther =\n"+bean2);
             if(bean2.numberList.size() >3 ){
                 for(int i = 0; i<bean2.numberList.size()-1 ;i++){
                     if(bean2.numberCountList.get(i) != 2){
@@ -80,6 +82,7 @@ public class RegularUtils2 {
                     }
                 }
             }else if(numberCount == 2){
+            //    XposedBridge.log("bean2.haveCount ="+bean2.haveCount);
                 if(bean2.haveCount){
                     if(bean2.numberCountList.get(0) !=2){
                         date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
@@ -104,8 +107,9 @@ public class RegularUtils2 {
                     }else if(bean2.spilStrList.size() == bean2.numberList.size()-1 ){
                         spile1 = bean2.spilStrList.get(0);
                     }
+
                     if(bean2.numberCountList.get(0) !=2){
-                        if((stringCount >1 && spile1.equals("/") || spile1.equals("，") ) ||spile1.equals("-") || spile1.equals("—") || spile1.equals("一") || spile1.equals("。") /*|| spile1.equals(".")*/){
+                        if((stringCount >1 && spile1.equals("/") || spile1.equals("，") ) ||spile1.contains("-") || spile1.contains("—") || spile1.equals("一") || spile1.equals("。") /*|| spile1.equals(".")*/){
                             date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
                             date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
                             bean2.mLocalCount.add(0);
@@ -276,6 +280,47 @@ public class RegularUtils2 {
         }
     }
 
+    private static void getPai(ArrayList<DateBean2>  list){
+        boolean isBack = true;
+        for(int i = 0 ; i<list.size();i++){
+            if(list.get(i).mLastData.size() == 0 && list.get(i).mDataList.size() == 0 && list.get(i).local.size() != 0){
+                isBack = false;
+                continue;
+            }else if(list.get(i).local.size() >0 ){
+                isBack = true;
+            }else if(list.get(i).local.size() == 0){
+                int index = i;
+                if(!isBack){
+                    list.get(i).local.addAll(list.get(i-1).local);
+                }else{
+                    index++;
+                    while(index < list.size() && list.get(index).local.size() == 0){
+                        index++;
+                    }
+                    if(index == list.size()){
+                        isBack = false;
+                        if(i > 0){
+                            list.get(i).local.addAll(list.get(i-1).local);
+                        }else{
+                            list.get(i).local.add(new Integer[]{4,5});
+                        }
+                    }else{
+                        if(list.get(index).mDataList.size() == 0 && list.get(index).mLastData.size() ==0){
+                            if(i > 0 && list.get(i-1).local.size() != 0){
+                                isBack = false;
+                                list.get(i).local.addAll(list.get(i-1).local);
+                                continue;
+                            }
+                        }
+                        list.get(i).local.addAll(list.get(index).local);
+                    }
+                }
+            }
+
+        }
+    }
+
+
     private static void duplicateRemove(ArrayList<DateBean2>  list){
         for(DateBean2 date :list){
             if(date.mDataList.size() != 0){
@@ -352,6 +397,7 @@ public class RegularUtils2 {
         char[] cs = str.toCharArray();
         for(int i = 0; i< cs.length;){
             if(cs[i] == StringDealFactory.NEW_LOCAL_CHAR){      //提取位置信息
+                builder.append("-");
                 deal.haveLoacl = true;
                 if(i < cs.length -3 && StringDealFactory.isLocal(cs[i+1]) && StringDealFactory.isLocal(cs[i+2]) && StringDealFactory.chinaToNumber(cs[i+3]) != -1) {
                     Integer[] local = new Integer[]{StringDealFactory.getLocalData(cs[i + 1]), StringDealFactory.getLocalData(cs[i + 2])};
@@ -497,6 +543,7 @@ public class RegularUtils2 {
 //            }else if(){}
             }else if(StringDealFactory.isUnuse(cs[i])){
                 builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+                builder.append("-");
                 i++;
             }else{
                 builder.append(cs[i]);

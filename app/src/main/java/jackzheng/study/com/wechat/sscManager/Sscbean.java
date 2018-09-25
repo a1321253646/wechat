@@ -11,6 +11,9 @@ public class Sscbean {
     String message;
     ArrayList<DateBean2> mList;
     int count = 0;
+    public static void resetID(){
+        ID=0;
+    }
     public Sscbean(String message){
         ID++;
         id = ID;
