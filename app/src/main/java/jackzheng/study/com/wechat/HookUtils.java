@@ -164,7 +164,7 @@ public class HookUtils implements IXposedHookLoadPackage {
     };
     private void dealOther(long hour ,long min){
         if(hour == 3 && min == 0){
-            ServerManager.getIntance().clearAllForAllGroup();
+            ServerManager.getIntance().clearAllForAllGroup(true);
         }else if(hour == 9 && min == 50){
             ServerManager.getIntance().setTrueByDayStrart();
         }

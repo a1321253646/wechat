@@ -268,7 +268,7 @@ public class ServerManager {
         DebugLog.saveLog(build.toString());
     }
 
-    public void clearAllForAllGroup(){
+    public void clearAllForAllGroup(boolean isAuto){
         StroeAdateManager.getmIntance().clearAllForAllGroup();
         String strBase ="当前量为0，芬为0" ;
         Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
@@ -279,6 +279,12 @@ public class ServerManager {
                     sendMessage(s,strBase);
                 }
             }
+        }
+        Handler handler = HookUtils.getIntance().getHandler();
+        if(isAuto && handler != null){
+            isHear = false;
+            handler.removeCallbacks(mHeartLoop);
+            //               handler.postDelayed(mHeartLoop,heartLoop);
         }
     }
 
@@ -298,6 +304,15 @@ public class ServerManager {
                 }
             }
         }
+        Set<Integer> integers = mHeartList.keySet();
+        long timeStamp = System.currentTimeMillis();
+        for(Integer id : integers){
+            if(mHeartList.get(id) != null  ){
+                mHeartList.put(id,timeStamp+15000);
+            }
+        }
+        sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
+        startHeart();
     }
     public void setFalseByDayEndNoNotification(){
         isTime = false;
@@ -330,13 +345,20 @@ public class ServerManager {
                     count = getGroupDeal(data);
                     sendMessage(s,index+" 欺共吓注"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen+"\n\n"+
                             "[玫瑰][玫瑰]"+index+"期结束[玫瑰][玫瑰]\n-----------------------------");
-                    if(mMyId != -1  ){
-                        startHeart();
-                        sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
-                    }
-                    Sscbean.resetID();
                 }
             }
+            if(mMyId != -1  ){
+                startHeart();
+                sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
+                Set<Integer> integers = mHeartList.keySet();
+                long timeStamp = System.currentTimeMillis();
+                for(Integer id : integers){
+                    if(mHeartList.get(id) != null  ){
+                        mHeartList.put(id,timeStamp+15000);
+                    }
+                }
+            }
+            Sscbean.resetID();
         }
     }
 
@@ -410,6 +432,19 @@ public class ServerManager {
 
             }
         }
+        if(mMyId != -1  ){
+            startHeart();
+            sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
+            Set<Integer> integers = mHeartList.keySet();
+            long timeStamp = System.currentTimeMillis();
+            for(Integer id : integers){
+                if(mHeartList.get(id) != null){
+                    mHeartList.put(id,timeStamp+15000);
+                }
+            }
+        }
+
+
         mAllData.clear();
         mErrorList.clear();
         if(index == 23){
@@ -762,7 +797,8 @@ public class ServerManager {
             return true;
         }else if(data.type == MessageDeal.CLEAR_CHECK_INT ){//清量
             sendMessage(data.groupID,"已清空所有量",true);
-            clearAllForAllGroup();
+            clearAllForAllGroup(false);
+
             return true;
         }
         return  false;
@@ -800,7 +836,7 @@ public class ServerManager {
         }else if(data.type == MessageDeal.XIN_TIAO_INT){
             try{
                 Integer id = Integer.parseInt(data.message.replace(MessageDeal.XIN_TIAO_STR, ""));
-                mHeartList.put(id,System.currentTimeMillis());
+                mHeartList.put(id,System.currentTimeMillis()+heartLoop+5000);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -931,7 +967,7 @@ public class ServerManager {
                     }else{
                         long timeStamp = System.currentTimeMillis();
                         for(int i = 0;i<mMyId;i++){
-                            mHeartList.put(i,timeStamp);
+                            mHeartList.put(i,timeStamp+heartLoop+5000);
                         }
                         startHeart();
                     }
@@ -951,7 +987,9 @@ public class ServerManager {
             }
         }
     };
+    boolean isHear = false;
     private void startHeart(){
+        isHear = true;
         Handler handler = HookUtils.getIntance().getHandler();
         if(handler != null){
             handler.removeCallbacks(mHeartLoop);
@@ -997,8 +1035,8 @@ public class ServerManager {
                 sendMessage(waitSendMessage.sendId,waitSendMessage.message,true);
                 mWaitSend.remove(0);
                 startLoop();
-            }else if( mMyId > 0 ){
-                long timeStamp = System.currentTimeMillis() - heartLoop -15000;
+            }else if( mMyId > 0  && isHear ){
+                long timeStamp = System.currentTimeMillis();
                 Set<Integer> integers = mHeartList.keySet();
                 boolean isShangwei  = true;
                 for(Integer id : integers){
