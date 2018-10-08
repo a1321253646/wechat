@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 
 public class RegularUtils2 {
 
@@ -15,15 +16,23 @@ public class RegularUtils2 {
             return null;
         }
         int stringCount = list.size();
+
         ArrayList<DateBean2> value = new ArrayList<>();
-        for(String data : list){
+        for(int iii = 0;iii < list.size();iii++){
+            String data = list.get(iii);
             if(TextUtils.isEmpty(data)){
                 continue;
             }
             int numberCount = StringDealFactory.haveNumCount(data);
             DateBean2 date = new DateBean2();
             SingleStrDealBean bean2 = new SingleStrDealBean();
-            getLocalAnOther(data,numberCount,bean2);
+//            if(iii == 0){
+                getLocalAnOther(data,numberCount,bean2,date);
+//            }else{
+//                getLocalAnOther(data,numberCount,bean2,null);
+//            }
+
+            date.mHaveGroup = bean2.haveGroup;
         //      XposedBridge.log(data +" getLocalAnOther =\n"+bean2);
             if(bean2.numberList.size() >3 ){
                 for(int i = 0; i<bean2.numberList.size()-1 ;i++){
@@ -109,7 +118,7 @@ public class RegularUtils2 {
                     }
 
                     if(bean2.numberCountList.get(0) !=2){
-                        if((stringCount >1 && spile1.equals("/") || spile1.equals("，") ) ||spile1.contains("-") || spile1.contains("—") || spile1.equals("一") || spile1.equals("。") /*|| spile1.equals(".")*/){
+                        if((stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) ||spile1.contains("-") || spile1.contains("—") || spile1.equals("一") /*|| spile1.equals("。") *//*|| spile1.equals(".")*/){
                             date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
                             date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
                             bean2.mLocalCount.add(0);
@@ -119,7 +128,7 @@ public class RegularUtils2 {
                             bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
                         }
                     }else{
-                        if( (stringCount >1 && spile1.equals("/") || spile1.equals("，") ) || spile1.equals("-") || spile1.equals("—")|| spile1.equals("一") ){
+                        if( (stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) || spile1.equals("-") || spile1.equals("—")|| spile1.equals("一") ){
                             date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
                             date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
                             bean2.mLocalCount.add(0);
@@ -162,10 +171,41 @@ public class RegularUtils2 {
             date.mCountList = bean2.mLocalCount;
             date.isHe = bean2.isHe;
             date.heNumber = bean2.heNumber;
+
+            if(bean2.isKill){
+                ArrayList<Integer> data0 = getKillData(date.mDataList.get(0));
+                ArrayList<Integer> data1 = getKillData(date.mDataList.get(1));
+                date.mDataList.clear();
+                date.mDataList.add(data0);
+                date.mDataList.add(data1);
+            }
             value.add(date);
 
         }
+        getPai(value);
+
+
         return dealDate(value);
+    }
+
+    private static ArrayList<Integer>  getKillData(ArrayList<Integer> data){
+        ArrayList<Integer> value =new ArrayList<>();
+        boolean  isKill = false;
+        for(int ii = 0 ;ii <10;ii++){
+            isKill = false;
+            for(int i= 0;i <  data.size();i++){
+                if(ii == data.get(i)){
+                    isKill = true;
+                    break;
+                }
+            }
+            if(isKill){
+                continue;
+            }else{
+                value.add(ii);
+            }
+        }
+        return value;
     }
 
     //整理位置和注数
@@ -239,84 +279,106 @@ public class RegularUtils2 {
         }
         return true;
     }
-
     private static void getLocal(ArrayList<DateBean2>  list){
-        boolean isBack = true;
-        for(int i = 0 ; i<list.size();i++){
-            if(list.get(i).mLastData.size() == 0 && list.get(i).mDataList.size() == 0 && list.get(i).local.size() != 0){
-                isBack = false;
-                continue;
-            }else if(list.get(i).local.size() >0 ){
-                isBack = true;
-            }else if(list.get(i).local.size() == 0){
-                int index = i;
-                if(!isBack){
-                    list.get(i).local.addAll(list.get(i-1).local);
-                }else{
-                    index++;
-                    while(index < list.size() && list.get(index).local.size() == 0){
-                        index++;
-                    }
-                    if(index == list.size()){
-                        isBack = false;
-                        if(i > 0){
-                            list.get(i).local.addAll(list.get(i-1).local);
-                        }else{
-                            list.get(i).local.add(new Integer[]{4,5});
-                        }
-                    }else{
-                        if(list.get(index).mDataList.size() == 0 && list.get(index).mLastData.size() ==0){
-                            if(i > 0 && list.get(i-1).local.size() != 0){
-                                isBack = false;
-                                list.get(i).local.addAll(list.get(i-1).local);
-                                continue;
-                            }
-                        }
-                        list.get(i).local.addAll(list.get(index).local);
+        ArrayList<Integer[]> next = null;
+        ArrayList<Integer[]> pre = null;
+        int mLocalCount = 0;
+        int start = 0;
+        int end = list.size();
+        for(int i =0 ; i<list.size();i++){
+            if(list.get(i).local !=null && list.get(i).local.size() >0){
+                mLocalCount++;
+            }
+        }
+        if(mLocalCount == 1 &&list.get(0).isALlUserFri) {
+            next = list.get(0).local;
+        }else if(mLocalCount == 1 && list.get(list.size() -1 ).isALlUserLast){
+            next =list.get(list.size() -1).local;
+        }
+        if(mLocalCount == 1 || mLocalCount == 0){
+            if(next != null && mLocalCount == 1 ){
+                if(mLocalCount == 1 &&list.get(0).isALlUserFri) {
+                    start = 1;
+                    next = list.get(0).local;
+                }else if(mLocalCount == 1 && list.get(list.size() -1 ).isALlUserLast){
+                    end = end -1;
+                    next =list.get(list.size() -1).local;
+                }
+            }else if(mLocalCount == 0){
+                next = new ArrayList<>();
+                next.add(new Integer[]{4,5});
+            }else{
+                next =null;
+            }
+            if(next != null){
+                for(int i =start ; i<end;i++){
+                    // list.get(i).local.clear();
+                    if(list.get(i).local.size() == 0){
+                        list.get(i).local.addAll(next);
                     }
                 }
+                return;
             }
+        }
 
+        for(int i =0 ; i<list.size();i++){
+            if(list.get(i).mCountList != null && list.get(i).mCountList.size() > 0 && list.get(i).mCountList.get(0) > 0) {
+                if (list.get(i).local == null || list.get(i).local.size() == 0) {
+                    pre = new ArrayList<>();
+                    pre.add(new Integer[]{4, 5});
+                    list.get(i).local.addAll(pre);
+                } else {
+                    pre = list.get(i).local;
+                }
+            }else if(list.get(i).local != null && list.get(i).local.size() != 0){
+                pre = list.get(i).local;
+            }else{
+                start = i;
+                while (i < list.size() && (list.get(i).local ==null  || list.get(i).local.size() == 0 ) &&(list.get(i).mCountList == null ||  list.get(i).mCountList.size() ==0 || list.get(i).mCountList.get(0) == 0)){
+                    i++;
+                }
+                if(i != list.size()){
+                    if(list.get(i).local ==null  || list.get(i).local.size() == 0 ){
+                        pre = new ArrayList<>();
+                        pre.add(new Integer[]{4,5});
+                        list.get(i).local.addAll(pre);
+                    }
+                    pre = list.get(i).local;
+                }
+                next = pre;
+                for(int ii = start ; ii < i ;ii++){
+                    list.get(ii).local.addAll(next);
+                }
+            }
         }
     }
 
-    private static void getPai(ArrayList<DateBean2>  list){
-        boolean isBack = true;
-        for(int i = 0 ; i<list.size();i++){
-            if(list.get(i).mLastData.size() == 0 && list.get(i).mDataList.size() == 0 && list.get(i).local.size() != 0){
-                isBack = false;
-                continue;
-            }else if(list.get(i).local.size() >0 ){
-                isBack = true;
-            }else if(list.get(i).local.size() == 0){
-                int index = i;
-                if(!isBack){
-                    list.get(i).local.addAll(list.get(i-1).local);
-                }else{
-                    index++;
-                    while(index < list.size() && list.get(index).local.size() == 0){
-                        index++;
-                    }
-                    if(index == list.size()){
-                        isBack = false;
-                        if(i > 0){
-                            list.get(i).local.addAll(list.get(i-1).local);
-                        }else{
-                            list.get(i).local.add(new Integer[]{4,5});
-                        }
-                    }else{
-                        if(list.get(index).mDataList.size() == 0 && list.get(index).mLastData.size() ==0){
-                            if(i > 0 && list.get(i-1).local.size() != 0){
-                                isBack = false;
-                                list.get(i).local.addAll(list.get(i-1).local);
-                                continue;
-                            }
-                        }
-                        list.get(i).local.addAll(list.get(index).local);
-                    }
+    private static void getPai(ArrayList<DateBean2> dates){
+        boolean isPai = false;
+        DateBean2 tmp = null;
+        for(int i = 0 ; i<dates.size();i++){
+            XposedBridge.log("getPai i="+i+" isNoSame="+dates.get(i).isNoSame);
+            if(dates.get(i).isNoSame){
+                isPai = true;
+                break;
+            }
+        }
+        if(isPai){
+            for(int i = 0 ; i<dates.size();i++){
+                tmp = dates.get(i);
+                XposedBridge.log("getPai i="+i+" tmp.mHaveGroup="+tmp.mHaveGroup);
+                XposedBridge.log("getPai tmp.mCountList = "+tmp.mCountList);
+                if(tmp.mCountList != null){
+                    XposedBridge.log("getPai tmp.mCountList.size() = "+tmp.mCountList.size());
+                }
+                if(tmp.mCountList.size() >0){
+                    XposedBridge.log("getPai tmp.mCountList.get(0)= "+tmp.mCountList.get(0));
+                }
+
+                if((tmp.mCountList ==null || tmp.mCountList.size() == 0 || tmp.mCountList.get(0) == 0)&& !tmp.mHaveGroup){
+                    tmp.isNoSame = true;
                 }
             }
-
         }
     }
 
@@ -391,12 +453,20 @@ public class RegularUtils2 {
         }
         return mnumlist;
     }
-    private static void getLocalAnOther(String str,int numberCount, SingleStrDealBean deal){
+    private static void getLocalAnOther(String str,int numberCount, SingleStrDealBean deal,DateBean2 date){
         StringBuilder builder = new StringBuilder();
         int numCount = 0;
         char[] cs = str.toCharArray();
         for(int i = 0; i< cs.length;){
             if(cs[i] == StringDealFactory.NEW_LOCAL_CHAR){      //提取位置信息
+              //  XposedBridge.log("numberCount = "+numberCount+" numCount="+numCount+" "+cs[i] );
+                if(numCount == 0 && date!= null){
+                    date.isALlUserFri = true;
+                }else if(numCount == numberCount && date != null){
+
+                    date.isALlUserLast = true;
+                }
+                XposedBridge.log("  date.isALlUserLast = "+  date.isALlUserLast );
                 builder.append("-");
                 deal.haveLoacl = true;
                 if(i < cs.length -3 && StringDealFactory.isLocal(cs[i+1]) && StringDealFactory.isLocal(cs[i+2]) && StringDealFactory.chinaToNumber(cs[i+3]) != -1) {
@@ -412,6 +482,11 @@ public class RegularUtils2 {
                     }
                     if (count != 0) {
                         deal.mLocalCount.add(count);
+                    }
+
+
+                    if(numCount == numberCount -1) {
+                        deal.haveCount = true;
                     }
                 }else if( i < cs.length -1 && StringDealFactory.isLocal(cs[i+1])) {
                     i++;
@@ -434,6 +509,9 @@ public class RegularUtils2 {
                         i++;
                     }
                     builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+                    if(numCount == numberCount -1) {
+                        deal.haveCount = true;
+                    }
                 }else{
                     builder.append(cs[i]);
                     i++;
@@ -445,6 +523,7 @@ public class RegularUtils2 {
                 i++;
                 int sum = 0;
                 deal.haveGroup = true;
+
                 while ( i < cs.length && StringDealFactory.chinaToNumber(cs[i]) != -1){
                     sum = sum*10 + StringDealFactory.chinaToNumber(cs[i]);
                     i++;
@@ -485,7 +564,12 @@ public class RegularUtils2 {
                         builder.append(StringDealFactory.NEW_SPLIE_CHAR);
                     }
                 } else {
+
+
                     builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+                    deal.isKill = true;
+                    i++;
+                    /*
                     boolean isKill = false;
                     ArrayList<Character> killChar = new ArrayList<>();
                     while (true) {
@@ -518,8 +602,9 @@ public class RegularUtils2 {
                             builder = new StringBuilder();
                             builder.append(StringDealFactory.NEW_SPLIE_CHAR);
                         }
-                    }
+                    }*/
                 }
+
             }else if(StringDealFactory.isNumber(cs[i])) {
                 if(builder.length() > 0){
                     deal.spilStrList.add(builder.toString());

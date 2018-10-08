@@ -22,6 +22,7 @@ public class StringDealFactory {
 
     private static char[] LOCAL_REPALCE = {'万','千','百','十','个'};
     public static char[] ALL_NUMBER_REPALCE = {'0','1','2','3','4','5','6','7','8','9'};
+    public static int[] ALL_NUMBER_REPALCE_INT = {0,1,2,3,4,5,6,7,8,9};
 
     private static final char[] GROUP_SIGN_LIST = {'全','单','双','大','小'};
     private static String[] GROUP_VALUE_LIST = {"-0123456789-","-13579-","-02468-","-56789-","-01234-"};
@@ -204,8 +205,11 @@ public class StringDealFactory {
                       builder.append("死00 11 22 33 44 55 66 77 88 99死");
                       continue;
                   }
-              }else if(cs[i] == '不' &&   i< cs.length-1  && cs[i+1] == '要'){
-                  i = i+1;
+              }else if((cs[i] == '不' &&   i< cs.length-1  && cs[i+1] == '要')) {
+                  i = i + 1;
+                  builder.append("杀");
+                  continue;
+              }else if( cs[i] == '没'){
                   builder.append("杀");
                   continue;
               }else if(cs[i] == '对' &&   i< cs.length-1  && cs[i+1] == '子'){
@@ -311,12 +315,13 @@ public class StringDealFactory {
                      i++;
                      builder.append(cs[i]);
                  }else{
-                     builder.append(StringDealFactory.NEW_SPLIE_CHAR);
-                     i++;
-                     while (i < cs.length && StringDealFactory.isNumber(cs[i])) {
-                         i++;
-                     }
-                     i--;
+                    // builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+                     builder.append(",");
+ //                    i++;
+//                     while (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+//                         i++;
+//                     }
+//                     i--;
                  }
              }else{
                  builder.append(cs[i]);

@@ -53,7 +53,7 @@ public class StroeAdateManager {
 
         if(mGroupList.containsKey(id)){
             JSONObject js = findJsonByGroupId(id);
-            if(id == null){
+            if(js == null){
                 return;
             }
             try {
@@ -75,6 +75,7 @@ public class StroeAdateManager {
                 js.put("id",date.id);
                 js.put("fen",date.fen);
                 js.put("enable",date.isEnable);
+                js.put("isStopParse",date.isStopParse);
                 js.put("pei",date.pei);
                 js.put("all",date.all);
                 JSONArray array;
@@ -129,6 +130,7 @@ public class StroeAdateManager {
     }
     public void setGuanliqunID(String id){
         try {
+            XposedBridge.log("setGuanliqunID:"+id);
             mJson.put("guanliquan",id);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -173,6 +175,7 @@ public class StroeAdateManager {
                                 int pei = 97;
                                 int all = 0;
                                 boolean enable = false;
+                                boolean stopParse = false;
                                 if(ob.has("name")){
                                     name = ob.getString("name");
                                 }
@@ -188,6 +191,9 @@ public class StroeAdateManager {
                                 if(ob.has("enable")){
                                     enable = ob.getBoolean("enable");
                                 }
+                                if(ob.has("isStopParse")){
+                                    enable = ob.getBoolean("isStopParse");
+                                }
                                 if(ob.has("all")){
                                     all = ob.getInt("all");
                                 }
@@ -195,6 +201,7 @@ public class StroeAdateManager {
                                 data.fen = fen;
                                 data.pei = pei;
                                 data.isEnable = enable;
+                                data.isStopParse = stopParse;
                                 data.all = all;
                                 mGroupList.put(data.id,data);
                             }
@@ -357,6 +364,26 @@ public class StroeAdateManager {
             e.printStackTrace();
         }
     }
+    public void stopParseGroup(String groupID,boolean isStop){
+        if(mGroupList.containsKey(groupID)){
+            JSONObject js = findJsonByGroupId(groupID);
+            if(js == null){
+                return;
+            }
+            try {
+                js.put("isStopParse",isStop);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return;
+            }
+            GroupData groupData = mGroupList.get(groupID);
+            groupData.isStopParse = isStop;
+        }else{
+            return;
+        }
+        writeFileToSDCard(mJson.toString().getBytes());
+    }
+
     public String getFuzheData(String group){
         try {
             String key = mJson.getString(group+"服");
@@ -467,6 +494,7 @@ public class StroeAdateManager {
         public boolean isEnable = false;
         public int pei =90;
         public int all = 0;
+        public boolean isStopParse = false;
         public GroupData(String name,String id){
             this.name = name;
             this.id = id;
@@ -512,15 +540,21 @@ public class StroeAdateManager {
         }).start();
     }
     private String  readFile() {
-        String folderPath = Environment.getExternalStorageDirectory()
-                + File.separator + FOLDER_NAME + File.separator;
-
+        String folderPath = Environment.getExternalStorageDirectory().toString()
+                + File.separator + FOLDER_NAME+ File.separator ;
         File fileDir = new File(folderPath);
         if (!fileDir.exists()) {
             return null;
         }
-        File file = new File(folderPath + FILE_NAME);
+        File file = new File(folderPath+FILE_NAME);
         if (!file.exists()) {
+//            File dir = new File(file.getParent());
+//            dir.mkdirs();
+//            try {
+//                file.createNewFile();
+//            }catch (Exception e){
+//                e.printStackTrace();
+//            }
             return null;
         }
         try {

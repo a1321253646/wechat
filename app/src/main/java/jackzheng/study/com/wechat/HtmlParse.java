@@ -36,6 +36,7 @@ public class HtmlParse {
             return null;
         }
     }
+
     public  static MaxIndexResult parseQuite(){
         Log.d("zsbin","HtmlParse MaxIndexResult = ");
         MaxIndexResult result = new MaxIndexResult();
@@ -87,7 +88,30 @@ public class HtmlParse {
         }
         return null;
     }
-
+    public  static MaxIndexResult parse2(){
+        MaxIndexResult result = new MaxIndexResult();
+        try {
+            Document doc = Jsoup.connect("https://www.1396j.com/shishicai").get();
+            Elements elements4 =  doc.select("div.lotteryPublic_tableBlock");
+            //  .select("div.main_d lotteryPublic_main");
+            Elements select = elements4.get(0).select("table#tbHistory.zebra_crossing");
+            Element tr = select.select("tr").get(1);
+            String time = tr.select("i.font_gray666").text();
+            Elements span = tr.select("div.number_redAndBlue").select("span");
+            StringBuilder builder = new StringBuilder();
+            for(Element element5 :span){
+                builder.append(element5.text());
+            }
+            Log.d("zsbin"," code = "+builder.toString());
+            Log.d("zsbin"," time = "+time);
+            result.index = Integer.parseInt(time.split("-")[1]);
+            result.str = builder.toString();
+            return  result;
+        }catch(Exception e) {
+             XposedBridge.log(e.toString());
+            return null;
+        }
+    }
 
 
     public static class MaxIndexResult{

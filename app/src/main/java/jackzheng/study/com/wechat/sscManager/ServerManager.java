@@ -80,7 +80,16 @@ public class ServerManager {
                 sendMessage(data.groupID,"该裙被"+fenStr+"负责裙");
             }
             return true;
+        }else if(data.type == MessageDeal.STOP_PARSE_INT){
+            StroeAdateManager.getmIntance().stopParseGroup(data.groupID,true);
+            sendMessage(data.groupID,"该裙不发送解析信息");
+             return true;
+        }else if(data.type == MessageDeal.STAART_PARSE_INT){
+            StroeAdateManager.getmIntance().stopParseGroup(data.groupID,false);
+            sendMessage(data.groupID,"该裙将重新发送解析信息");
+            return true;
         }
+
         return  false;
     }
     private boolean qunFuzherenCommon(MessageDeal.MessagerDealDate data){//普通群中的负责员命令
@@ -188,7 +197,7 @@ public class ServerManager {
     public void receiveMessage(String str,String userId,String group){
         MessageDeal.MessagerDealDate data = MessageDeal.getMessageDealData(str,userId,group);
         StringBuilder build = new StringBuilder();
-        build.append("\n---------------------------------------------------\n"+"message = "+str+" user id = "+userId);
+        build.append("\n---------------------------------------------------\n"+"message = "+str+" user id = "+userId+" group= "+group);
         if(data == null){
             return;
         }
@@ -207,6 +216,7 @@ public class ServerManager {
                 return;
             }
         }
+
         if(data.type == MessageDeal.GUAN_LI_QUN_INT && !TextUtils.isEmpty(data.groupID)){//管理群信息，已经有群记录的进行发自己身份ID，没有的等待5s进行确认身份ID
             String quunId = StroeAdateManager.getmIntance().getGuanliQunId();
             if(TextUtils.isEmpty(quunId) || mMyId == -1){
@@ -304,6 +314,7 @@ public class ServerManager {
                 }
             }
         }
+
         Set<Integer> integers = mHeartList.keySet();
         long timeStamp = System.currentTimeMillis();
         for(Integer id : integers){
@@ -312,6 +323,7 @@ public class ServerManager {
             }
         }
         sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
+        XposedBridge.log("userid: 开始心跳");
         startHeart();
     }
     public void setFalseByDayEndNoNotification(){
@@ -330,7 +342,7 @@ public class ServerManager {
             }
         }
     }
-
+    private long mAutoStopTime  = -1;
     public void setFalseByAuto(int index){
         isTime = false;
         Map<String, StroeAdateManager.GroupData> groupDate = StroeAdateManager.getmIntance().getGroupDate();
@@ -343,18 +355,18 @@ public class ServerManager {
                 if(groupDate.get(s).isEnable){
                     data = mAllData.get(s);
                     count = getGroupDeal(data);
-                    sendMessage(s,index+" 欺共吓注"+count+",剩余"+StroeAdateManager.getmIntance().getGroupDatById(s).fen+"\n\n"+
-                            "[玫瑰][玫瑰]"+index+"期结束[玫瑰][玫瑰]\n-----------------------------");
+                    sendMessage(s,index+" 欺共吓注 "+count+"【米"+StroeAdateManager.getmIntance().getGroupDatById(s).fen+"】\n\n"+
+                            "[红包][红包] "+index+"期结束 [红包][红包]\n-----------------------------");
                 }
             }
             if(mMyId != -1  ){
-                startHeart();
+                startHeart(5000);
                 sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
                 Set<Integer> integers = mHeartList.keySet();
-                long timeStamp = System.currentTimeMillis();
+                mAutoStopTime = System.currentTimeMillis();
                 for(Integer id : integers){
-                    if(mHeartList.get(id) != null  ){
-                        mHeartList.put(id,timeStamp+15000);
+                    if(mHeartList.get(id) != null  && !(mHeartList.get(id) >mAutoStopTime -6000) ){
+                        mHeartList.put(id,mAutoStopTime+15000);
                     }
                 }
             }
@@ -422,8 +434,8 @@ public class ServerManager {
                 StroeAdateManager.getmIntance().changeFen(id,menoy);
                 if(index != 23){
                     sendMessage(id,""+index+"期： "+str+"\n\n "
-                            +" 重："+count+" "+" 上 ："+menoy+" 余："+data.fen+"\n\n"+
-                            "[玫瑰][玫瑰]"+indexNext+" 欺开始[玫瑰][玫瑰]\n-----------------------------"
+                            +"仲"+count+":芬"+menoy+" [米:"+data.fen+"]\n\n"+
+                            "[红包][红包] "+indexNext+" 欺开始 [红包][红包]\n-----------------------------"
                     );
                 }else{
                     sendMessage(id,+index+" 期 "+str+" "
@@ -433,13 +445,14 @@ public class ServerManager {
             }
         }
         if(mMyId != -1  ){
-            startHeart();
+            long timeStamp = System.currentTimeMillis();
+            startHeart(timeStamp- (mAutoStopTime-5000));
             sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.XIN_TIAO_STR+mMyId,true);
             Set<Integer> integers = mHeartList.keySet();
-            long timeStamp = System.currentTimeMillis();
+
             for(Integer id : integers){
-                if(mHeartList.get(id) != null){
-                    mHeartList.put(id,timeStamp+15000);
+                if(mHeartList.get(id) != null && !(mHeartList.get(id) >mAutoStopTime+10000)){
+                    mHeartList.put(id,timeStamp+10000);
                 }
             }
         }
@@ -554,7 +567,9 @@ public class ServerManager {
             sendMessage(userId,builder2.toString());
             String rec = StroeAdateManager.getmIntance().getReceviDate(userId);
             if(rec!= null && StroeAdateManager.getmIntance().getGroupDatById(rec).isEnable){
-                sendMessage(rec,builder2.toString());
+                if(!StroeAdateManager.getmIntance().getGroupDatById(rec).isStopParse){
+                    sendMessage(rec,builder2.toString());
+                }
                 xiazjianfen(bean,rec);
                 if(!mAllData.containsKey(rec)){
                     ArrayList<Sscbean> recData = new ArrayList<>();
@@ -989,13 +1004,15 @@ public class ServerManager {
     };
     boolean isHear = false;
     private void startHeart(){
+        startHeart(0);
+    }
+    private void startHeart(long idle){
         isHear = true;
         Handler handler = HookUtils.getIntance().getHandler();
         if(handler != null){
             handler.removeCallbacks(mHeartLoop);
-            handler.postDelayed(mHeartLoop,heartLoop);
+            handler.postDelayed(mHeartLoop,heartLoop-idle);
         }
-
     }
 //    Runnable mLoopRun = new Runnable() {
 //        @Override
@@ -1025,6 +1042,7 @@ public class ServerManager {
 //            }
 //        }
 //    };
+    boolean mIsShangweiIng = false;
     Runnable mWorkRun = new Runnable() {
         @Override
         public void run() {
@@ -1035,7 +1053,7 @@ public class ServerManager {
                 sendMessage(waitSendMessage.sendId,waitSendMessage.message,true);
                 mWaitSend.remove(0);
                 startLoop();
-            }else if( mMyId > 0  && isHear ){
+            }else if( mMyId > 0  && isHear  && !mIsShangweiIng){
                 long timeStamp = System.currentTimeMillis();
                 Set<Integer> integers = mHeartList.keySet();
                 boolean isShangwei  = true;
@@ -1046,8 +1064,19 @@ public class ServerManager {
                     }
                 }
                 if(isShangwei){
-                    sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.SHANG_WEI_QUN+mMyId+","+0,true);
-                    mMyId = 0;
+                    mIsShangweiIng = true;
+                    Handler handler = HookUtils.getIntance().getHandler();
+                    if(handler != null){
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                mIsShangweiIng = false;
+                                sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.SHANG_WEI_QUN+mMyId+","+0,true);
+                                mMyId = 0;
+                            }
+                        },5000);
+                    }
+
                 }
                 startLoop();
             }else{

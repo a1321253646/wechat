@@ -15,6 +15,7 @@ public class SingleStrDealBean {
     public ArrayList<Integer> mLocalCount= new ArrayList<>();
     public int heNumber = 0;
     public boolean isHaveLatSpile = false;
+    public boolean isKill = false;
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

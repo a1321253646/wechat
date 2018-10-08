@@ -69,7 +69,7 @@ public class HookUtils implements IXposedHookLoadPackage {
                 @Override
                 public void run() {
                     while(true){
-                        mCurrentResult = HtmlParse.parseQuite();
+                        mCurrentResult = HtmlParse.parse2();
                         if(mCurrentResult  == null){
                             XposedBridge.log("parseQuite 没数据");
                         }else{
@@ -80,21 +80,33 @@ public class HookUtils implements IXposedHookLoadPackage {
                             mHandler.postDelayed(mTimeRun,2000);
                             break;
                         }else{
-                            mCurrentResult = HtmlParse.parse();
+                            mCurrentResult = HtmlParse.parseQuite();
                             if(mCurrentResult  == null){
-                                XposedBridge.log("parse 没数据");
+                                XposedBridge.log("parseQuite 没数据");
                             }else{
-                                XposedBridge.log("mIndexMax ="+mIndexMax+" parse mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
+                                XposedBridge.log("mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
                             }
-                            if(mCurrentResult != null && ( (mIndexMax >= 10 && mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
+                            if(mCurrentResult != null && ( (mIndexMax >= 10 &&  mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
                                 mHandler.removeCallbacks(mTimeRun);
                                 mHandler.postDelayed(mTimeRun,2000);
                                 break;
                             }else{
-                                try {
-                                    Thread.sleep(2000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                mCurrentResult = HtmlParse.parse();
+                                if(mCurrentResult  == null){
+                                    XposedBridge.log("parse 没数据");
+                                }else{
+                                    XposedBridge.log("mIndexMax ="+mIndexMax+" parse mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
+                                }
+                                if(mCurrentResult != null && ( (mIndexMax >= 10 && mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
+                                    mHandler.removeCallbacks(mTimeRun);
+                                    mHandler.postDelayed(mTimeRun,2000);
+                                    break;
+                                }else{
+                                    try {
+                                        Thread.sleep(2000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
@@ -361,7 +373,7 @@ public class HookUtils implements IXposedHookLoadPackage {
     public void sendMeassageBy(String id,String str){
         XposedBridge.log("mSendObject = "+ mSendObject);
         if(mSendObject != null){
-            XposedHelpers.callMethod(mSendObject,"Dl",new Class[]{String.class},id+"&"+str);
+            XposedHelpers.callMethod(mSendObject,"Dl",new Class[]{String.class},"liesi"+id+"&"+str);
         }
     }
     private void appInitHook( ){
@@ -417,9 +429,14 @@ public class HookUtils implements IXposedHookLoadPackage {
                 super.beforeHookedMethod(param);
                 if(param.args != null){
                     XposedBridge.log("com.tencent.mm.mudelmulti.j hookAllConstructors before srgs leng="+param.args.length  );
-                    if(param.args.length == 5){
-                        param.args[0] = ((String)param.args[1]).split("&")[0];
-                        param.args[1] = ((String)param.args[1]).replaceFirst(param.args[0]+"&","");
+                    if(param.args.length == 5 && param.args[1] instanceof  String){
+                        String message =  (String)param.args[1];
+                        if(!TextUtils.isEmpty(message) && message.startsWith("liesi")){
+                            message = message.replace("liesi","");
+                            param.args[0] = message.split("&")[0];
+                            param.args[1] = message.replaceFirst(param.args[0]+"&","");
+                        }
+
                     }
 
                 }else{
