@@ -80,6 +80,22 @@ public class ServerManager {
                 sendMessage(data.groupID,"该裙被"+fenStr+"负责裙");
             }
             return true;
+        }else if(data.type == MessageDeal.QUAN_ZHUANG_INT ){
+            String fenStr = data.message.replace(MessageDeal.QUAN_ZHUANG_STR,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveBeFuzheDate(data.groupID,fenStr);
+                StroeAdateManager.getmIntance().saveSendDate(data.groupID,fenStr);
+                sendMessage(data.groupID,"该裙被"+fenStr+"砖马裙");
+            }
+            return true;
+        }else if(data.type == MessageDeal.QUAN_SHOU_INT ){
+            String fenStr = data.message.replace(MessageDeal.QUAN_SHOU_STR,"");
+            if(!TextUtils.isEmpty(fenStr)){
+                StroeAdateManager.getmIntance().saveReceviDate(fenStr,data.groupID);
+                StroeAdateManager.getmIntance().saveFuzheDate(fenStr,data.groupID);
+                sendMessage(data.groupID,"该裙为"+fenStr+"收马裙");
+            }
+            return true;
         }else if(data.type == MessageDeal.STOP_PARSE_INT){
             StroeAdateManager.getmIntance().stopParseGroup(data.groupID,true);
             sendMessage(data.groupID,"该裙不发送解析信息");
@@ -252,12 +268,16 @@ public class ServerManager {
             }catch (Exception e){
 
             }
-        }else if(data.message.equals("故意出错")&& ! TextUtils.isEmpty(StroeAdateManager.getmIntance().getGuanliQunId()) &&
+//        }else if(data.message.equals("故意出错")&& ! TextUtils.isEmpty(StroeAdateManager.getmIntance().getGuanliQunId()) &&
+//                ! TextUtils.isEmpty(data.groupID) &&!data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId()) &&
+//                !isRobot(data.TakerId)){
+//                if(mMyId != 0){
+//                    sendMessage(data.groupID,"出错");
+//                }
+        }else if(data.message.equals("图片测试")&& ! TextUtils.isEmpty(StroeAdateManager.getmIntance().getGuanliQunId()) &&
                 ! TextUtils.isEmpty(data.groupID) &&!data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId()) &&
                 !isRobot(data.TakerId)){
-                if(mMyId != 0){
-                    sendMessage(data.groupID,"出错");
-                }
+            sendMessage(data.groupID,"/sdcard/DCIM/Screenshots/Screenshot_2018-10-04-04-02-53-195_com.miui.home.png");
         }else if(haveNumber(str) && ! TextUtils.isEmpty(StroeAdateManager.getmIntance().getGuanliQunId()) &&
                 ! TextUtils.isEmpty(data.groupID) &&!data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId()) &&
                 !isRobot(data.TakerId) && isInit){
@@ -266,9 +286,13 @@ public class ServerManager {
                 build.append("该群未注册");
                 return;
             }
-            if(!isTime || !groupData.isEnable){
+            if(  !groupData.isEnable){
                 build.append(groupData.name+" 下注：isTime ="+isTime+" isenable="+groupData.isEnable);
                 return;
+            }
+            if(!isTime){
+                sendMessage(data.groupID,str+" 无效");
+                return ;
             }
             build.append("下注："+str);
             saveMassege(group,str);
@@ -355,8 +379,11 @@ public class ServerManager {
                 if(groupDate.get(s).isEnable){
                     data = mAllData.get(s);
                     count = getGroupDeal(data);
-                    sendMessage(s,index+" 欺共吓注 "+count+"【米"+StroeAdateManager.getmIntance().getGroupDatById(s).fen+"】\n\n"+
-                            "[红包][红包] "+index+"期结束 [红包][红包]\n-----------------------------");
+                    String str =  "[红包][红包] "+index+"期结束 [红包][红包]\n-----------------------------";
+                    if(!groupDate.get(s).isStopParse){
+                        str = index+" 欺共吓注 "+count+"【米"+StroeAdateManager.getmIntance().getGroupDatById(s).fen+"】\n\n"+str;
+                    }
+                    sendMessage(s,str);
                 }
             }
             if(mMyId != -1  ){
@@ -433,13 +460,19 @@ public class ServerManager {
                 }
                 StroeAdateManager.getmIntance().changeFen(id,menoy);
                 if(index != 23){
-                    sendMessage(id,""+index+"期： "+str+"\n\n "
-                            +"仲"+count+":芬"+menoy+" [米:"+data.fen+"]\n\n"+
-                            "[红包][红包] "+indexNext+" 欺开始 [红包][红包]\n-----------------------------"
-                    );
+                    String str2 = ""+index+"期： "+str+"\n\n ";
+                    if(!data.isStopParse){
+                        str2 = str2 +"仲"+count+":芬"+menoy+" [米:"+data.fen+"]\n\n";
+                    }
+                    str2 = str2+"[红包][红包] "+indexNext+" 欺开始 [红包][红包]\n-----------------------------";
+                    sendMessage(id, str2);
                 }else{
-                    sendMessage(id,+index+" 期 "+str+" "
-                            +" 重："+count+"，"+" 上 ："+menoy+"余："+data.fen+"\n"+ "晚安") ;
+                    String str2 =+index+" 期 "+str+" \n";
+                    if(!data.isStopParse){
+                        str2 = str2 +" 重："+count+"，"+" 上 ："+menoy+"余："+data.fen+"\n";
+                    }
+                    str2 = str2+ "晚安";
+                    sendMessage(id,str2) ;
                 }
 
             }
@@ -472,9 +505,12 @@ public class ServerManager {
      * @param id 对应该字符串的id
      */
     private void sendMessageToGroup(String userid,Sscbean bean,String error,int id){
-        sendMessage(userid,"无法识别\n"+bean.message);
+        if(!StroeAdateManager.getmIntance().getGroupDatById(userid).isStopParse){
+            sendMessage(userid,"无法识别\n"+bean.message);
+        }
+
         String fuzhe = StroeAdateManager.getmIntance().getFuzheData(userid);
-        if(!TextUtils.isEmpty( fuzhe) && StroeAdateManager.getmIntance().getGroupDatById(fuzhe).isEnable){
+        if(!TextUtils.isEmpty( fuzhe) && StroeAdateManager.getmIntance().getGroupDatById(fuzhe).isEnable ){
             sendMessage(fuzhe,StroeAdateManager.getmIntance().getGroupDatById(userid).name+" 无法识别\n"+bean.message);
         }
     }
@@ -564,12 +600,13 @@ public class ServerManager {
                 }
             }
             builder2.append("   (退"+bean.getId()+")");
-            sendMessage(userId,builder2.toString());
+            if(!StroeAdateManager.getmIntance().getGroupDatById(userId).isStopParse){
+                sendMessage(userId,builder2.toString());
+            }
+
             String rec = StroeAdateManager.getmIntance().getReceviDate(userId);
             if(rec!= null && StroeAdateManager.getmIntance().getGroupDatById(rec).isEnable){
-                if(!StroeAdateManager.getmIntance().getGroupDatById(rec).isStopParse){
-                    sendMessage(rec,builder2.toString());
-                }
+                sendMessage(rec,builder2.toString());
                 xiazjianfen(bean,rec);
                 if(!mAllData.containsKey(rec)){
                     ArrayList<Sscbean> recData = new ArrayList<>();

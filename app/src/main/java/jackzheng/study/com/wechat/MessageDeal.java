@@ -36,6 +36,8 @@ public class MessageDeal {
     public static final String QUN_BEIFUZHE_JSON = "裙被富责";
     public static final String STOP_PARSE_STR = "停解";
     public static final String STAART_PARSE_STR = "开解";
+    public static final String QUAN_ZHUANG_STR = "马转";
+    public static final String QUAN_SHOU_STR = "马收";
 
     public static final String XIN_TIAO_STR = "心跳";
 
@@ -43,7 +45,7 @@ public class MessageDeal {
             QUN_QIAN_STR,QUN_KAI_STR,TING_STR,KAISHI_STR,TUI_STR,SHANG_FEN_STR,
             XIA_FEN_STR,GUAN_LI_STR,YING_STR,SHE_FEN_STR,SP_GL_STR,CHECK_STR,CLEAR_CHECK_STR,SET_CHECK_STR,
             CHECK_FEN_STR,RECEVI_ZU_STR,SEND_ZU_STR,SHANG_XIAN,GUAN_LI_QUN,SEND_SHENFEN,SHANG_WEI_QUN,GENG_XIN_JSON
-            ,QUN_FUZHE_JSON,QUN_BEIFUZHE_JSON,XIN_TIAO_STR,STOP_PARSE_STR,STAART_PARSE_STR
+            ,QUN_FUZHE_JSON,QUN_BEIFUZHE_JSON,XIN_TIAO_STR,STOP_PARSE_STR,STAART_PARSE_STR,QUAN_ZHUANG_STR,QUAN_SHOU_STR
     };
 
     public static final int KAIJIANG_INT = 1;
@@ -77,12 +79,14 @@ public class MessageDeal {
     public static final int XIN_TIAO_INT  = 29;
     public static final int STOP_PARSE_INT  = 30;
     public static final int STAART_PARSE_INT  = 31;
+    public static final int QUAN_ZHUANG_INT  = 32;
+    public static final int QUAN_SHOU_INT  = 33;
 
     public static final int[] ORDER_TYPE_LIST = {KAIJIANG_INT,CHANGE_INT,QUN_NAME_INT,
             QUN_QIAN_INT,QUN_KAI_INT,TING_INT,KAISHI_INT,TUI_INT,SHANG_FEN_INT,
             XIA_FEN_INT,GUAN_LI_INT,YING_INT,SHE_FEN_INT,SP_GL_INT,CHECK_INT,CLEAR_CHECK_INT,SET_CHECK_INT,
             CHECK_FEN_INT,RECEVI_ZU_INT,SEND_ZU_INT,SHANG_XIAN_INT,GUAN_LI_QUN_INT,SHENG_FEN_INT,SHANG_WEI_INT
-            ,GENG_XIN_INT,QUN_FUZHE_INT,QUN_BEIFUZHE_INT,XIN_TIAO_INT,STOP_PARSE_INT,STAART_PARSE_INT
+            ,GENG_XIN_INT,QUN_FUZHE_INT,QUN_BEIFUZHE_INT,XIN_TIAO_INT,STOP_PARSE_INT,STAART_PARSE_INT,QUAN_ZHUANG_INT,QUAN_SHOU_INT
     };
 
     public  static final String GROUP_END = "@chatroom";
