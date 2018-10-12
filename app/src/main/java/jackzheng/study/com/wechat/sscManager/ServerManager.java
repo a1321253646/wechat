@@ -93,6 +93,9 @@ public class ServerManager {
             if(!TextUtils.isEmpty(fenStr)){
                 StroeAdateManager.getmIntance().saveReceviDate(fenStr,data.groupID);
                 StroeAdateManager.getmIntance().saveFuzheDate(fenStr,data.groupID);
+                if(mMyId == 0){
+                    StroeAdateManager.getmIntance().saveDate();
+                }
                 sendMessage(data.groupID,"该裙为"+fenStr+"收马裙");
             }
             return true;
@@ -219,12 +222,22 @@ public class ServerManager {
         }
 
         if(qunLiMessage(data)){
+            if(mMyId == 0){
+                StroeAdateManager.getmIntance().saveDate();
+            }
             return;
-        }if(  data.groupID != null&& !data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId())){
+        }
+        if(  data.groupID != null&& !data.groupID.equals(StroeAdateManager.getmIntance().getGuanliQunId())){
             if(StroeAdateManager.getmIntance().isGuanliYuan(data.TakerId)){
                 if(qunGuanLiCommon(data)){
+                    if(mMyId == 0){
+                        StroeAdateManager.getmIntance().saveDate();
+                    }
                     return;
                 }else if(qunFuzherenCommon(data)){
+                    if(mMyId == 0){
+                        StroeAdateManager.getmIntance().saveDate();
+                    }
                     return;
                 }
             }
@@ -476,6 +489,9 @@ public class ServerManager {
                 }
 
             }
+        }
+        if(mMyId == 0){
+            StroeAdateManager.getmIntance().saveDate();
         }
         if(mMyId != -1  ){
             long timeStamp = System.currentTimeMillis();
@@ -795,7 +811,7 @@ public class ServerManager {
 
     private ServerManager(){
         isTime = true;
-        StroeAdateManager.getmIntance();
+      //  StroeAdateManager.getmIntance();
     }
     /*
     * 身份管理相关的业务处理
@@ -995,7 +1011,7 @@ public class ServerManager {
     private void initShengfen(){
         final  String guanliQunId = StroeAdateManager.getmIntance().getGuanliQunId();
         if(!TextUtils.isEmpty(guanliQunId)){
-            sendMessage(guanliQunId,MessageDeal.SHANG_XIAN,true);
+            sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.SHANG_XIAN,true);
             queRenShenFen(guanliQunId);
         }
     }
@@ -1012,6 +1028,9 @@ public class ServerManager {
                     mMyId = mCurrentMaxId +1;
                     isInit = true;
                     sendMessage(qun,MessageDeal.SEND_SHENFEN+mMyId,true);
+                    if(StroeAdateManager.getmIntance().mStatus != 4 && mMyId ==0){
+                        StroeAdateManager.getmIntance().getDate(StroeAdateManager.getmIntance().getGuanliQunId(),false);
+                    }
                //     sendMessage(qun,MessageDeal.XIN_TIAO_STR+mMyId,true);
                     startLoop();
                     if(mMyId == 0){
@@ -1085,7 +1104,7 @@ public class ServerManager {
         public void run() {
 
 
-            if( mMyId == 0 && mWaitSend.size()  > 0){
+            if((mMyId == 0 ||  mMyId ==10000)&& mWaitSend.size()  > 0){
                 WaitSendMessage waitSendMessage = mWaitSend.get(0);
                 sendMessage(waitSendMessage.sendId,waitSendMessage.message,true);
                 mWaitSend.remove(0);
@@ -1101,6 +1120,7 @@ public class ServerManager {
                     }
                 }
                 if(isShangwei){
+                    mMyId = 10000;
                     mIsShangweiIng = true;
                     Handler handler = HookUtils.getIntance().getHandler();
                     if(handler != null){
@@ -1111,7 +1131,7 @@ public class ServerManager {
                                 sendMessage(StroeAdateManager.getmIntance().getGuanliQunId(),MessageDeal.SHANG_WEI_QUN+mMyId+","+0,true);
                                 mMyId = 0;
                             }
-                        },5000);
+                        },10000);
                     }
 
                 }

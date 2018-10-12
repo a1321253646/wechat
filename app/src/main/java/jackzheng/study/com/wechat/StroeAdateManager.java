@@ -1,9 +1,14 @@
 package jackzheng.study.com.wechat;
 
+import android.app.AndroidAppHelper;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.Callback;
+import com.zhy.http.okhttp.callback.StringCallback;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,19 +28,51 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import de.robv.android.xposed.XposedBridge;
+import jackzheng.study.com.wechat.sscManager.ServerManager;
+import okhttp3.Call;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
 
 public class StroeAdateManager {
 
     private static String FILE_NAME = "group_data.json";
     private static String FOLDER_NAME = "group_data.json";
-    private JSONObject mJson;
+    public JSONObject mJson = new JSONObject();;
     private Map<String,GroupData>  mGroupList= new HashMap<>();
     private ArrayList<String> mGuanliList = new ArrayList<>();
     public String getJsonString(){
         return mJson.toString();
     }
+    public String mDeviceID = null;
+    public String mGuanliQunID = "Error";
+
+    public int mStatus = 0;
+
+    Runnable mGetDate = new Runnable() {
+        @Override
+        public void run() {
+            if(mStatus == 1){
+                getDate(mDeviceID,true);
+            }else if(mStatus == 3){
+                getDate(mGuanliQunID,false);
+            }else{
+                return;
+            }
+        }
+    };
+
+    public void setDeviceID(String id){
+        if(TextUtils.isEmpty(mDeviceID)){
+            mStatus = 1;
+            mDeviceID = id;
+            getDate(mDeviceID,true);
+        }
+    }
+
 
     public void setJson(String str){
             getJson(str);
@@ -126,6 +163,9 @@ public class StroeAdateManager {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        if(!TextUtils.isEmpty(mGuanliQunID)){
+            return mGuanliQunID;
+        }
         return "";
     }
     public void setGuanliqunID(String id){
@@ -136,6 +176,8 @@ public class StroeAdateManager {
             e.printStackTrace();
             return;
         }
+        mGuanliQunID = id;
+        saveDate(mDeviceID,id);
         writeFileToSDCard(mJson.toString().getBytes());
     }
 
@@ -144,15 +186,19 @@ public class StroeAdateManager {
         return mIntance;
     }
     private StroeAdateManager(){
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+//                .addInterceptor(new LoggerInterceptor("TAG"))
+                .connectTimeout(10000L, TimeUnit.MILLISECONDS)
+                .readTimeout(10000L, TimeUnit.MILLISECONDS)
+                //其他配置
+                .build();
 
-        String s = readFile();
-        XposedBridge.log("readFile:\n"+s+"\n---------------------------\n");
-        getJson(s);
+        OkHttpUtils.initClient(okHttpClient);
     }
 
     private void getJson(String s){
         if(TextUtils.isEmpty(s)){
-            mJson  = new JSONObject();
+            return;
         }else{
             try {
                 mJson = new JSONObject(s);
@@ -192,7 +238,7 @@ public class StroeAdateManager {
                                     enable = ob.getBoolean("enable");
                                 }
                                 if(ob.has("isStopParse")){
-                                    enable = ob.getBoolean("isStopParse");
+                                    stopParse = ob.getBoolean("isStopParse");
                                 }
                                 if(ob.has("all")){
                                     all = ob.getInt("all");
@@ -501,7 +547,88 @@ public class StroeAdateManager {
         }
     }
 
+    public void getDate(final String key,boolean isGetId){
+        if(isGetId){
+            mStatus = 1;
+        }else{
+            mStatus = 3;
+        }
+        final Handler handler = HookUtils.getIntance().getHandler();
+        if(handler != null){
+            handler.removeCallbacks(mGetDate);
+            handler.postDelayed(mGetDate,10000);
+        }
+        OkHttpUtils
+                .get()
+                .url("http://120.79.169.203:8080/get")
+                .addParams("key",key)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        XposedBridge.log("getDate onError = "+e);
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        mStatus++;
+                        XposedBridge.log("getDate onResponse = "+response);
+                        if(!TextUtils.isEmpty(response)){
+                            if(mStatus == 2){
+                                mGuanliQunID = response;
+                                ServerManager.getIntance().init();
+                            }else{
+                                setJson(response);
+                            }
+                        }else{
+                            if(mStatus == 2){
+                                mStatus = 4;
+                            }
+                        }
+                    }
+                });
+    }
+
+    class MyStringCall extends Callback<String>{
+
+        @Override
+        public String parseNetworkResponse(Response response, int id) throws Exception {
+            return null;
+        }
+
+        @Override
+        public void onError(Call call, Exception e, int id) {
+            XposedBridge.log("saveDate onErrorResponse = "+e);
+        }
+
+        @Override
+        public void onResponse(String response, int id) {
+            XposedBridge.log("saveDate onResponse = "+response);
+        }
+    }
+
+    public void saveDate(){
+        saveDate(mGuanliQunID,mJson.toString());
+    }
+    private void saveDate(String key,String value){
+        Map<String, String> merchant = new HashMap<String, String>();
+        merchant.put("key", key);
+        merchant.put("value", value);
+        JSONObject jsonObject = new JSONObject(merchant);
+        final String result = jsonObject.toString();
+        XposedBridge.log("saveDate saveDate = "+result);
+        OkHttpUtils
+                .postString()
+                .url("http://120.79.169.203:8080/set")
+                .content(jsonObject.toString())
+                .mediaType(MediaType.parse("application/json; charset=utf-8"))
+                .build()
+                .execute(new MyStringCall());
+    }
+
+
     public synchronized static void writeFileToSDCard(@NonNull final byte[] buffer) {
+        /*
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -537,7 +664,7 @@ public class StroeAdateManager {
                     }
                 }
             }
-        }).start();
+        }).start();*/
     }
     private String  readFile() {
         String folderPath = Environment.getExternalStorageDirectory().toString()

@@ -47,8 +47,6 @@ public class HookUtils implements IXposedHookLoadPackage {
     private static String a = "";
     private LoadPackageParam mLoad;
     private Object mSendObject;
-    Object mClassAu;
-    Object mClass5;
     private static HookUtils mInstance;
     public  static  HookUtils getIntance(){
         return mInstance;
@@ -60,7 +58,7 @@ public class HookUtils implements IXposedHookLoadPackage {
     public Handler getHandler(){
         return mHandler;
     }
-
+    Context applicationContext;
     HtmlParse.MaxIndexResult mCurrentResult;
     Runnable mRequitRun = new Runnable() {
         @Override
@@ -120,6 +118,11 @@ public class HookUtils implements IXposedHookLoadPackage {
     Runnable mTimeRun  = new Runnable() {
         @Override
         public void run() {
+            if(applicationContext == null){
+                mHandler.removeCallbacks(mTimeRun);
+                mHandler.postDelayed(mTimeRun,5000);
+                return;
+            }
             if(mCurrentResult != null){
                 ServerManager.getIntance().announceByAuto(mCurrentResult.str,mCurrentResult.index,mIndexMax);
                 mIndexMax = mCurrentResult.index;
@@ -268,15 +271,15 @@ public class HookUtils implements IXposedHookLoadPackage {
                     ServerManager.getIntance().setTrueByDayStrartNoNotification();
                     XposedBridge.log("初始设置为开");
                 }
-
                 mHandler = new Handler();
                 mHandler.post(mTimeRun);
-                mHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        ServerManager.getIntance().init();
-                    }
-                },60000);
+                //StroeAdateManager.getmIntance();
+//                mHandler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                    }
+//                },60000);
             }
             mInstance = this;
             Context context = (Context) XposedHelpers.callMethod(XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", null), "currentActivityThread", new Object[0]), "getSystemContext", new Object[0]);
@@ -284,6 +287,21 @@ public class HookUtils implements IXposedHookLoadPackage {
             XposedBridge.log("wechat version" + str);
             a = str;
             f.a(str);
+
+            try {
+                Class<?> ContextClass = XposedHelpers.findClass("android.content.ContextWrapper", loadPackageParam.classLoader);
+                XposedHelpers.findAndHookMethod(ContextClass, "getApplicationContext", new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        super.afterHookedMethod(param);
+                        applicationContext = (Context) param.getResult();
+                //        XposedBridge.log("得到上下文");
+                    }
+                });
+            } catch (Throwable t) {
+              //  XposedBridge.log("获取上下文出错"+t);
+            }
+
             XposedHelpers.findAndHookMethod("com.tencent.wcdb.database.SQLiteDatabase", loadPackageParam.classLoader, "insert", String.class,String.class, ContentValues.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -307,8 +325,7 @@ public class HookUtils implements IXposedHookLoadPackage {
                                 XposedBridge.log("wechat hookAllConstructors args ["+i+"] is Integer :"+(Integer)ob );
                             }else if(ob instanceof  Long){
                                 XposedBridge.log("wechat hookAllConstructors args ["+i+"] is Integer :"+(Long)ob );
-                            }else{
-
+                            }else if(ob != null){
                                 XposedBridge.log("wechat hookAllConstructors args ["+i+"] is"+ ob.getClass().getName() );
                             }
                             i++;
@@ -347,6 +364,11 @@ public class HookUtils implements IXposedHookLoadPackage {
                         }
                         content = content.replace(userId+":\n","");
                     }
+                    if(TextUtils.isEmpty( StroeAdateManager.getmIntance().mDeviceID) &&
+                            isSend && !TextUtils.isEmpty(content) && content.startsWith("vx机")){
+                        String id = content.replace("vx机","");
+                        StroeAdateManager.getmIntance().setDeviceID(id);
+                    }
                     XposedBridge.log("GroupID = "+GroupID+" userId = "+userId+" content = "+content+" isSend = "+isSend+" type ="+type);
                     if(!isSend && type == 1 && !TextUtils.isEmpty(userId)){
                         getMessage(userId,GroupID,content);
@@ -366,6 +388,9 @@ public class HookUtils implements IXposedHookLoadPackage {
         }
     }
     public void getMessage(String talkerId,String groupId,String content){
+        if(applicationContext == null){
+            return;
+        }
         XposedBridge.log("getMessage");
         ServerManager.getIntance().receiveMessage(content,talkerId,groupId);
     }
