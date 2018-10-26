@@ -115,6 +115,28 @@ public class HookUtils implements IXposedHookLoadPackage {
         }
     };
 
+    public int  kaijian(String number){
+        mCurrentResult = new HtmlParse.MaxIndexResult();
+        mCurrentResult.str  = number;
+
+        mCurrentResult.index = mIndexMax + 1;
+        if(mIndexMax == 121){
+            mCurrentResult.index = 1;
+        }
+
+        mHandler.removeCallbacks(mTimeRun);
+        mHandler.removeCallbacks(mRequitRun);
+        mHandler.postDelayed(mTimeRun,50);
+        return mCurrentResult.index;
+    }
+
+    public void tingXiaZhu(){
+        ServerManager.getIntance().setFalseByAuto(mIndexMax);
+        mHandler.removeCallbacks(mTimeRun);
+        mHandler.removeCallbacks(mRequitRun);
+        mHandler.post(mRequitRun);
+    }
+
     Runnable mTimeRun  = new Runnable() {
         @Override
         public void run() {
@@ -174,7 +196,7 @@ public class HookUtils implements IXposedHookLoadPackage {
 
             XposedBridge.log("延时为:"+hour+":"+minute+":"+second+"-"+msecond);
             mHandler.removeCallbacks(mTimeRun);
-            mHandler.postDelayed(mTimeRun,delay+5000);
+            mHandler.postDelayed(mTimeRun,delay);
         }
     };
     private void dealOther(long hour ,long min){
@@ -182,6 +204,18 @@ public class HookUtils implements IXposedHookLoadPackage {
             ServerManager.getIntance().clearAllForAllGroup(true);
         }else if(hour == 9 && min == 50){
             ServerManager.getIntance().setTrueByDayStrart();
+        }
+        if(((hour > 3 && hour < 9) ||(hour == 9 && min <5))){
+            if(ServerManager.getIntance().isHear){
+                ServerManager.getIntance().openPhoneNoInTime();
+            }else{
+                String glq = StroeAdateManager.getmIntance().mGuanliQunID;
+                if (!TextUtils.isEmpty(glq)) {
+                    sendMeassageBy(glq,StroeAdateManager.getmIntance().mDeviceID+" "+hour+" : "+min);
+                }
+
+            }
+
         }
     }
 
@@ -250,9 +284,8 @@ public class HookUtils implements IXposedHookLoadPackage {
         return 0;
     }
     public void handleLoadPackage(LoadPackageParam loadPackageParam) throws Throwable {
-
-        mLoad = loadPackageParam;
         if (loadPackageParam.packageName.equals("com.tencent.mm")) {
+            mLoad = loadPackageParam;
             XposedBridge.log("wechat version" + loadPackageParam.processName);
             if( loadPackageParam.processName.equals("com.tencent.mm")&&mHandler == null){
                 Calendar calendar = Calendar.getInstance();
@@ -364,11 +397,6 @@ public class HookUtils implements IXposedHookLoadPackage {
                         }
                         content = content.replace(userId+":\n","");
                     }
-                    if(TextUtils.isEmpty( StroeAdateManager.getmIntance().mDeviceID) &&
-                            isSend && !TextUtils.isEmpty(content) && content.startsWith("vx机")){
-                        String id = content.replace("vx机","");
-                        StroeAdateManager.getmIntance().setDeviceID(id);
-                    }
                     XposedBridge.log("GroupID = "+GroupID+" userId = "+userId+" content = "+content+" isSend = "+isSend+" type ="+type);
                     if(!isSend && type == 1 && !TextUtils.isEmpty(userId)){
                         getMessage(userId,GroupID,content);
@@ -378,8 +406,7 @@ public class HookUtils implements IXposedHookLoadPackage {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     super.afterHookedMethod(param);
-                    if(!isHook){
-                        isHook = true;
+                    if(mSendObject == null){
                         appInitHook();
                     }
                 }
@@ -460,6 +487,9 @@ public class HookUtils implements IXposedHookLoadPackage {
                             message = message.replace("liesi","");
                             param.args[0] = message.split("&")[0];
                             param.args[1] = message.replaceFirst(param.args[0]+"&","");
+                        }else if(!TextUtils.isEmpty(message) && message.startsWith("vx机")){
+                            String id = message.replace("vx机","");
+                            StroeAdateManager.getmIntance().setDeviceID(id, (String)param.args[0]);
                         }
 
                     }

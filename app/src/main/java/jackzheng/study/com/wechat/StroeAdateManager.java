@@ -44,13 +44,21 @@ public class StroeAdateManager {
     public JSONObject mJson = new JSONObject();;
     private Map<String,GroupData>  mGroupList= new HashMap<>();
     private ArrayList<String> mGuanliList = new ArrayList<>();
+    private ArrayList<RobatType> mRobatList = new ArrayList<>();
     public String getJsonString(){
         return mJson.toString();
     }
     public String mDeviceID = null;
     public String mGuanliQunID = "Error";
+    public int mType = 0;
 
     public int mStatus = 0;
+
+    public static class RobatType{
+        public String id;
+        public String name;
+        public int type;
+    }
 
     Runnable mGetDate = new Runnable() {
         @Override
@@ -65,11 +73,28 @@ public class StroeAdateManager {
         }
     };
 
-    public void setDeviceID(String id){
+    public boolean isRobot(String id){
+        for(RobatType type : mRobatList){
+            if( type.type == mType && !TextUtils.isEmpty(type.id) &&type.id.equals(id)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void setDeiveIdByName(String id,String name){
+        for(RobatType type : mRobatList){
+            if(type.name.equals(name)){
+                type.id = id;
+            }
+        }
+    }
+
+    public void setDeviceID(String id,String group){
         if(TextUtils.isEmpty(mDeviceID)){
             mStatus = 1;
             mDeviceID = id;
-            getDate(mDeviceID,true);
+            getDate(mDeviceID,true,group);
         }
     }
 
@@ -84,6 +109,46 @@ public class StroeAdateManager {
     }
     public GroupData getGroupDatById(String id){
         return mGroupList.get(id);
+    }
+
+    public int saveDeviceType(int type){
+        JSONArray array = null;
+        JSONObject ob = null;
+        String id = null;
+        int idType = -1;
+        try {
+           // if(type == 1){
+                if(!mJson.has("robat")){
+                    array = new JSONArray();
+                    mJson.put("robat",array);
+                }else{
+                    array = mJson.getJSONArray("robat");
+                }
+                for(int i =0 ;i< array.length() ; i++){
+                    ob = array.getJSONObject(i);
+                    id = ob.getString("name");
+                    idType = ob.getInt("type");
+                    if(TextUtils.isEmpty(id) && id.equals(mDeviceID)){
+                        if(idType == type){
+                            return  1;
+                        }else{
+                            ob.put("type",type);
+                            return 0;
+                        }
+                    }
+                }
+                ob= new JSONObject();
+                ob.put("name",mDeviceID);
+                ob.put("type",type);
+                array.put(ob);
+                saveDate();
+                return 0;
+            //}
+            //saveDate();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     public void addGroup(String name, String id){
@@ -115,6 +180,8 @@ public class StroeAdateManager {
                 js.put("isStopParse",date.isStopParse);
                 js.put("pei",date.pei);
                 js.put("all",date.all);
+                js.put("max",date.max);
+                js.put("type",date.type);
                 JSONArray array;
                 if(mJson.has("list")){
                    array = mJson.getJSONArray("list");
@@ -128,6 +195,7 @@ public class StroeAdateManager {
                 return;
             }
         }
+        saveDate();
         writeFileToSDCard(mJson.toString().getBytes());
     }
 
@@ -209,6 +277,26 @@ public class StroeAdateManager {
                         XposedBridge.log("guanli id= "+mGuanliList.get(i));
                     }
                 }
+                if(mJson.has("robat")){
+                    JSONArray array = mJson.getJSONArray("robat");
+                    for(int i = 0;i<array.length();i++){
+                        JSONObject ob = array.getJSONObject(i);
+                        RobatType type = new RobatType();
+                        if(ob.has("type")){
+                            type.type = ob.getInt("type");
+                        }
+                        if(ob.has("name")){
+                            type.name = ob.getString("name");
+                        }
+                        if(!TextUtils.isEmpty(type.name) && type.name.equals(mDeviceID)){
+                            mType = type.type;
+                        }
+                        mRobatList.add(type);
+                        XposedBridge.log("robat name= "+type.name);
+                    }
+                }
+
+
                 if(mJson.has("list")){
                     JSONArray array = mJson.getJSONArray("list");
                     if(array != null && array.length() > 0){
@@ -220,6 +308,8 @@ public class StroeAdateManager {
                                 int fen = 0;
                                 int pei = 97;
                                 int all = 0;
+                                int max =600;
+                                int type = 3;
                                 boolean enable = false;
                                 boolean stopParse = false;
                                 if(ob.has("name")){
@@ -243,12 +333,20 @@ public class StroeAdateManager {
                                 if(ob.has("all")){
                                     all = ob.getInt("all");
                                 }
+                                if(ob.has("max")){
+                                    max = ob.getInt("max");
+                                }
+                                if(ob.has("type")){
+                                    type = ob.getInt("type");
+                                }
                                 GroupData data = new GroupData(name,id);
                                 data.fen = fen;
                                 data.pei = pei;
                                 data.isEnable = enable;
                                 data.isStopParse = stopParse;
                                 data.all = all;
+                                data.max = max;
+                                data.type = type;
                                 mGroupList.put(data.id,data);
                             }
                         }
@@ -429,6 +527,53 @@ public class StroeAdateManager {
         }
         writeFileToSDCard(mJson.toString().getBytes());
     }
+    public void stopZhuang(String groupID,int type){
+        if(mGroupList.containsKey(groupID)){
+            JSONObject js = findJsonByGroupId(groupID);
+            if(js == null){
+                return;
+            }
+            try {
+                js.put("type",type);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return;
+            }
+            GroupData groupData = mGroupList.get(groupID);
+            groupData.type = type;
+        }else{
+            return;
+        }
+        writeFileToSDCard(mJson.toString().getBytes());
+    }
+
+    public void shexianGroup(String groupID,int max){
+        if(mGroupList.containsKey(groupID)){
+            JSONObject js = findJsonByGroupId(groupID);
+            if(js == null){
+                return;
+            }
+            try {
+                js.put("max",max);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return;
+            }
+            GroupData groupData = mGroupList.get(groupID);
+            groupData.max = max;
+        }else{
+            return;
+        }
+        writeFileToSDCard(mJson.toString().getBytes());
+    }
+    public int  getShexianGroup(String groupID){
+        if(mGroupList.containsKey(groupID)){
+            GroupData groupData = mGroupList.get(groupID);
+            return groupData.max;
+        }else{
+            return 600;
+        }
+    }
 
     public String getFuzheData(String group){
         try {
@@ -488,6 +633,11 @@ public class StroeAdateManager {
         writeFileToSDCard(mJson.toString().getBytes());
     }
 
+    public ArrayList<String> getmGuanliList() {
+        return mGuanliList;
+    }
+
+
     public boolean isGuanliYuan(String takerId){
         for(String id : mGuanliList){
             if(takerId.equals(id)){
@@ -541,13 +691,15 @@ public class StroeAdateManager {
         public int pei =90;
         public int all = 0;
         public boolean isStopParse = false;
+        public int max = 600;
+        public int type = 3;
         public GroupData(String name,String id){
             this.name = name;
             this.id = id;
         }
     }
 
-    public void getDate(final String key,boolean isGetId){
+    public void getDate(final String key,boolean isGetId,final String group){
         if(isGetId){
             mStatus = 1;
         }else{
@@ -582,11 +734,19 @@ public class StroeAdateManager {
                             }
                         }else{
                             if(mStatus == 2){
-                                mStatus = 4;
+                                mGuanliQunID = group;
+                                setGuanliqunID(group);
+                                HookUtils.getIntance().sendMeassageBy(group,"该裙为："+mDeviceID+"关里裙");
+                                ServerManager.getIntance().init();
                             }
                         }
                     }
                 });
+
+    }
+
+    public void getDate(final String key,boolean isGetId){
+        getDate(key,isGetId,mGuanliQunID);
     }
 
     class MyStringCall extends Callback<String>{

@@ -3,7 +3,7 @@ package jackzheng.study.com.wechat.regular;
 import java.util.ArrayList;
 
 public class DateBean2 {
-
+    public String message;
     public boolean isNoSame = false;
     public ArrayList<Integer[]> mLastData = new ArrayList<>();
     public ArrayList<ArrayList<Integer>> mDataList = new ArrayList<>();
@@ -19,6 +19,7 @@ public class DateBean2 {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        builder.append(message+"\n");
         builder.append("【");
          if(mDataList.size() >0){
              for(int i = 0;i <mDataList.size() ;i++){
@@ -35,12 +36,11 @@ public class DateBean2 {
                  builder.append(""+data[0]+data[1]+".");
              }
          }
-        builder.append("】");
-        builder.append("位");
+        builder.append("】[");
         for(Integer[] localitem : local ){
-            builder.append("["+localitem[0]+localitem[1]+"]");
+            builder.append(""+localitem[0]+localitem[1]+".");
         }
-        builder.append(" 注");
+        builder.append("]");
         boolean isAllSome = true;
         int c = -1;
         for(Integer count : mCountList ){
@@ -55,18 +55,20 @@ public class DateBean2 {
                 c = count;
             }
         }
+        builder.append("(");
         if(isAllSome){
-            builder.append("("+c+")");
+            builder.append(""+c);
         }else{
             for(Integer count : mCountList ){
-                builder.append("("+count+")");
+                builder.append(count+".");
             }
         }
+        builder.append(")");
         builder.append(isNoSame?"排":"重");
         if(isHe !=null){
             builder.append((isHe?"":"不")+"合"+heNumber);
         }
-        builder.append(" 共"+allCount);
+        builder.append(allCount);
         return builder.toString();
     }
 }

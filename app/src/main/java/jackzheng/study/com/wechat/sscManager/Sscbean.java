@@ -6,11 +6,13 @@ import jackzheng.study.com.wechat.regular.DateBean;
 import jackzheng.study.com.wechat.regular.DateBean2;
 
 public class Sscbean {
+    public String user;
     private static int ID=0;
     private int id;
     String message;
     ArrayList<DateBean2> mList;
     int count = 0;
+    public int zhong = 0;
     public static void resetID(){
         ID=0;
     }
@@ -19,6 +21,11 @@ public class Sscbean {
         id = ID;
         this.message = message;
     }
+    public Sscbean(String message ,int i){
+        id = i;
+        this.message = message;
+    }
+
 
     public String getMessage() {
         return message;

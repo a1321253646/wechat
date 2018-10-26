@@ -25,6 +25,7 @@ public class RegularUtils2 {
             }
             int numberCount = StringDealFactory.haveNumCount(data);
             DateBean2 date = new DateBean2();
+            date.message = data;
             SingleStrDealBean bean2 = new SingleStrDealBean();
 //            if(iii == 0){
                 getLocalAnOther(data,numberCount,bean2,date);
