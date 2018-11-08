@@ -32,7 +32,7 @@ public class HtmlParse {
             }
             return  result;
         }catch(Exception e) {
-            XposedBridge.log(e.toString());
+//            XposedBridge.log(e.toString());
             return null;
         }
     }

@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
 public class DebugLog {
     public static void saveLog(String str){
         Log.d("zsbin",str);
-        getString(str);
+      //  getString(str);
     }
 
     private static FileOutputStream outStream = null;

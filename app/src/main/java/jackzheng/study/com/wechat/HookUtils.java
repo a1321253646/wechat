@@ -69,9 +69,9 @@ public class HookUtils implements IXposedHookLoadPackage {
                     while(true){
                         mCurrentResult = HtmlParse.parse2();
                         if(mCurrentResult  == null){
-                            XposedBridge.log("parseQuite 没数据");
+                            XposedBridge.log("parseQuite2 没数据");
                         }else{
-                            XposedBridge.log("mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
+                            XposedBridge.log("parseQuite2 mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
                         }
                         if(mCurrentResult != null && ( (mIndexMax >= 10 &&  mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
                             mHandler.removeCallbacks(mTimeRun);
@@ -82,7 +82,7 @@ public class HookUtils implements IXposedHookLoadPackage {
                             if(mCurrentResult  == null){
                                 XposedBridge.log("parseQuite 没数据");
                             }else{
-                                XposedBridge.log("mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
+                                XposedBridge.log("parseQuite mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
                             }
                             if(mCurrentResult != null && ( (mIndexMax >= 10 &&  mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
                                 mHandler.removeCallbacks(mTimeRun);
@@ -93,7 +93,7 @@ public class HookUtils implements IXposedHookLoadPackage {
                                 if(mCurrentResult  == null){
                                     XposedBridge.log("parse 没数据");
                                 }else{
-                                    XposedBridge.log("mIndexMax ="+mIndexMax+" parse mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
+                                    XposedBridge.log("parse mIndexMax ="+mIndexMax+" parse mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
                                 }
                                 if(mCurrentResult != null && ( (mIndexMax >= 10 && mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
                                     mHandler.removeCallbacks(mTimeRun);
@@ -161,7 +161,7 @@ public class HookUtils implements IXposedHookLoadPackage {
             int msecond =calendar.get(Calendar.MILLISECOND);
             XposedBridge.log("Calendar获取当前日期"+year+"年"+month+"月"+day+"日"+hour+":"+minute+":"+second+"."+msecond);
             long delay = 0;
-            if(second < 11) {
+         //   if(second < 50) {
                 dealOther(hour,minute);
                 mIndexMax = getIndex(hour, minute);
                 if (isOpen) {
@@ -181,10 +181,11 @@ public class HookUtils implements IXposedHookLoadPackage {
                     } else {
                         delay = getDelayMs(tmp[0],tmp[1],hour,minute,second,msecond);
                     }
+                    delay =delay + 20*1000;
                 }
-            }else{
-                delay =(60-second)*1000;
-            }
+           // }else{
+            //    delay =(60-second)*1000;
+            //}
             long delay2 = delay;
             msecond =(int) delay2 % 1000;
             delay2 = delay2/1000;
@@ -490,7 +491,10 @@ public class HookUtils implements IXposedHookLoadPackage {
                         }else if(!TextUtils.isEmpty(message) && message.startsWith("vx机")){
                             String id = message.replace("vx机","");
                             StroeAdateManager.getmIntance().setDeviceID(id, (String)param.args[0]);
-                        }
+                        }/*else if(!TextUtils.isEmpty(message) && message.startsWith("表情测试")){
+                            param.args[1] = "wxid_d67dg24okmqp12:1541269558576:0:cf5df8fb5e829e2033277c461675e3fb::0";
+                            param.args[2] = 47;
+                        }*/
 
                     }
 

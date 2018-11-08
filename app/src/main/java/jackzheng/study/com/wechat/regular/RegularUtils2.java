@@ -18,6 +18,7 @@ public class RegularUtils2 {
         int stringCount = list.size();
 
         ArrayList<DateBean2> value = new ArrayList<>();
+        boolean isDuoZhu =stringCount > 1 ? true:false ;
         for(int iii = 0;iii < list.size();iii++){
             String data = list.get(iii);
             if(TextUtils.isEmpty(data)){
@@ -28,7 +29,7 @@ public class RegularUtils2 {
             date.message = data;
             SingleStrDealBean bean2 = new SingleStrDealBean();
 //            if(iii == 0){
-                getLocalAnOther(data,numberCount,bean2,date);
+                getLocalAnOther(data,numberCount,bean2,date,isDuoZhu);
 //            }else{
 //                getLocalAnOther(data,numberCount,bean2,null);
 //            }
@@ -454,10 +455,11 @@ public class RegularUtils2 {
         }
         return mnumlist;
     }
-    private static void getLocalAnOther(String str,int numberCount, SingleStrDealBean deal,DateBean2 date){
+    private static void getLocalAnOther(String str,int numberCount, SingleStrDealBean deal,DateBean2 date,boolean duozhu){
         StringBuilder builder = new StringBuilder();
         int numCount = 0;
         char[] cs = str.toCharArray();
+        boolean isLocalSpile = false;
         for(int i = 0; i< cs.length;){
             if(cs[i] == StringDealFactory.NEW_LOCAL_CHAR){      //提取位置信息
               //  XposedBridge.log("numberCount = "+numberCount+" numCount="+numCount+" "+cs[i] );
@@ -491,6 +493,11 @@ public class RegularUtils2 {
                     }
                 }else if( i < cs.length -1 && StringDealFactory.isLocal(cs[i+1])) {
                     i++;
+                    if(i< cs.length -1 &&  StringDealFactory.isLocal(cs[i+1])){
+                        isLocalSpile = false;
+                    }else if( duozhu &&  numCount == numberCount -1){
+                        isLocalSpile = true;
+                    }
                     while( i < cs.length  && StringDealFactory.isLocal(cs[i])){
                         Integer[] integers;
                         if (deal.mLocal.size() == 0) {
@@ -505,12 +512,17 @@ public class RegularUtils2 {
                                 deal.mLocal.add(integers);
                             } else {
                                 integers[1] = StringDealFactory.getLocalData(cs[i]);
+                                if(isLocalSpile && deal.mLocal.size() == 1){
+                                    isLocalSpile = true;
+                                }else{
+                                    isLocalSpile = false;
+                                }
                             }
                         }
                         i++;
                     }
                     builder.append(StringDealFactory.NEW_SPLIE_CHAR);
-                    if(numCount == numberCount -1) {
+                    if(!isLocalSpile && numCount == numberCount -1) {
                         deal.haveCount = true;
                     }
                 }else{

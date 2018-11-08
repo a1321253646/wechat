@@ -43,6 +43,45 @@ public class StringDealFactory {
         for(int i= 0;i< list.size() ;i++){
             String s = list.get(i);
             if(s.contains("下奖") || s.contains("上奖") ){
+                if(s.contains("下奖5位")||s.contains("下奖五位") ||s.contains("下奖5囲个位")|| s.contains("下奖五囲个位")){
+                    String str111 = null;
+                    if(s.contains("下奖5位")){
+                        str111 = "下奖5位";
+                    }else if(s.contains("下奖五位")){
+                        str111 = "下奖五位";
+                    }else if(s.contains("下奖5囲个位")){
+                        str111 = "下奖5囲个位";
+                    }else if(s.contains("下奖五囲个位")){
+                        str111 = "下奖五囲个位";
+                    }
+                    s = s.replace(str111,StringDealFactory.NEW_SPILE_SIGN);
+                    list.remove(i);
+                    char[] cs = s.toCharArray();
+                    StringBuilder builder = new StringBuilder();
+                    int index = 0;
+                    while(index < cs.length && !isNumber(cs[index])){
+                        //    builder.append(cs[index]);
+                        index++;
+                    }
+                    while(index < cs.length && isNumber(cs[index])){
+                        builder.append(cs[index]);
+                        index++;
+                    }
+                    StringBuilder builder2 = new StringBuilder();
+                    while(index < cs.length){
+                        builder2.append(cs[index]);
+                        index++;
+                    }
+                    StringBuilder builder3 = new StringBuilder();
+                    builder3.append(builder.toString());
+                    builder3.append("-0123456789");
+                    builder3.append("囲万千囲千百囲百十囲十个囲个十");
+                    builder3.append(builder2.toString());
+                    list.add(i,builder3.toString());
+                    continue;
+                }
+
+
                 String str1 = "";
                 String str2 = "";
                 list.remove(i);
@@ -80,6 +119,20 @@ public class StringDealFactory {
                 Log.d("zsbin","String 2 ="+str2);
                 list.add(i,str1);
                 list.add(i,str2);
+            }else if(s.contains("任意")){
+                String renyi = null;
+                if(s.contains("任意两位")){
+                    renyi ="任意两位";
+                }else if(s.contains("任意二位")){
+                    renyi ="任意二位";
+                }else if(s.contains("任意2位")){
+                    renyi ="任意2位";
+                }else if(s.contains("任意位")){
+                    renyi ="任意位";
+                }
+                String str1 = s.replace(renyi,"囲万千囲万百囲万十囲万个囲千百囲千十囲千个囲百十囲百个囲十个");
+                list.remove(i);
+                list.add(i,str1);
             }
 
         }
@@ -199,7 +252,11 @@ public class StringDealFactory {
         String newStr;
         StringBuilder builder = new StringBuilder();
         for(int i =0 ; i<cs.length ;i++){
-              if(cs[i] == '平' || cs[i] == '双' ){
+              if(isNo(cs[i] )&& i< cs.length-1 &&  cs[i+1] == '双' ){
+                  i = i+1;
+                  builder.append(ALL_PAI_CHAR);
+                  continue;
+              }else if(cs[i] == '平' || cs[i] == '双' ){
                   if(i< cs.length-1 && (cs[i+1] == '重' || cs[i+1] == '从')){
                       i = i+1;
                       builder.append("死00 11 22 33 44 55 66 77 88 99死");

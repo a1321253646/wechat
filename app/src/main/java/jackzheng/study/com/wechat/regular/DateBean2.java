@@ -19,8 +19,8 @@ public class DateBean2 {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(message+"\n");
-        builder.append("【");
+      //  builder.append(message+"\n");
+        builder.append("[玫瑰]【");
          if(mDataList.size() >0){
              for(int i = 0;i <mDataList.size() ;i++){
                  ArrayList<Integer> ss = mDataList.get(i);
