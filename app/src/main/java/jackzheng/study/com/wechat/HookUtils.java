@@ -3,18 +3,10 @@ package jackzheng.study.com.wechat;
 import android.content.ContentValues;
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.os.storage.StorageManager;
 import android.text.TextUtils;
 
 import com.ydscience.fakemomo.utils.f;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Set;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -53,90 +45,29 @@ public class HookUtils implements IXposedHookLoadPackage {
     }
     private boolean  isHook = false;
     Handler mHandler ;
-    int mIndexMax = 0;
-
+    public int mIndexMax = 0;
     public Handler getHandler(){
         return mHandler;
     }
     Context applicationContext;
-    HtmlParse.MaxIndexResult mCurrentResult;
     Runnable mRequitRun = new Runnable() {
         @Override
         public void run() {
-            Thread thread= new Thread(){
-                @Override
-                public void run() {
-                    while(true){
-                        mCurrentResult = HtmlParse.parse2();
-                        if(mCurrentResult  == null){
-                            XposedBridge.log("parseQuite2 没数据");
-                        }else{
-                            XposedBridge.log("parseQuite2 mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
-                        }
-                        if(mCurrentResult != null && ( (mIndexMax >= 10 &&  mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
-                            mHandler.removeCallbacks(mTimeRun);
-                            mHandler.postDelayed(mTimeRun,2000);
-                            break;
-                        }else{
-                            mCurrentResult = HtmlParse.parseQuite();
-                            if(mCurrentResult  == null){
-                                XposedBridge.log("parseQuite 没数据");
-                            }else{
-                                XposedBridge.log("parseQuite mIndexMax ="+mIndexMax+" parseQuite mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
-                            }
-                            if(mCurrentResult != null && ( (mIndexMax >= 10 &&  mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
-                                mHandler.removeCallbacks(mTimeRun);
-                                mHandler.postDelayed(mTimeRun,2000);
-                                break;
-                            }else{
-                                mCurrentResult = HtmlParse.parse();
-                                if(mCurrentResult  == null){
-                                    XposedBridge.log("parse 没数据");
-                                }else{
-                                    XposedBridge.log("parse mIndexMax ="+mIndexMax+" parse mCurrentResult index ="+mCurrentResult.index+" mCurrentResult str"+mCurrentResult.str);
-                                }
-                                if(mCurrentResult != null && ( (mIndexMax >= 10 && mCurrentResult.index >= mIndexMax) || (mIndexMax < 10 && mCurrentResult.index!= 120 &&  mCurrentResult.index >= mIndexMax) ) ){
-                                    mHandler.removeCallbacks(mTimeRun);
-                                    mHandler.postDelayed(mTimeRun,2000);
-                                    break;
-                                }else{
-                                    try {
-                                        Thread.sleep(2000);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-            thread.start();
+            NetManager.getIntance().kaijaing();
+            mHandler.removeCallbacks(mRequitRun);
+            mHandler.postDelayed(mRequitRun,10000);
         }
     };
 
-    public int  kaijian(String number){
-        mCurrentResult = new HtmlParse.MaxIndexResult();
-        mCurrentResult.str  = number;
-
-        mCurrentResult.index = mIndexMax + 1;
-        if(mIndexMax == 121){
-            mCurrentResult.index = 1;
-        }
-
-        mHandler.removeCallbacks(mTimeRun);
+    public void kaijaingEnd(){
+        ServerManager.getIntance().setTrueByAuto();
         mHandler.removeCallbacks(mRequitRun);
-        mHandler.postDelayed(mTimeRun,50);
-        return mCurrentResult.index;
+        mHandler.postDelayed(mTimeRun,30000);
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        mIndexMax = getIndex(hour, minute);
     }
-
-    public void tingXiaZhu(){
-        ServerManager.getIntance().setFalseByAuto(mIndexMax);
-        mHandler.removeCallbacks(mTimeRun);
-        mHandler.removeCallbacks(mRequitRun);
-        mHandler.post(mRequitRun);
-    }
-
     Runnable mTimeRun  = new Runnable() {
         @Override
         public void run() {
@@ -144,11 +75,6 @@ public class HookUtils implements IXposedHookLoadPackage {
                 mHandler.removeCallbacks(mTimeRun);
                 mHandler.postDelayed(mTimeRun,5000);
                 return;
-            }
-            if(mCurrentResult != null){
-                ServerManager.getIntance().announceByAuto(mCurrentResult.str,mCurrentResult.index,mIndexMax);
-                mIndexMax = mCurrentResult.index;
-                mCurrentResult = null;
             }
 
             Calendar calendar = Calendar.getInstance();
@@ -161,16 +87,17 @@ public class HookUtils implements IXposedHookLoadPackage {
             int msecond =calendar.get(Calendar.MILLISECOND);
             XposedBridge.log("Calendar获取当前日期"+year+"年"+month+"月"+day+"日"+hour+":"+minute+":"+second+"."+msecond);
             long delay = 0;
-         //   if(second < 50) {
+            if(second < 50) {
                 dealOther(hour,minute);
                 mIndexMax = getIndex(hour, minute);
-                if (isOpen) {
-                    ServerManager.getIntance().setFalseByAuto(mIndexMax);
+                if (isOpen ) {
+                    ServerManager.getIntance().setFalseByAuto();
                    mHandler.post(mRequitRun);
+                   mHandler.removeCallbacks(mTimeRun);
                    return;
                 } else {
                     Integer[] tmp;
-                    tmp = mTimeLsit[mIndexMax];
+                    tmp = mTimeLsit[mIndexMax-1];
                     XposedBridge.log("目标时间"+tmp[0]+"时"+tmp[1]+"分");
                     if((hour > 1 && hour <3)||(hour == 1  && minute > 55)) {
                         delay = getDelayMs(3, 0, hour, minute, second, msecond);//定时3：00 全面清盘
@@ -183,9 +110,9 @@ public class HookUtils implements IXposedHookLoadPackage {
                     }
                     delay =delay + 20*1000;
                 }
-           // }else{
-            //    delay =(60-second)*1000;
-            //}
+            }else{
+                delay =(60-second)*1000;
+            }
             long delay2 = delay;
             msecond =(int) delay2 % 1000;
             delay2 = delay2/1000;
@@ -201,22 +128,8 @@ public class HookUtils implements IXposedHookLoadPackage {
         }
     };
     private void dealOther(long hour ,long min){
-        if(hour == 3 && min == 0){
-            ServerManager.getIntance().clearAllForAllGroup(true);
-        }else if(hour == 9 && min == 50){
+        if(hour == 9 && min == 50){
             ServerManager.getIntance().setTrueByDayStrart();
-        }
-        if(((hour > 3 && hour < 9) ||(hour == 9 && min <5))){
-            if(ServerManager.getIntance().isHear){
-                ServerManager.getIntance().openPhoneNoInTime();
-            }else{
-                String glq = StroeAdateManager.getmIntance().mGuanliQunID;
-                if (!TextUtils.isEmpty(glq)) {
-                    sendMeassageBy(glq,StroeAdateManager.getmIntance().mDeviceID+" "+hour+" : "+min);
-                }
-
-            }
-
         }
     }
 
@@ -273,11 +186,11 @@ public class HookUtils implements IXposedHookLoadPackage {
                     return i+1;
                 }else{
                     isOpen = false;
-                    return i;
+                    return i+1;
                 }
             }else if(hour < time[0]){
                 isOpen = false;
-                return i;
+                return i+1;
             }else{
                 continue;
             }
@@ -307,13 +220,6 @@ public class HookUtils implements IXposedHookLoadPackage {
                 }
                 mHandler = new Handler();
                 mHandler.post(mTimeRun);
-                //StroeAdateManager.getmIntance();
-//                mHandler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                    }
-//                },60000);
             }
             mInstance = this;
             Context context = (Context) XposedHelpers.callMethod(XposedHelpers.callStaticMethod(XposedHelpers.findClass("android.app.ActivityThread", null), "currentActivityThread", new Object[0]), "getSystemContext", new Object[0]);
@@ -424,6 +330,9 @@ public class HookUtils implements IXposedHookLoadPackage {
     }
 
     public void sendMeassageBy(String id,String str){
+        if(!NetManager.getIntance().isSendEableMessageGroup(id)){
+            return;
+        }
         XposedBridge.log("mSendObject = "+ mSendObject);
         if(mSendObject != null){
             XposedHelpers.callMethod(mSendObject,"Dl",new Class[]{String.class},"liesi"+id+"&"+str);
@@ -490,7 +399,12 @@ public class HookUtils implements IXposedHookLoadPackage {
                             param.args[1] = message.replaceFirst(param.args[0]+"&","");
                         }else if(!TextUtils.isEmpty(message) && message.startsWith("vx机")){
                             String id = message.replace("vx机","");
-                            StroeAdateManager.getmIntance().setDeviceID(id, (String)param.args[0]);
+                            String[] list = id.split("&");
+                            if(list.length == 1){
+                                NetManager.getIntance().loginIn(id, (String)param.args[0],1+"");
+                            }else{
+                                NetManager.getIntance().loginIn(list[0], (String)param.args[0],list[1]);
+                            }
                         }/*else if(!TextUtils.isEmpty(message) && message.startsWith("表情测试")){
                             param.args[1] = "wxid_d67dg24okmqp12:1541269558576:0:cf5df8fb5e829e2033277c461675e3fb::0";
                             param.args[2] = 47;

@@ -48,6 +48,7 @@ public class MessageDeal {
     public static final String ZHUAN_SEND_SHENFEN  = "砖身份";
     public static final String ZHUAN_XIN_TIAO_STR  = "砖心跳";
     public static final String ZHUANG_SHANG_XIAN = "砖上限";
+    public static final String ZHUANG_MING_LING = "命令";
 
     public static final String[] ORDER_LIST = {KAIJIANG_STR,CHANGE_STR,QUN_NAME_STR,
             QUN_QIAN_STR,QUN_KAI_STR,TING_STR,KAISHI_STR,TUI_STR,SHANG_FEN_STR,
@@ -55,7 +56,7 @@ public class MessageDeal {
             CHECK_FEN_STR,RECEVI_ZU_STR,SEND_ZU_STR,SHANG_XIAN,GUAN_LI_QUN,SEND_SHENFEN,SHANG_WEI_QUN,GENG_XIN_JSON
             ,QUN_FUZHE_JSON,QUN_BEIFUZHE_JSON,XIN_TIAO_STR,STOP_PARSE_STR,STAART_PARSE_STR,QUAN_ZHUANG_STR,QUAN_SHOU_STR
             ,CHA_TUI_STR,CHA_XIA_STR,SHE_XIAN_STR,SHEN_ZHU_STR,SHANGXIAN_SHOUDONG_STR,LEIXIN_STR,ZHUAN_SEND_SHENFEN
-            ,ZHUAN_XIN_TIAO_STR,ZHUANG_SHANG_XIAN
+            ,ZHUAN_XIN_TIAO_STR,ZHUANG_SHANG_XIAN,ZHUANG_MING_LING
     };
 
     public static final int KAIJIANG_INT = 1;
@@ -99,7 +100,8 @@ public class MessageDeal {
     public static final int LEIXING_INT  = 39;
     public static final int ZHUAN_SEND_SHENFEN_INT  = 40;
     public static final int ZHUAN_XIN_TIAO_INT  = 41;
-    public static final int ZHUANG_SHANG_XIAN_INT  = 22;
+    public static final int ZHUANG_SHANG_XIAN_INT  = 42;
+    public static final int ZHUANG_MING_LING_INT = 43;
 
     public static final int[] ORDER_TYPE_LIST = {KAIJIANG_INT,CHANGE_INT,QUN_NAME_INT,
             QUN_QIAN_INT,QUN_KAI_INT,TING_INT,KAISHI_INT,TUI_INT,SHANG_FEN_INT,
@@ -107,7 +109,7 @@ public class MessageDeal {
             CHECK_FEN_INT,RECEVI_ZU_INT,SEND_ZU_INT,SHANG_XIAN_INT,GUAN_LI_QUN_INT,SHENG_FEN_INT,SHANG_WEI_INT
             ,GENG_XIN_INT,QUN_FUZHE_INT,QUN_BEIFUZHE_INT,XIN_TIAO_INT,STOP_PARSE_INT,STAART_PARSE_INT,QUAN_ZHUANG_INT,QUAN_SHOU_INT,
             CHA_TUI_INT,CHA_XIA_INT,SHE_XIAN_INT,SHEN_ZHU_INT,SHANGXIAN_SHOUDONG_INT,LEIXING_INT,ZHUAN_SEND_SHENFEN_INT
-            ,ZHUAN_XIN_TIAO_INT,ZHUANG_SHANG_XIAN_INT
+            ,ZHUAN_XIN_TIAO_INT,ZHUANG_SHANG_XIAN_INT,ZHUANG_MING_LING_INT
     };
 
     public  static final String GROUP_END = "@chatroom";
