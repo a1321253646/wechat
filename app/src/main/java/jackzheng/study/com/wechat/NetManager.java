@@ -21,7 +21,6 @@ import jackzheng.study.com.wechat.sscManager.ServerManager;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
-import jackzheng.study.com.wechat.HookUtils;
 
 public class NetManager {
 
@@ -54,12 +53,12 @@ public class NetManager {
         JSONObject js = new JSONObject();
         try {
             String aaaa = "";
-            if(HookUtils.getIntance().mIndexMax < 10){
+            if(SscControl.getIntance().mIndexMax < 10){
                 aaaa = "00";
-            }else if (HookUtils.getIntance().mIndexMax < 100 ){
+            }else if (SscControl.getIntance().mIndexMax < 100 ){
                 aaaa = "0";
             }
-            js.put("index",aaaa+HookUtils.getIntance().mIndexMax);
+            js.put("index",aaaa+SscControl.getIntance().mIndexMax);
             js.put("groupID",mGuanliQunID);
             postData(js,"http://47.107.161.54:8801/opendata.php",new MyStringCall(null,mGuanliQunID,null){
                 @Override
@@ -166,7 +165,7 @@ public class NetManager {
                                         }
                                     }
                                 }
-                                HookUtils.getIntance().kaijaingEnd();
+                                SscControl.getIntance().kaijaingEnd();
                             }else if(status == 2){
                                 if(js.has("data")){
                                     JSONArray data = js.getJSONArray("data");
@@ -219,7 +218,7 @@ public class NetManager {
 
 
                                             StringBuilder b2 = new StringBuilder();
-                                            b2.append(HookUtils.getIntance().mIndexMax);
+                                            b2.append(SscControl.getIntance().mIndexMax);
                                             b2.append( "期 开失败  ");
                                             b2.append( index);
                                             b2.append( "期 开 ");
@@ -239,7 +238,7 @@ public class NetManager {
                                         }
                                     }
                                 }
-                                HookUtils.getIntance().kaijaingEnd();
+                                SscControl.getIntance().kaijaingEnd();
                             }
                         }
                     } catch (Exception e) {
@@ -256,12 +255,12 @@ public class NetManager {
         JSONObject js = new JSONObject();
         try {
             String aaaa = "";
-            if(HookUtils.getIntance().mIndexMax < 10){
+            if(SscControl.getIntance().mIndexMax < 10){
                 aaaa = "00";
-            }else if (HookUtils.getIntance().mIndexMax < 100 ){
+            }else if (SscControl.getIntance().mIndexMax < 100 ){
                 aaaa = "0";
             }
-            js.put("index",aaaa+HookUtils.getIntance().mIndexMax);
+            js.put("index",aaaa+SscControl.getIntance().mIndexMax);
             js.put("orderid",id2);
             js.put("groupID",mGuanliQunID);
             js.put("workID",workId);
@@ -301,12 +300,12 @@ public class NetManager {
         JSONObject js = new JSONObject();
         try {
             String aaaa = "";
-            if(HookUtils.getIntance().mIndexMax < 10){
+            if(SscControl.getIntance().mIndexMax < 10){
                 aaaa = "00";
-            }else if (HookUtils.getIntance().mIndexMax < 100 ){
+            }else if (SscControl.getIntance().mIndexMax < 100 ){
                 aaaa = "0";
             }
-            js.put("index",aaaa+HookUtils.getIntance().mIndexMax);
+            js.put("index",aaaa+SscControl.getIntance().mIndexMax);
             js.put("ms",str);
             js.put("groupID",mGuanliQunID);
             js.put("workID", group );
@@ -441,6 +440,7 @@ public class NetManager {
                                         b.append("]");
                                     }
                                 }
+
                                 b.append("\n----------------------\n");
                             }
                         }
@@ -459,12 +459,12 @@ public class NetManager {
         JSONObject js = new JSONObject();
         try {
             String aaaa = "";
-            if(HookUtils.getIntance().mIndexMax < 10){
+            if(SscControl.getIntance().mIndexMax < 10){
                 aaaa = "00";
-            }else if (HookUtils.getIntance().mIndexMax < 100 ){
+            }else if (SscControl.getIntance().mIndexMax < 100 ){
                 aaaa = "0";
             }
-            js.put("index",aaaa+HookUtils.getIntance().mIndexMax);
+            js.put("index",aaaa+SscControl.getIntance().mIndexMax);
             js.put("ms",newStr);
             js.put("orderid",""+idc);
             js.put("groupID",mGuanliQunID);

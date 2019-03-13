@@ -9,9 +9,10 @@ import java.util.Random;
 import java.util.Set;
 
 import de.robv.android.xposed.XposedBridge;
-import jackzheng.study.com.wechat.HookUtils;
+
 import jackzheng.study.com.wechat.MessageDeal;
 import jackzheng.study.com.wechat.NetManager;
+import jackzheng.study.com.wechat.SscControl;
 
 public class ServerManager {
 
@@ -421,7 +422,7 @@ public class ServerManager {
 
         XposedBridge.log("userid:"+userId+" str="+str+" isnow"+isNow);
         if(isNow){
-            HookUtils.getIntance().sendMeassageBy(userId,str);
+            SscControl.getIntance().sendMeassageBy(userId,str);
         }else{
             addWairMessage(userId,str);
         }
@@ -537,7 +538,7 @@ public class ServerManager {
     private boolean isWorkLoop = false;
     private void startLoop(){
         isWorkLoop = true;
-        Handler handler = HookUtils.getIntance().getHandler();
+        Handler handler = SscControl.getIntance().getHandler();
         if(handler != null){
             Random random = new Random();
             int i = random.nextInt(100);

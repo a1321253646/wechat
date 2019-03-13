@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,18 +17,18 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="xposedmodule"
-            android:value="true" />
+            android:value="true"/>
         <meta-data
             android:name="xposeddescription"
-            android:value="@string/app_name" />
+            android:value="微信hook"/>
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
         <activity android:name=".MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
     </application>
