@@ -3,6 +3,7 @@ package yaunma.com.myapplication;
 import android.app.Activity;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 
 
 /**
@@ -30,6 +31,7 @@ public class ActivityOncreate extends XC_MethodHook {
     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
         String cn = param.thisObject.getClass().getSimpleName();
         Activity activity = (Activity) param.thisObject;
+
         //        Context context = activity.getApplicationContext();
 //        LogUtils.d("cn:"+cn);
         if (cn.equals("LauncherUI")) {

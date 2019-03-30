@@ -1,9 +1,15 @@
 package yaunma.com.myapplication;
 
+import android.content.ContentValues;
 import android.util.Log;
 
+import java.util.Set;
+
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import jackzheng.study.com.wechat.HtmlParse;
+import jackzheng.study.com.wechat.sscManager.ServerManager2;
 
 
 /**
@@ -11,8 +17,6 @@ import de.robv.android.xposed.XposedHelpers;
  */
 
 public class Av_P extends XC_MethodHook {
-
-
 
 
     @Override
@@ -25,6 +29,14 @@ public class Av_P extends XC_MethodHook {
         //群的id
         final String roomId = (String) XposedHelpers.getObjectField(param.thisObject, "field_talker");
         final long field_msgSvrId = XposedHelpers.getLongField(param.thisObject, "field_msgSvrId");
+        final long isSend = XposedHelpers.getLongField(param.thisObject, "field_isSend");
+        final long msgId = XposedHelpers.getLongField(param.thisObject, "field_msgId");
+
+
+        if(isSend == 1 || field_type != 1){
+            return;
+        }
+
         String userId = "";
         String msg = "";
         String room = "";
@@ -39,11 +51,21 @@ public class Av_P extends XC_MethodHook {
             msg = field_content;
             room = "";
         }
-        Log.d("mylog","userId:"+userId);
-        Log.d("mylog","msg:"+msg);
-        Log.d("mylog","room:"+room);
-        if (msg.equals("发送")){
-            Tools.sendTextToRoom(Tools.mActivity,"我回答了",roomId);
+        if(ServerManager2.getmIntance().mAllMessage.containsKey(field_msgSvrId)){
+            return;
+        }
+        ServerManager2.getmIntance().mAllMessage.put(field_msgSvrId,true);
+        if (msg.equals("上线")){
+            ServerManager2.getmIntance().isInit = true;
+            Tools.sendTextToRoom(Tools.mActivity,"已上线",roomId);
+        }
+        if(!ServerManager2.getmIntance().isInit){
+            return;
+        }
+        try{
+            ServerManager2.getmIntance().receiveMessage(msg,userId,room,msgId);
+        }catch (Exception e){
+            XposedBridge.log(e.toString());
         }
 
     }
