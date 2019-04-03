@@ -1,12 +1,11 @@
 package jackzheng.study.com.wechat.regular;
 
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
 
 
-public class StringDealFactory {
+public class StringDealFactory2 {
 
     private static final char[] SPILE_SIGN_LIST = {',','，','.','。','/','、',' '};
     public final static char NEW_SPLIE_CHAR = '死';
@@ -22,7 +21,7 @@ public class StringDealFactory {
     //目前使用在单组多个位置多注数的情况，合数
     private static char[] NUMBER_REPALACE = {'拾','壹','贰','叁','肆','伍','陆','柒','捌','玖'};
 
-    public static char[] LOCAL_REPALCE = {'万','千','百','十','个'};
+    private static char[] LOCAL_REPALCE = {'万','千','百','十','个'};
     public static char[] ALL_NUMBER_REPALCE = {'0','1','2','3','4','5','6','7','8','9'};
     public static int[] ALL_NUMBER_REPALCE_INT = {0,1,2,3,4,5,6,7,8,9};
 
@@ -33,27 +32,24 @@ public class StringDealFactory {
     private static final char[] DUPLICATE_SIGN_LIST = {'重','从'};
 
     private static final char[] UNUSER_SIGN_LIST = {'头','尾'};
-    public static ArrayList<StringDealBean.StringSimpleDealBean> stringDeal(String str){
+    public static ArrayList<String> stringDeal(String str){
         // Log.d("zsbin","str ="+str+"***************************************************************************************************\n");
         str = repalaceFrist(str);
-        str = rejectNouserChar(str);
-        //       Log.d("zsbin","rejectNouserChar:str ="+str);
-              Log.d("zsbin","repalace:str ="+str);
-        str = weirdReplace(str);
+        ArrayList<String> result =  spileString(str);
+        ArrayList<String> back =  new ArrayList<>();
+        for(int i= 0;i< result.size() ;i++){
+            String s = result.get(i);
+            s = rejectNouserChar(s);
+            back.add(s);
+        }
 
-        ArrayList<StringDealBean.StringSimpleDealBean> result = new ArrayList<StringDealBean.StringSimpleDealBean>();
-
-//        Log.d("zsbin","weirdReplace:str ="+str);
-        ArrayList<String> list =  spileStringNew(str);
+        return back;
+      /*  ArrayList<String> list =result.list;
 
         for(int i= 0;i< list.size() ;i++){
-            StringDealBean.StringSimpleDealBean strDec = new StringDealBean.StringSimpleDealBean();
             String s = list.get(i);
             if(s.contains("下奖") || s.contains("上奖") ){
-                strDec.dec = new StringDealBean.StringDecBean();
-                strDec.dec.isXiajiang = true;
                 if(s.contains("下奖5位")||s.contains("下奖五位") ||s.contains("下奖5囲个位")|| s.contains("下奖五囲个位")){
-                    strDec.dec.isWuwei = true;
                     String str111 = null;
                     if(s.contains("下奖5位")){
                         str111 = "下奖5位";
@@ -64,8 +60,8 @@ public class StringDealFactory {
                     }else if(s.contains("下奖五囲个位")){
                         str111 = "下奖五囲个位";
                     }
-                    s = s.replace(str111,StringDealFactory.NEW_SPILE_SIGN);
-                //    list.remove(i);
+                    s = s.replace(str111, StringDealFactory2.NEW_SPILE_SIGN);
+                    list.remove(i);
                     char[] cs = s.toCharArray();
                     StringBuilder builder = new StringBuilder();
                     int index = 0;
@@ -83,25 +79,22 @@ public class StringDealFactory {
                         index++;
                     }
                     StringBuilder builder3 = new StringBuilder();
-                    strDec.dec.xiajiangNumber = builder.toString();
                     builder3.append(builder.toString());
                     builder3.append("-0123456789");
                     builder3.append("囲万千囲千百囲百十囲十个囲个十");
                     builder3.append(builder2.toString());
-                    strDec.str = builder3.toString();
-                    result.add(strDec);
-                  //  list.add(i,builder3.toString());
+                    list.add(i,builder3.toString());
                     continue;
                 }
 
 
-              //  String str1 = "";
+                String str1 = "";
                 String str2 = "";
-             //   list.remove(i);
+                list.remove(i);
                 if(s.contains("下奖")){
-                    s = s.replace("下奖",StringDealFactory.NEW_SPILE_SIGN);
+                    s = s.replace("下奖", StringDealFactory2.NEW_SPILE_SIGN);
                 }else if(s.contains("上奖")){
-                    s = s.replace("上奖",StringDealFactory.NEW_SPILE_SIGN);
+                    s = s.replace("上奖", StringDealFactory2.NEW_SPILE_SIGN);
                 }
                 char[] cs = s.toCharArray();
                 StringBuilder builder = new StringBuilder();
@@ -111,16 +104,15 @@ public class StringDealFactory {
                     index++;
                 }
                 str2 += builder.toString();
-               // str1 += builder.toString();
+                str1 += builder.toString();
                 builder = new StringBuilder();
-              //  str1 += "0123456789-";
+                str1 += "0123456789-";
                 while (index <cs.length && isNumber(cs[index])){
                     builder.append(cs[index]);
                     index++;
                 }
-                strDec.dec.xiajiangNumber = builder.toString();
                 str2 += builder.toString();
-               // str1 += builder.toString();
+                str1 += builder.toString();
                 str2 += "-0123456789";
                 builder = new StringBuilder();
                 while (index <cs.length){
@@ -128,13 +120,11 @@ public class StringDealFactory {
                     index++;
                 }
                 str2 += builder.toString();
-            //    str1 += builder.toString();
-              //  Log.d("zsbin","String 1 ="+str1);
+                str1 += builder.toString();
+                Log.d("zsbin","String 1 ="+str1);
                 Log.d("zsbin","String 2 ="+str2);
-              //  list.add(i,str1);
-             //   list.add(i,str2);
-                strDec.str = str2;
-                result.add(strDec);
+                list.add(i,str1);
+                list.add(i,str2);
             }else if(s.contains("任意")){
                 String renyi = null;
                 if(s.contains("任意两位")){
@@ -147,23 +137,17 @@ public class StringDealFactory {
                     renyi ="任意位";
                 }
                 String str1 = s.replace(renyi,"囲万千囲万百囲万十囲万个囲千百囲千十囲千个囲百十囲百个囲十个");
-               // list.remove(i);
-               // list.add(i,str1);
-                strDec.dec = new StringDealBean.StringDecBean();
-                strDec.str = str1;
-                strDec.dec.isAllWei = true;
-                result.add(strDec);
-            }else{
-                strDec.str = s;
-                result.add(strDec);
+                list.remove(i);
+                list.add(i,str1);
             }
-        }
 
-        for(int i = 0 ; i< result.size() ; i++){
-            StringDealBean.StringSimpleDealBean bean = result.get(i);
-            repalace(bean);
         }
-        return  result;
+//        for(int i = 0 ;i <list.size();i++){
+//            Log.d("zsbin","siglen:data["+i+"] ="+list.get(i));
+//        }
+//        Log.d("zsbin","-------------------------------------------------------------------------------------------\n");
+        result.list = list;
+        return  result;*/
     }
     private static String repalaceFrist(String s){
         String renyi = null;
@@ -171,6 +155,37 @@ public class StringDealFactory {
         if(s.contains("球")){
             s = s.replace("球","位");
         }
+        if(s.contains("无")){
+            s = s.replace("无","排");
+        }
+        if(s.contains("不")){
+            s = s.replace("不","排");
+        }
+        if(s.contains("去")){
+            s = s.replace("去","排");
+        }
+        if(s.contains("上奖")){
+            s = s.replace("上奖","奖");
+        }
+        if(s.contains("下奖")){
+            s = s.replace("下奖","奖");
+        }
+        if(s.contains("奖") && s.contains("字")){
+            s = s.replace("字","");
+        }
+        if(s.contains("，")){
+            s = s.replace("，","\n");
+        }
+        if(s.contains("。")){
+            s = s.replace("。","\n");
+        }
+        if(s.contains(",")){
+            s = s.replace(",","\n");
+        }
+        if(s.contains("、")){
+            s = s.replace("、","\n");
+        }
+
 
         if(s.contains("5位") && s.contains("奖")){
             renyi = "5位";
@@ -178,10 +193,6 @@ public class StringDealFactory {
             renyi = "5个位";
         }else if(s.contains("5星")){
             renyi = "5星";
-        }else if(s.contains("全部")){
-            renyi = "全部";
-        }else if(s.contains("全位")){
-            renyi = "全位";
         }else if(s.contains("五个位")){
             renyi = "五个位";
         }else if(s.contains("五位")){
@@ -191,89 +202,31 @@ public class StringDealFactory {
         }
         if(renyi != null){
            s = s.replace(renyi,"五个位");
-            s = s.replace("奖","");
-            s = s.replace("下","下奖");
-            s =s.replace("上","下奖");
-        }
-        if(s.contains("下奖全")){
-            s = s.replace(renyi,"下奖五位");
-        }
-        if(s.contains("五个位") && s.contains("下奖")){
-            s = s.replace("五个位","");
-            s = s.replace("下奖","下奖五位");
         }
 
-        if(s.contains("任二")){
-            s = s.replace("任二","任意位");
-        }else if(s.contains("任位")){
-            s = s.replace("任位","任意位");
-        }
-        if(s.contains("合") && !s.contains("单") && !s.contains("双")){
-            char[] strs = s.toCharArray();
-            int count = 0;
-            for(char c : strs){
-                if(c == '合'){
-                    break;
-                }else if(isNumber(c)){
-                    count++;
-                }
-            }
-            if(count == 0){
-                s = "1234567890"+s;
-            }
 
+        renyi = null;
+        if(s.contains("全位")){
+            renyi = "全位";
+        }else if(s.contains("任意位") ){
+            renyi = "任意位";
+        }
+        if(renyi != null){
+            s = s.replace(renyi,"任二");
         }
 
-        if(s.contains("任选二")){
-            s = s.replace("任选二","任意位");
+        if(s.contains("合单")){
+            s =s.replace("合单","合13579囲");
+        }else if(s.contains("合双")){
+            s = s.replace("合双","合02468囲");
         }
 
         return s;
     }
-  /*  private static String repalaceFrist(String s){
-        if(s.contains("下奖全")||
-                s.contains("字5位")||
-                s.contains("字5星")||
-                s.contains("字走5全位")||
-                s.contains("字下奖全位")||
-                s.contains("下5位")||
-                s.contains("字五位")||
-                s.contains("字五星")||
-                s.contains("字走五全位")||
-                s.contains("字下奖全位")||
-                s.contains("下五位")
-                ){
-            String renyi = null;
-            if(s.contains("下奖全")){
-                renyi ="下奖全";
-            }else if(s.contains("字5位")){
-                renyi ="字5位";
-            }else if(s.contains("字5星")){
-                renyi ="字5星";
-            }else if(s.contains("字走5全位")){
-                renyi ="字走5全位";
-            }else if(s.contains("字下奖全位")){
-                renyi ="字下奖全位";
-            }else if(s.contains("下5位")){
-                renyi ="下5位";
-            }else if(s.contains("字五位")){
-                renyi ="字五位";
-            }else if(s.contains("字五星")){
-                renyi ="字五星";
-            }else if(s.contains("字走五全位")){
-                renyi ="字走五全位";
-            }else if(s.contains("字下奖全位")){
-                renyi ="字下奖全位";
-            }else if(s.contains("下五位")){
-                renyi ="下五位";
-            }
-            return  s.replace(renyi,"下奖五位");
-        }
-        return s;
-    }*/
 
     //剔除字符串中连续出现的符号和首尾的空格
     private static String rejectNouserChar(String str){
+
         char[] list = str.toCharArray();
         int start = 0;
         int end = list.length -1;
@@ -294,34 +247,11 @@ public class StringDealFactory {
         if(start == end){
             return null;
         }
-        for(;start<=end;){
-            if(isSpileChar(list[start])){
-                ArrayList<Character> mtmpChar = new ArrayList<>();
-                boolean isHave = false;
-                while (start <= end && isSpileChar(list[start])){
-                    if(mtmpChar.size() == 0 ){
-                        mtmpChar.add(list[start]);
-                        build.append(list[start]);
-                    }else{
-                        isHave = false;
-                        for(Character c :mtmpChar){
-                            if(c == list[start]){
-                                isHave = true;
-                                break;
-                            }
-                        }
-                        if(!isHave){
-                            mtmpChar.add(list[start]);
-                            build.append(list[start]);
-                        }
-                    }
-                    start++;
-                }
-            }else{
+       for(;start<=end;){
                 build.append(list[start]);
                 start++;
-            }
         }
+
         return build.toString();
     }
 
@@ -376,8 +306,8 @@ public class StringDealFactory {
     //处理了全 单 双 大 小
     //处理了合 将其数字符号转化为中文数字
     //不要 直接替代为啥
-    private static String repalace(StringDealBean.StringSimpleDealBean bean){
-        char[] cs = bean.str.toCharArray();
+    private static String repalace(String str){
+        char[] cs = str.toCharArray();
         String newStr;
         StringBuilder builder = new StringBuilder();
         for(int i =0 ; i<cs.length ;i++){
@@ -386,10 +316,6 @@ public class StringDealFactory {
                 builder.append(ALL_PAI_CHAR);
                 continue;
             }else if(cs[i] == '平' || cs[i] == '双' ){
-                if(bean.dec == null){
-                    bean.dec = new StringDealBean.StringDecBean();
-                }
-                bean.dec.isDuizi = true;
                 if(i< cs.length-1 && (cs[i+1] == '重' || cs[i+1] == '从')){
                     i = i+1;
                     builder.append("死00 11 22 33 44 55 66 77 88 99死");
@@ -403,25 +329,13 @@ public class StringDealFactory {
                 builder.append("杀");
                 continue;
             }else if(cs[i] == '对' &&   i< cs.length-1  && cs[i+1] == '子'){
-                if(bean.dec == null){
-                    bean.dec = new StringDealBean.StringDecBean();
-                }
-                bean.dec.isDuizi = true;
                 i = i+1;
                 builder.append("死00 11 22 33 44 55 66 77 88 99死");
                 continue;
             }else if(cs[i] == '合' && i< cs.length-1 && (cs[i+1] == '单' ||  cs[i+1] == '双')){
                 if( cs[i+1] == '单'){
-                    if(bean.dec == null){
-                        bean.dec = new StringDealBean.StringDecBean();
-                    }
-                    bean.dec.isHeDang = true;
                     builder.append("死13579-02468,02468-13579死");
                 }else if( cs[i+1] == '双'){
-                    if(bean.dec == null){
-                        bean.dec = new StringDealBean.StringDecBean();
-                    }
-                    bean.dec.isHeChuang = true;
                     builder.append("死02468-02468,13579-13579死");
                 }
                 i = i+1;
@@ -497,9 +411,9 @@ public class StringDealFactory {
                     }
                 }
             }else if(cs[i] == '共') {
-                builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+                builder.append(StringDealFactory2.NEW_SPLIE_CHAR);
                 i++;
-                while (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+                while (i < cs.length && StringDealFactory2.isNumber(cs[i])) {
                     i++;
                 }
             }else if(cs[i]== '元') {
@@ -509,7 +423,7 @@ public class StringDealFactory {
                 }
                 yuanindex--;
                 builder.delete( builder.length() - yuanindex , builder.length());
-                builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+                builder.append(StringDealFactory2.NEW_SPLIE_CHAR);
             }else if(cs[i] == '下'){
 
                 if(i< cs.length-1 && cs[i+1]== '奖' ){
@@ -529,7 +443,6 @@ public class StringDealFactory {
                 builder.append(cs[i]);
             }
         }
-        bean.str =  builder.toString();
         return builder.toString();
     }
 
@@ -587,77 +500,18 @@ public class StringDealFactory {
         return null;
     }
 
-    private static ArrayList<String> spileStringNew(String str){
-        str = str.replace(",","\n");
-        str = str.replace("，","\n");
-        str = str.replace("。","\n");
-        str = str.replace("、","\n");
-        ArrayList<String> list = new ArrayList<>();
-        String[] strs = str.split("\n");
-        for(String s: strs){
-            if(TextUtils.isEmpty(s)){
-                continue;
-            }else{
-                list.add(s);
-            }
-        }
-        return list;
-    }
-
 
     //字符串的分割
- /*   private static StringDealBean.StringListDealBean spileString(String str){
-        StringDealBean.StringListDealBean result = new StringDealBean.StringListDealBean();
-        char[] cs = str.toCharArray();
-        boolean isHavaSpoleSign ;
-        StringBuilder build = new StringBuilder();
-        ArrayList<String> list = new ArrayList<>();
-        ArrayList<String> value = new ArrayList<>();
-
-        for(char c :cs){
-            if (c == '\n') {
-                if(build.length() <1){
-                    continue;
-                }
-                String str2 = build.toString();
-                build = new StringBuilder();
-                list.add(str2);
-            }else{
-                build.append(c);
+    private static ArrayList<String> spileString(String str){
+        String[] strs = str.split("\n");
+        if(str.length() > 0){
+            ArrayList<String>  result = new ArrayList<>();
+            for(String s:strs){
+                result.add(s);
             }
+            return result;
         }
-        if(build.length() >0){
-            list.add(build.toString());
-        }
-//        for(int i = 0 ;i <list.size();i++){
-//            Log.d("zsbin","按行:data["+i+"] ="+list.get(i));
-//        }
-        //单行分割
-        for(String s: list){
-            if(haveNumCount(s) >3){
-                StringDealBean.StringListDealBean tmpr = sigleLineSpile(s);
-                if(tmpr ==null ){
-                    value.add(s);
-                    continue;
-                }
-                ArrayList<String> tmp = tmpr.list;
-                String end = tmp.get(tmp.size() - 1);
-                int nuumcount = haveNumCount(end);
-                if(nuumcount== 1 || nuumcount == 0){
-                    ArrayList<String> tmp2 = new ArrayList<>();
-                    for(int ii = 0 ; ii< tmp.size() -1;ii++){
-                        tmp2.add(tmp.get(ii)+NEW_SPILE_SIGN+end);
-                    }
-                    value.addAll(tmp2);
-                }else{
-                    value.addAll(tmp);
-                }
-            }else{
-                value.add(s);
-            }
-        }
-        result.list = value;
-        return  result;
+        return  null;
     }
     private static  StringDealBean.StringListDealBean sigleLineSpile(String str){
         StringDealBean.StringListDealBean result = new StringDealBean.StringListDealBean();
@@ -715,7 +569,7 @@ public class StringDealFactory {
             }
         }
         return null;
-    }*/
+    }
     public static int haveNumCount(String s){
         char[] cs = s.toCharArray();
         int count = 0;
@@ -820,5 +674,15 @@ public class StringDealFactory {
             }
         }
         return false;
+    }
+
+    public static boolean isAllNumber(String str){
+        char[] cs = str.toCharArray();
+        for(char c : cs){
+            if(!isNumber(c)){
+                return false;
+            }
+        }
+        return true;
     }
 }

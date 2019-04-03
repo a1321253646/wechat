@@ -73,9 +73,9 @@ public enum Hook {
                                 if (sqlParam.equals("10000")) {//别人撤回
                                     Object[] newObjArr = new Object[2];
                                     //param.args[1] = "UPDATE message SET type=? WHERE msgId=?";
-                                    param.args[1] = "select * from message where type=? and msgId=?";
-                                    param.args[2] = newObjArr;
-                                    newObjArr[0] = 1;
+                                  //  param.args[1] = "select * from message where type=? and msgId=?";
+                                  //  param.args[2] = newObjArr;
+                                   // newObjArr[0] = 1;
                                     newObjArr[1] = objArr[objArr.length - 1];
                                     //param.args[1] = "UPDATE message SET content=(select (select content from message where msgId = ?)||X'0D'||X'0A'||X'0D'||X'0A'||(\"<sysmsg>wxInvoke卧槽，TA竟然要撤回上面的信息wxInvoke</sysmsg>\")),msgId=?,type=? WHERE msgId=?";
                                   //  XposedBridge.log("撤回的信息是msgid="+ newObjArr[1]);

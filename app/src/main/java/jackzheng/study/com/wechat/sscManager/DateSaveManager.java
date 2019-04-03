@@ -18,9 +18,11 @@ public class DateSaveManager {
     public  String mGuanliQun ;
     public  String mZongQun ;
     public  String mTixing;
+    public  String mFengLiang;
     public static int mIndex = 0;
     public static int mGuanLiIndex = 0;
     public boolean isJustShou = false;
+    public boolean isFangqun= false;
     public int mMaxJieId = 2;
     public boolean isHaveGroup (String group){
         if(mGroupDate.containsKey(group)){
@@ -111,6 +113,10 @@ public class DateSaveManager {
         mGuanliQun = guanliqun;
         saveStringDate("guanliqun",mGuanliQun);
     }
+    public void saveFengLiang(String guanliqun){
+        mFengLiang = guanliqun;
+        saveStringDate("fengliang",guanliqun);
+    }
 
     private void saveGroupId(GroupDate group){
 
@@ -141,7 +147,10 @@ public class DateSaveManager {
         isJustShou = true;
         saveStringDate("justShou",true);
     }
-
+    public void saveFangqun(){
+        isFangqun = true;
+        saveStringDate("fangqun",true);
+    }
     public void changeGroupFenOrLiang(String group,boolean isFen,int action,int value){
         if(isFen){
             mGroupDate.get(group).fen = saveFenOrLiangeActionValue(mGroupDate.get(group).fen,action,value);
@@ -186,13 +195,17 @@ public class DateSaveManager {
         mGroupDate.clear();
         mIndex = 0;
         editor.remove("justShou").commit();
+        editor.remove("fangqun").commit();
         editor.remove("zong").commit();
         editor.remove("maxJie").commit();
         editor.remove("tixing").commit();
+        editor.remove("fengliang").commit();
 
         mZongQun = null;
         mTixing = null;
         isJustShou = false;
+        isFangqun = false;
+        mFengLiang = null;
         mMaxJieId = 2;
     }
 
@@ -246,6 +259,8 @@ public class DateSaveManager {
         isJustShou = getBooleanDate("justShou");
         mZongQun = getStringDate("zong");
         mTixing = getStringDate("tixing");
+        mFengLiang = getStringDate("fengliang");
+        isFangqun = getBooleanDate("fangqun");
 
     }
 

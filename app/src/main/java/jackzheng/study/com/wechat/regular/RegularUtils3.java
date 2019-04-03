@@ -6,211 +6,345 @@ import java.util.ArrayList;
 
 import de.robv.android.xposed.XposedBridge;
 
-public class RegularUtils2 {
+public class RegularUtils3 {
 
-    public static RegularStrBean regularStr(String str){
-
-        RegularStrBean regu = new RegularStrBean();
-        StringDealBean.StringListDealBean spile = new StringDealBean.StringListDealBean();
-        spile.list = StringDealFactory.stringDeal(str);
-
-        if(spile == null || spile.list.size() <1){
-            return regu;
+    public final static String NEW_LOCAL_CHAR = "囲";
+    private static String getLocal(String str,DateBean3 date){
+        if(str.contains("任二")){
+            date.isRenyi = true;
+            str = str.replace("任二",NEW_LOCAL_CHAR);
+            for(int i = 1 ;i<6 ;i++){
+                for(int ii = i+1; ii< 6 ;ii++){
+                    date.local.add(new Integer[]{i,ii});
+                }
+            }
+            return str;
         }
-        ArrayList<StringDealBean.StringSimpleDealBean> list = spile.list;
-        int stringCount = list.size();
-
-        ArrayList<DateBean2> value = new ArrayList<>();
-        regu.isTrue = spile.isTrue;
-        //regu.list = value;
-
-        boolean isDuoZhu =stringCount > 1 ? true:false ;
-        for(int iii = 0;iii < list.size();iii++){
-            StringDealBean.StringSimpleDealBean data = list.get(iii);
-
-            if(TextUtils.isEmpty(data.str) || StringDealFactory.haveNumCount(data.str) == 0){
-                continue;
+        if(str.contains("五个位")){
+            date.isWuwei = true;
+            str = str.replace("五个位",NEW_LOCAL_CHAR);
+            for(int i = 1 ;i<5 ;i++){
+                date.local.add(new Integer[]{i,i+1});
             }
-            int numberCount = StringDealFactory.haveNumCount(data.str);
-            DateBean2 date = new DateBean2();
-            if(data.dec != null){
-                date.dec = data.dec;
+            date.local.add(new Integer[]{5,4});
+            return str;
+        }
+        if(str.contains("位")){
+            if(str.endsWith("位")){
+                String[] strs = str.split(" ");
+                String wei = strs[strs.length -1];
+                str = str.replace(" "+wei,NEW_LOCAL_CHAR);
+                wei = wei.replace("位","");
+                String[] weis = wei.split(".");
+                for(String s : weis){
+                    if(s.length() !=2 || !StringDealFactory2.isAllNumber(s)){
+                        date.error = "XX位在后面的正确方法为使用空格与前面隔开如1234/12 12.23.45位";
+                        return null;
+                    }
+                    char[] cs = s.toCharArray();
+                    date.local.add(new Integer[]{cs[0]-'0',cs[1]-'0'});
+                }
+            }else{
+                String[] strs = str.split("位");
+                String wei = strs[0];
+                str = str.replace(wei+"位",NEW_LOCAL_CHAR);
+                String[] weis = wei.split(".");
+                for(String s : weis){
+                    if(s.length() !=2 || !StringDealFactory2.isAllNumber(s)){
+                        date.error = "XX位在前面的正确方法如12.23.45位1234/12 ";
+                        return null;
+                    }
+                    char[] cs = s.toCharArray();
+                    date.local.add(new Integer[]{cs[0]-'0',cs[1]-'0'});
+                }
             }
-            date.message = data.str;
-            SingleStrDealBean bean2 = new SingleStrDealBean();
-//            if(iii == 0){
-            if(!getLocalAnOther(data.str,numberCount,bean2,date,isDuoZhu)){
+        }
+        if(str.contains("前")){
+            str = str.replace("前",NEW_LOCAL_CHAR);
+            date.local.add(new Integer[]{1,2});
+        }
+        if(str.contains("后")){
+            str = str.replace("后",NEW_LOCAL_CHAR);
+            date.local.add(new Integer[]{4,5});
+        }
+
+        if(str.contains("万")||str.contains("千")||str.contains("百")||str.contains("十")||str.contains("个")){
+            char[] cs = str.toCharArray();
+            StringBuilder build = new StringBuilder();
+            Integer[] local  = new Integer[2];
+            int count = 0;
+            int i = 0;
+            while (i< cs.length && !StringDealFactory2.isLocal(cs[i])){
+                i++;
+            }
+            for(;i<cs.length;i++){
+                if(cs[i] == '.'){
+                    if(count == 1){
+                        date.error = "使用万千百十个来指定位置需要是指定两位如 万千.十个 或者 万千十个";
+                        return null;
+                    }
+                    build.append(cs[i]);
+                }else if(StringDealFactory2.isLocal(cs[i])){
+                    local[count] = StringDealFactory2.getLocalData(cs[i]);
+                    count ++;
+                    if(count == 2){
+                        date.local.add(local);
+                        local = new Integer[2];
+                        count = 0;
+                    }
+                    build.append(cs[i]);
+                }else{
+                    break;
+                }
+            }
+            if(count == 1){
+                date.error = "使用万千百十个来指定位置需要是指定两位如 万千.十个 或者 万千十个";
                 return null;
             }
-//            }else{
-//                getLocalAnOther(data,numberCount,bean2,null);
-//            }
+            str = str.replace(build.toString(),NEW_LOCAL_CHAR);
+        }
 
-            date.mHaveGroup = bean2.haveGroup;
-            //      XposedBridge.log(data +" getLocalAnOther =\n"+bean2);
-            if(bean2.numberList.size() >3 ){
-                for(int i = 0; i<bean2.numberList.size()-1 ;i++){
-                    if(bean2.numberCountList.get(i) != 2){
-                        return regu;
-                    }
-                }
-                for(int i = 0 ;i < bean2.numberList.size() -1 ;i++){
-                    char[] chars = bean2.numberList.get(i).toCharArray();
-                    date.mLastData.add(new Integer[]{chars[0]-'0',chars[1]-'0'});
-                }
-                bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(bean2.numberList.size()-1)));
-            }if(numberCount == 3){
-                if(bean2.numberCountList.get(0) != 2 || bean2.numberCountList.get(1) != 2){
-                    date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                    date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
-                    bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(2)));
-                }else{
+        return str;
+    }
 
-                    if(!date.mHaveGroup ){
-                        regu.isTrue = false;
-                    }
-                    String spile1 =null;
-                    String spile2 = null;
-                    if(bean2.spilStrList.size() == bean2.numberList.size() && bean2.isHaveLatSpile){
-                        spile1 = bean2.spilStrList.get(0);
-                        spile2 = bean2.spilStrList.get(1);
-                    }else if(bean2.spilStrList.size() == bean2.numberList.size() ){
-                        spile1 = bean2.spilStrList.get(1);
-                        spile2 = bean2.spilStrList.get(2);
-                    }else if(bean2.spilStrList.size() == bean2.numberList.size()+1 ){
-                        spile1 = bean2.spilStrList.get(1);
-                        spile2 = bean2.spilStrList.get(2);
-                    }else if(bean2.spilStrList.size() == bean2.numberList.size()-1 ){
-                        spile1 = bean2.spilStrList.get(0);
-                        spile2 = bean2.spilStrList.get(1);
-                    }
-                       XposedBridge.log("spile1 ="+spile1+" spile2"+spile2);
-                    boolean have = false;
-                    String[] chars = {",", "，", ".", "。", "、", " ","/"};
-                    for(String c: chars){
-                        /*if(spile1.contains(c) && spile2.contains(c) ){
-                            return regu;
-                        }else*/
-                            if(spile1.contains(c) ){
-                            have = true;
-                            break;
-                        }
-                    }
-                    if(have && bean2.haveGroup){
-                        have = false;
-                    }
-                    if(have){
-                        date.mLastData.add(new Integer[]{getIntFormString(bean2.numberList.get(0)).get(0),getIntFormString(bean2.numberList.get(0)).get(1)});
-                        date.mLastData.add(new Integer[]{getIntFormString(bean2.numberList.get(1)).get(0),getIntFormString(bean2.numberList.get(1)).get(1)});
-                        bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(2)));
-                    }else{
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
-                        bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(2)));
-                    }
-                }
-            }else if(numberCount == 2){
-                //    XposedBridge.log("bean2.haveCount ="+bean2.haveCount);
-                if(bean2.haveCount){
-                    if(bean2.numberCountList.get(0) !=2){
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                        bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
-                    }else if(bean2.haveGroup){
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                        bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
-                    }else{
-                        date.mLastData.add(new Integer[]{getIntFormString(bean2.numberList.get(0)).get(0),getIntFormString(bean2.numberList.get(0)).get(1)});
-                        bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
-                    }
-                }else{
-                    String spile1 =null;
-                    if(bean2.spilStrList.size() == bean2.numberList.size() && bean2.isHaveLatSpile){
-                        spile1 = bean2.spilStrList.get(0);
-                    }else if(bean2.spilStrList.size() == bean2.numberList.size() ){
-                        spile1 = bean2.spilStrList.get(1);
-                    }else if(bean2.spilStrList.size() == bean2.numberList.size()+1 ){
-                        spile1 = bean2.spilStrList.get(1);
-                    }else if(bean2.spilStrList.size() == bean2.numberList.size()-1 ){
-                        spile1 = bean2.spilStrList.get(0);
-                    }
 
-                    if(bean2.numberCountList.get(0) !=2){
-                        if((stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) ||spile1.contains("-") || spile1.contains("—") || spile1.equals("一") /*|| spile1.equals("。") *//*|| spile1.equals(".")*/){
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
-                            bean2.mLocalCount.add(0);
+    public static String getPai(String str,DateBean3 date ){
+        if(str.contains("排")){
+            str = str.replace("排",NEW_LOCAL_CHAR);
+            date.isNoSame = true;
+        }
+        return str;
+    }
+
+    public static String getSha(String str,DateBean3 date){
+        if(str.contains("杀")){
+            char[] cs = str.toCharArray();
+            boolean isHaveNumber = false;
+            for(int i = 0 ;i< cs.length ; i++){
+                if(StringDealFactory2.isNumber(cs[i])){
+                    isHaveNumber = true;
+                }else if(cs[i] == '杀') {
+                    break;
+                }
+            }
+            if(isHaveNumber){
+                date.error = "杀字前面除了位置，不能带数字";
+                return null;
+            }
+            str = str.replace("杀",NEW_LOCAL_CHAR);
+            date.isSha = true;
+        }
+        return str;
+    }
+
+    public static String getHe(String str,DateBean3 date){
+        if(str.contains("合")){
+            StringBuilder build = new StringBuilder();
+            boolean isHaveNumber = false;
+            char[] cs = str.toCharArray();
+            for(int i = 0 ;i< cs.length ; i++){
+                if(StringDealFactory2.isNumber(cs[i])){
+                    isHaveNumber = true;
+                }else if(cs[i] == '合') {
+                    if(i > 0){
+                        if(cs[i-1] == '不'){
+                            build.append("不合");
+                            date.isHe = false;
                         }else{
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                            bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
+                            build.append("合");
+                            date.isHe = true;
                         }
                     }else{
-                        if(!date.mHaveGroup ){
-                            regu.isTrue = false;
+                        build.append("合");
+                        date.isHe = true;
+                    }
+                    if(i < cs.length ){
+                        i++;
+                        for(;i< cs.length ; i++){
+                            if(StringDealFactory2.isNumber(cs[i])){
+                                build.append(cs[i]);
+                                date.heNumber.add(cs[i]-'0');
+                            }else{
+                                break;
+                            }
                         }
-                        if( (stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) || spile1.equals("-") || spile1.equals("—")|| spile1.equals("一") ){
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
-                            bean2.mLocalCount.add(0);
-                        }else if(bean2.haveGroup) {
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                            date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                            bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
-                        }else if(bean2.numberCountList.get(0) ==2 && spile1.equals(" ")){
-                            date.mLastData.add(new Integer[]{getIntFormString(bean2.numberList.get(0)).get(0),getIntFormString(bean2.numberList.get(0)).get(1)});
-                            date.mLastData.add(new Integer[]{getIntFormString(bean2.numberList.get(1)).get(0),getIntFormString(bean2.numberList.get(1)).get(1)});
-                            bean2.mLocalCount.add(0);
+                    }
+                    if(date.heNumber.size() <1){
+                        date.error = "请在合后面指明合或不合那些数";
+                        return null;
+                    }else{
+                        if(!isHaveNumber){
+                            str = str.replace(build.toString(),"全头全尾");
                         }else{
-                            date.mLastData.add(new Integer[]{getIntFormString(bean2.numberList.get(0)).get(0),getIntFormString(bean2.numberList.get(0)).get(1)});
-                            bean2.mLocalCount.add(Integer.parseInt(bean2.numberList.get(1)));
+                            str = str.replace(build.toString(),NEW_LOCAL_CHAR);
                         }
                     }
-                }
-            }else if(numberCount ==1 ){
-                if(stringCount == 1){
-                    return regu;
-                }else{
-                    if(!date.mHaveGroup ){
-                        regu.isTrue = false;
-                    }
-                    if(bean2.numberCountList.get(0) !=2 || bean2.haveGroup) {
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                        date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
-                        bean2.mLocalCount.add(0);
-                    }else{
-                        date.mLastData.add(new Integer[]{getIntFormString(bean2.numberList.get(0)).get(0),getIntFormString(bean2.numberList.get(0)).get(1)});
-                        bean2.mLocalCount.add(0);
-                    }
+                    break;
                 }
             }
-            if(bean2.isPai == null){
-                bean2.isPai = false;
-            }
-            date.isNoSame = bean2.isPai;
-//            if(bean2.mLocal.size() ==0){
-//                bean2.mLocal.add(new Integer[]{4,5});
-//            }
-            date.local = bean2.mLocal;
-            date.mCountList = bean2.mLocalCount;
-            date.isHe = bean2.isHe;
-            date.heNumber = bean2.heNumber;
+        }
+        return str;
+    }
 
-            if(bean2.isKill){
-                ArrayList<Integer> data0 = getKillData(date.mDataList.get(0));
-                ArrayList<Integer> data1 = getKillData(date.mDataList.get(1));
-                date.mDataList.clear();
-                date.mDataList.add(data0);
-                date.mDataList.add(data1);
+    private static String getXiaJiang(String str,DateBean3 date){
+        if(str.contains("奖")){
+            StringBuilder build = new StringBuilder();
+            char[] cs  = str.toCharArray();
+            int i = 0;
+            int leng = 0;
+            while (i < cs.length && cs[i] != '奖'){
+                i++;
             }
-            value.add(date);
+            while (i > 0 && StringDealFactory2.isNumber(cs[i])){
+                leng ++;
+            }
+            if(leng < 1){
+                date.error = "不符合下奖玩法";
+                return null;
+            }
+            build.append(cs,i-leng+1,leng);
+
+            for(char c : build.toString().toCharArray()){
+                date.xiajiangNumber.add(c-'0');
+            }
+            date.isXiaJiang = true;
+            str = str.replace(build.toString()+"奖",build.toString()+"-0123456789"+NEW_LOCAL_CHAR);
+        }
+        return str;
+    }
+
+
+    public static String replaceNumber(String s,DateBean3 date){
+        if(s.contains("双")){
+            s =s.replace("双","囲02468囲");
+        }
+        if(s.contains("单")){
+            s =s.replace("单","囲13579囲");
+        }
+        if(s.contains("大")){
+            s =s.replace("大","囲56789囲");
+        }
+        if(s.contains("小")){
+            s =s.replace("双","囲01234囲");
+        }
+        if(s.contains("对子")){
+            s =s.replace("对子","囲00.11.22.33.44.55.66.77.88.99囲");
+        }
+        if(s.contains("平重")){
+            s =s.replace("平重","囲00.11.22.33.44.55.66.77.88.99囲");
+        }
+
+        if(s.contains("全头")){
+            s =s.replace("全头","囲0123456789头");
+        }
+        if(s.contains("全尾")){
+            s =s.replace("全尾","囲0123456789尾");
+        }
+
+        if(s.contains("头") && s.contains("尾")){
+            StringBuilder build1 = new StringBuilder();
+            StringBuilder build2 = new StringBuilder();
+            int touIndex = 0;
+            int weiIndex = 0;
+
+            char[] cs  = s.toCharArray();
+            int i = 0;
+
+            int leng = 0;
+            while (i < cs.length && cs[i] != '头'){
+                i++;
+            }
+            touIndex = i;
+            while (i > 0 && StringDealFactory2.isNumber(cs[i])){
+                leng ++;
+            }
+            if(leng < 1){
+                date.error = "不符合头尾玩法";
+                return null;
+            }
+            build1.append(cs,i-leng+1,leng);
+
+            i = 0;
+            leng =0;
+            while (i < cs.length && cs[i] != '尾'){
+                i++;
+            }
+            weiIndex = i;
+            while (i > 0 && StringDealFactory2.isNumber(cs[i])){
+                leng ++;
+            }
+            if(leng < 1){
+                date.error = "不符合头尾玩法";
+                return null;
+            }
+            build2.append(cs,i-leng+1,leng);
+            if(weiIndex < touIndex){
+                s=s.replace(build2+"尾",build1+NEW_LOCAL_CHAR);
+                s=s.replace(build1+"头",build2+NEW_LOCAL_CHAR);
+            }else{
+                s=s.replace("尾",NEW_LOCAL_CHAR);
+                s=s.replace("头",NEW_LOCAL_CHAR);
+            }
+        }
+
+        return s;
+    }
+
+    public static ArrayList<DateBean3>  regularStr(String str){
+
+        ArrayList<String>list = StringDealFactory2.stringDeal(str);
+
+        if(list == null || list.size() <1){
+            return null;
+        }
+
+        int stringCount = list.size();
+
+        ArrayList<DateBean3> value = new ArrayList<>();
+        boolean isDuoZhu =stringCount > 1 ? true:false ;
+
+
+        for(int i = 0 ; i< list.size() ; i++){
+
+            String each = list.get(i);
+            if(each.contains("重")){
+                each = each.replace("重",NEW_LOCAL_CHAR);
+            }
+            DateBean3 date = new DateBean3();
+            each = getLocal(each,date);
+            if(each == null){
+                value.clear();
+                value.add(date);
+                return value;
+            }
+            each = getPai(each,date);
+            each = getHe(each,date);
+            if(each == null){
+                value.clear();
+                value.add(date);
+                return value;
+            }
+            each = getSha(each,date);
+            if(each == null){
+                value.clear();
+                value.add(date);
+                return value;
+            }
+            each = getXiaJiang(each,date);
+            if(each == null){
+                value.clear();
+                value.add(date);
+                return value;
+            }
+            each = replaceNumber(each,date);
+            if(each == null){
+                value.clear();
+                value.add(date);
+                return value;
+            }
 
         }
-        getPai(value);
-        dealDate(value);
-        regu.list = value;
-        return regu;
+        return null;
 
     }
 
@@ -313,15 +447,14 @@ public class RegularUtils2 {
         int end = list.size();
         for(int i =0 ; i<list.size();i++){
             if(list.get(i).local !=null && list.get(i).local.size() >0){
-                next = list.get(i).local;
                 mLocalCount++;
             }
         }
-        /*if(mLocalCount == 1 &&list.get(0).isALlUserFri) {
+        if(mLocalCount == 1 &&list.get(0).isALlUserFri) {
             next = list.get(0).local;
         }else if(mLocalCount == 1 && list.get(list.size() -1 ).isALlUserLast){
             next =list.get(list.size() -1).local;
-        }*/
+        }
         if(mLocalCount == 1 || mLocalCount == 0){
             if(next != null && mLocalCount == 1 ){
                 if(mLocalCount == 1 &&list.get(0).isALlUserFri) {
@@ -331,12 +464,12 @@ public class RegularUtils2 {
                     end = end -1;
                     next =list.get(list.size() -1).local;
                 }
-            }else /*if(mLocalCount == 0)*/{
+            }else if(mLocalCount == 0){
                 next = new ArrayList<>();
                 next.add(new Integer[]{4,5});
-            }/*else{
+            }else{
                 next =null;
-            }*/
+            }
             if(next != null){
                 for(int i =start ; i<end;i++){
                     // list.get(i).local.clear();
@@ -344,54 +477,12 @@ public class RegularUtils2 {
                         list.get(i).local.addAll(next);
                     }
                 }
-
-                for(int i =0 ; i<list.size();i++){
-                    XposedBridge.log("list.get(i).dec  = "+list.get(i).dec );
-                    if(list.get(i).dec !=null ){
-                        XposedBridge.log("isXiajiang  = "+list.get(i).dec.isXiajiang+" isWuwei="+ list.get(i).dec.isWuwei+" number="+list.get(i).dec.xiajiangNumber);
-                    }
-                    if(list.get(i).dec !=null && list.get(i).dec.isXiajiang && !list.get(i).dec.isWuwei){
-                        int count = list.get(i).local.size();
-                        for(int ii = 0 ; ii< count ;ii++){
-                            list.get(i).local.add(new Integer[]{list.get(i).local.get(i)[1],list.get(i).local.get(i)[0]});
-                        }
-
-                    }
-                }
-
                 return;
             }
         }
 
-        for(int i =0 ; i<list.size();){
-            int tmp = i;
-            if (list.get(i).local == null || list.get(i).local.size() == 0) {
-                while(tmp < list.size() && (list.get(tmp).local== null|| list.get(tmp).local.size() == 0)){
-                    tmp++;
-                }
-                if(tmp < list.size()){
-                    for (;i<tmp;i++){
-                        if(list.get(i).local == null){
-                            list.get(i).local = new ArrayList<>();
-                        }
-                        list.get(i).local.addAll(list.get(tmp).local);
-                    }
-                    i = tmp+1;
-                }else{
-                    pre = new ArrayList<>();
-                    pre.add(new Integer[]{4, 5});
-                    for(;i<list.size();i++){
-                        list.get(i).local.addAll(pre);
-                    }
-                }
-            }else{
-                i++;
-            }
-
-
-
-
-           /* if(list.get(i).mCountList != null && list.get(i).mCountList.size() > 0 && list.get(i).mCountList.get(0) > 0) {
+        for(int i =0 ; i<list.size();i++){
+            if(list.get(i).mCountList != null && list.get(i).mCountList.size() > 0 && list.get(i).mCountList.get(0) > 0) {
                 if (list.get(i).local == null || list.get(i).local.size() == 0) {
                     pre = new ArrayList<>();
                     pre.add(new Integer[]{4, 5});
@@ -418,22 +509,8 @@ public class RegularUtils2 {
                 for(int ii = start ; ii < i ;ii++){
                     list.get(ii).local.addAll(next);
                 }
-            }*/
-        }
-        for(int i =0 ; i<list.size();i++){
-            XposedBridge.log("list.get(i).dec  = "+list.get(i).dec );
-            if(list.get(i).dec !=null ){
-                XposedBridge.log("isXiajiang  = "+list.get(i).dec.isXiajiang+" isWuwei="+ list.get(i).dec.isWuwei+" number="+list.get(i).dec.xiajiangNumber);
-            }
-            if(list.get(i).dec !=null && list.get(i).dec.isXiajiang && !list.get(i).dec.isWuwei){
-                int count = list.get(i).local.size();
-                for(int ii = 0 ; ii< count ;ii++){
-                    list.get(i).local.add(new Integer[]{list.get(i).local.get(i)[1],list.get(i).local.get(i)[0]});
-                }
-
             }
         }
-
     }
 
     private static void getPai(ArrayList<DateBean2> dates){
@@ -554,7 +631,7 @@ public class RegularUtils2 {
         }
         return mnumlist;
     }
-    private static boolean getLocalAnOther(String str,int numberCount, SingleStrDealBean deal,DateBean2 date,boolean duozhu){
+    private static void getLocalAnOther(String str,int numberCount, SingleStrDealBean deal,DateBean2 date,boolean duozhu){
         StringBuilder builder = new StringBuilder();
         int numCount = 0;
         char[] cs = str.toCharArray();
@@ -783,6 +860,5 @@ public class RegularUtils2 {
             }
             deal.spilStrList = newStr;
         }
-        return  true;
     }
 }

@@ -34,6 +34,9 @@ public class CommonDeal {
                 data.type == MessageDeal.XIA_LIANG_INT||
                 data.type == MessageDeal.SHE_LIANG_INT
                 ){                                              //修改分量
+            if(DateSaveManager.getIntance().isJustShou){
+                return true;
+            }
             changeFenOrLiang(data);
             return true;
         } else if(data.type  == MessageDeal.GUAN_LI_QUN_INT &&
@@ -53,7 +56,11 @@ public class CommonDeal {
                 DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
                 DateSaveManager.getIntance().isGuanli(data.TakerId)
                 ){//设置管理员
+            if(DateSaveManager.getIntance().isJustShou){
+                return true;
+            }
             try {
+
                 int fen = Integer.parseInt(data.message.replace(MessageDeal.YING_STR,""));
                 DateSaveManager.getIntance().saveYin(data.groupID,fen);
                 SscControl.getIntance().sendMessage("该群一吟"+fen,data.groupID,false);
@@ -91,6 +98,9 @@ public class CommonDeal {
         }else if(data.type == MessageDeal.CHECK_INT &&
                 DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
                 !DateSaveManager.getIntance().isJustShou){
+            if(DateSaveManager.getIntance().isJustShou){
+                return true;
+            }
             DateSaveManager.GroupDate group = DateSaveManager.getIntance().getGroup(data.groupID);
             SscControl.getIntance().sendMessage("分"+group.fen+"量"+group.liang,data.groupID,false);
             return true;
@@ -101,11 +111,18 @@ public class CommonDeal {
                 TextUtils.isEmpty(data.groupID)){
             DateSaveManager.getIntance().saveJustShou();
             return true;
+        }else if(data.type == MessageDeal.SET_FANG_QUN_INT &&
+                TextUtils.isEmpty(data.groupID)){
+            DateSaveManager.getIntance().saveFangqun();
+            return true;
         }else if(data.type == MessageDeal.SET_ZONG_QUN_INT &&
                 !TextUtils.isEmpty(data.groupID) &&
                 !DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
                 !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
+            if(DateSaveManager.getIntance().isJustShou){
+                return true;
+            }
             DateSaveManager.getIntance().saveZong(data.groupID);
             return true;
         }else if(data.type == MessageDeal.SET_TIXING_INT &&
@@ -115,10 +132,28 @@ public class CommonDeal {
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
             DateSaveManager.getIntance().saveTiXing(data.groupID);
             return true;
+        }else if(data.type == MessageDeal.SET_FENGLIANG_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                !DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
+                !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)){
+            DateSaveManager.getIntance().saveFengLiang(data.groupID);
+            return true;
          }else if(data.type == MessageDeal.SET_RESET_INT &&
                 TextUtils.isEmpty(data.groupID) &&
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
             DateSaveManager.getIntance().clearAll();
+            return true;
+        }else if(data.type == MessageDeal.SET_YUANQUN_CEXIAO_NT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isHaveGroup(data.groupID)){
+            try {
+                String fen = data.message.replace(MessageDeal.SET_YUANQUN_CEXIAO,"");
+                ServerManager2.getmIntance().tuiDeal(fen);
+            }catch (Exception e){
+
+            }
+
             return true;
         }
         return false;
@@ -138,10 +173,19 @@ public class CommonDeal {
 
     private static void changeFenOrLiang(MessageDeal.MessagerDealDate data){
         if(TextUtils.isEmpty(data.groupID)||
-                !DateSaveManager.getIntance().isGuanli(data.TakerId)||
                 !DateSaveManager.getIntance().isHaveGroup(data.groupID)){
             return;
         }
+        if(!DateSaveManager.getIntance().isGuanli(data.TakerId)){
+            if(TextUtils.isEmpty(DateSaveManager.getIntance().mFengLiang)){
+                SscControl.getIntance().sendMessage("需要管理员才能操作",data.groupID,false);
+            }else{
+                SscControl.getIntance().sendMessage("等待审核中.........",data.groupID,false);
+                SscControl.getIntance().sendMessage(DateSaveManager.getIntance().getGroup(data.groupID).groupName+":"+data.message,DateSaveManager.getIntance().mFengLiang,false);
+            }
+            return;
+        }
+
         boolean isFen = false;
         int isAdd = 1;//1为加2为减3为设
         String friStr = "";

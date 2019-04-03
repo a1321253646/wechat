@@ -3,16 +3,26 @@ package jackzheng.study.com.wechat.regular;
 import java.util.ArrayList;
 
 public class StringDealBean {
+
     public static class StringListDealBean{
-        public ArrayList<String> list;
+        ArrayList<StringSimpleDealBean> list ;
         public boolean isTrue = true;
     }
+
     public static class  StringSimpleDealBean{
         String str;
-        public boolean isTrue = true;
+        StringDecBean dec;
     }
-    public static class StringArrayDealBean{
-        public ArrayList[] list;
-        public boolean isTrue = true;
+
+
+    public static class StringDecBean{
+        String xiajiangNumber;
+        boolean isXiajiang= false;
+        boolean isDuizi = false;
+        boolean isWuwei = false;
+        boolean isAllWei = false;
+        boolean isHeDang = false;
+        boolean isHeChuang = false;
+
     }
 }
