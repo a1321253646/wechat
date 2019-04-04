@@ -461,19 +461,24 @@ public class ServerManager2 {
                 }
 
             }
-            ArrayList<DateBean2> dateBean2s = null;
+        //    ArrayList<DateBean2> dateBean2s = null;
             RegularStrBean result = null;
             try {
                 result = RegularUtils2.regularStr(message);
-                if(result != null){
+/*                if(result != null){
                     dateBean2s = result.list;
-                }
+                }*/
 
             }catch (Exception e){
 
             }
+            if(result != null && result.list3 != null && result.list3.size() > 0){
 
-            if(dateBean2s == null || dateBean2s.size() < 1){
+                return;
+            }
+
+
+            if(result == null || result.list == null || result.list.size() < 1){
                 if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
                     SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
                 }else{
@@ -482,7 +487,7 @@ public class ServerManager2 {
 
                 return;
             }
-            for(DateBean2 dateBeanEach : dateBean2s){
+            for(DateBean2 dateBeanEach : result.list){
                 if(dateBeanEach.mCountList== null ||
                         dateBeanEach.mCountList.size() == 0 ||
                         dateBeanEach.local == null ||
@@ -522,10 +527,10 @@ public class ServerManager2 {
                 }
             }
 
-            bean.list = dateBean2s;
+            bean.list = result.list;
             String str = "";
             int count  = 0;
-            for(DateBean2 tmp : dateBean2s){
+            for(DateBean2 tmp : result.list){
                 count += tmp.allCount;
                 str = str+ tmp.toString()+"\n";
             }

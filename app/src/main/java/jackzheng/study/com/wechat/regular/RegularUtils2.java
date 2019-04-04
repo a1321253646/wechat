@@ -9,8 +9,15 @@ import de.robv.android.xposed.XposedBridge;
 public class RegularUtils2 {
 
     public static RegularStrBean regularStr(String str){
-
         RegularStrBean regu = new RegularStrBean();
+        String[] tmp = str.split("\n");
+        String stmStr = tmp[0];
+        if(Regular3Utils.Regular3Bean.is3Bean(stmStr)){
+            Regular3Utils.Regular3Bean.getBeans(tmp,regu);
+            return regu;
+        }
+
+
         StringDealBean.StringListDealBean spile = new StringDealBean.StringListDealBean();
         spile.list = StringDealFactory.stringDeal(str);
 
