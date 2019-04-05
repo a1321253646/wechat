@@ -33,12 +33,15 @@ public class MessageDeal {
     public static final String SET_FENGLIANG= "分量";
     public static final String SET_FANG_QUN= "放裙";
     public static final String SET_YUANQUN_CEXIAO= "原裙撤销";
+    public static final String SET_ZHENGQUE= "正确";
+    public static final String SET_BAOBIAO= "报表";
 
 
     public static final String[] ORDER_LIST = {QUN_KAI_STR,TING_STR,SHANG_FEN_STR,XIA_FEN_STR,
             SHE_FEN_STR,SHANG_LIANG_STR,XIA_LIANG__STR,SHE_LIANG__STR,GUAN_LI_STR,YING_STR,
             CHECK_STR,CLEAR_CHECK_STR,RECEVI_ZU_STR,SEND_ZU_STR,GUAN_LI_QUN,SET_QUN_QUN_NAME,SET_JUST_SHOU,
-            SET_ZONG_QUN,SET_TUI,SET_RESET,SET_DETAIL,SET_TIXING,SET_FENGLIANG,SET_FANG_QUN,SET_YUANQUN_CEXIAO
+            SET_ZONG_QUN,SET_TUI,SET_RESET,SET_DETAIL,SET_TIXING,SET_FENGLIANG,SET_FANG_QUN,SET_YUANQUN_CEXIAO,
+            SET_ZHENGQUE,SET_BAOBIAO
     };
 
     public static final int XIA_ZU_INT = 0;
@@ -68,12 +71,14 @@ public class MessageDeal {
     public static final int SET_FENGLIANG_INT= 24;
     public static final int SET_FANG_QUN_INT= 25;
     public static final int SET_YUANQUN_CEXIAO_NT= 26;
+    public static final int SET_ZHENGQUE_INT= 27;
+    public static final int SET_BAOBIAO_INT= 28;
 
     public static final int[] ORDER_TYPE_LIST = {QUN_KAI_INT,TING_INT,SHANG_FEN_INT,XIA_FEN_INT,SHE_FEN_INT,SHANG_LIANG_INT,
             XIA_LIANG_INT,SHE_LIANG_INT,GUAN_LI_INT,YING_INT,CHECK_INT,CLEAR_CHECK_INT,RECEVI_ZU_INT,SEND_ZU_INT,
             GUAN_LI_QUN_INT,SET_QUN_QUN_NAME_INT,SET_JUST_SHOU_INT,
             SET_ZONG_QUN_INT,SET_TUI_INT,SET_RESET_INT,SET_DETAIL_INT,SET_TIXING_INT,SET_FENGLIANG_INT,SET_FANG_QUN_INT,
-            SET_YUANQUN_CEXIAO_NT
+            SET_YUANQUN_CEXIAO_NT,SET_ZHENGQUE_INT,SET_BAOBIAO_INT
     };
 
     public  static final String GROUP_END = "@chatroom";

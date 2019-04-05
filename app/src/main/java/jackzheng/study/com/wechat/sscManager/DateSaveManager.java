@@ -19,6 +19,8 @@ public class DateSaveManager {
     public  String mZongQun ;
     public  String mTixing;
     public  String mFengLiang;
+    public  String mZhengque;
+    public  String mBaobiao;
     public static int mIndex = 0;
     public static int mGuanLiIndex = 0;
     public boolean isJustShou = false;
@@ -117,7 +119,14 @@ public class DateSaveManager {
         mFengLiang = guanliqun;
         saveStringDate("fengliang",guanliqun);
     }
-
+    public void saveZhengque(String guanliqun){
+        mZhengque = guanliqun;
+        saveStringDate("zhengque",guanliqun);
+    }
+    public void saveBaobiao(String guanliqun){
+        mBaobiao = guanliqun;
+        saveStringDate("baobiao",guanliqun);
+    }
     private void saveGroupId(GroupDate group){
 
         saveStringDate("groupId"+group.index,group.groupID);
@@ -206,6 +215,8 @@ public class DateSaveManager {
         isJustShou = false;
         isFangqun = false;
         mFengLiang = null;
+        mZhengque = null;
+        mBaobiao = null;
         mMaxJieId = 2;
     }
 
@@ -261,6 +272,8 @@ public class DateSaveManager {
         mTixing = getStringDate("tixing");
         mFengLiang = getStringDate("fengliang");
         isFangqun = getBooleanDate("fangqun");
+        mZhengque = getStringDate("zhengque");
+        mBaobiao = getStringDate("baobiao");
 
     }
 

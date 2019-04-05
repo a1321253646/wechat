@@ -38,8 +38,8 @@ public class StringDealFactory {
         str = repalaceFrist(str);
         str = rejectNouserChar(str);
         //       Log.d("zsbin","rejectNouserChar:str ="+str);
-              Log.d("zsbin","repalace:str ="+str);
-        str = weirdReplace(str);
+
+
 
         ArrayList<StringDealBean.StringSimpleDealBean> result = new ArrayList<StringDealBean.StringSimpleDealBean>();
 
@@ -49,6 +49,7 @@ public class StringDealFactory {
         for(int i= 0;i< list.size() ;i++){
             StringDealBean.StringSimpleDealBean strDec = new StringDealBean.StringSimpleDealBean();
             String s = list.get(i);
+            Log.d("zsbin","repalace:s ="+s);
             if(s.contains("下奖") || s.contains("上奖") ){
                 strDec.dec = new StringDealBean.StringDecBean();
                 strDec.dec.isXiajiang = true;
@@ -162,6 +163,9 @@ public class StringDealFactory {
         for(int i = 0 ; i< result.size() ; i++){
             StringDealBean.StringSimpleDealBean bean = result.get(i);
             repalace(bean);
+            bean.str = weirdReplace(bean.str);
+            Log.d("zsbin","repalace:str ="+bean.str);
+
         }
         return  result;
     }
@@ -386,11 +390,12 @@ public class StringDealFactory {
                 builder.append(ALL_PAI_CHAR);
                 continue;
             }else if(cs[i] == '平' || cs[i] == '双' ){
-                if(bean.dec == null){
-                    bean.dec = new StringDealBean.StringDecBean();
-                }
-                bean.dec.isDuizi = true;
+
                 if(i< cs.length-1 && (cs[i+1] == '重' || cs[i+1] == '从')){
+                    if(bean.dec == null){
+                        bean.dec = new StringDealBean.StringDecBean();
+                    }
+                    bean.dec.isDuizi = true;
                     i = i+1;
                     builder.append("死00 11 22 33 44 55 66 77 88 99死");
                     continue;
@@ -416,13 +421,13 @@ public class StringDealFactory {
                         bean.dec = new StringDealBean.StringDecBean();
                     }
                     bean.dec.isHeDang = true;
-                    builder.append("死13579-02468,02468-13579死");
+                    builder.append("合13579死");
                 }else if( cs[i+1] == '双'){
                     if(bean.dec == null){
                         bean.dec = new StringDealBean.StringDecBean();
                     }
                     bean.dec.isHeChuang = true;
-                    builder.append("死02468-02468,13579-13579死");
+                    builder.append("合02468死");
                 }
                 i = i+1;
                 continue;
