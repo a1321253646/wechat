@@ -143,7 +143,7 @@ public class DateBean2 {
                 }
             }
         }
-        if(isHe !=null){
+        if((dec == null || (!dec.isHeDang && !dec.isHeChuang))&&isHe != null){
             builder.append((isHe?"":"不")+"合");
             for(Integer number : heNumber){
                 builder.append(number);

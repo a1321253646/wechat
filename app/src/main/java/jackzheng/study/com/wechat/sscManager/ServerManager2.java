@@ -157,7 +157,7 @@ public class ServerManager2 {
             return;
         }
         String indexNumber =index<10?("00"+index):index<100?("0"+index):""+index;
-        String msgRoot="第["+indexNumber+"]届      ：结束\n";
+        String msgRoot="\uE252\uE252 第["+indexNumber+"]届      ：结束\n";
         isTime = false;
         StringBuilder str;
         int count = 0;
@@ -188,13 +188,14 @@ public class ServerManager2 {
             }
             str.append("共"+count+" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen+" 流"+DateSaveManager.getIntance().getGroup(goupID).liang);
             if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
-             //   if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
+                if(!TextUtils.isEmpty( DateSaveManager.getIntance().mBaobiao)){
+                    SscControl.getIntance().sendMessage( DateSaveManager.getIntance().getGroup(goupID).groupName+"\n"+ str.toString(),
+                            DateSaveManager.getIntance().mBaobiao,false);
+
+                }else{
                     SscControl.getIntance().sendMessage(  str.toString(),
                             goupID,false);
-             //       SscControl.getIntance().sendMessage("**************************\n"+msgRoot,goupID,false);
-           //     }else{
-             //       SscControl.getIntance().sendMessage("**************************\n"+str.toString(),goupID,false);
-         //       }
+                }
             }
 
         }
@@ -204,7 +205,7 @@ public class ServerManager2 {
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
 
         String indexNumber = parse.index<10?("00"+ parse.index):parse.index<100?("0"+parse.index):""+parse.index;
-        String msgRoot="第["+indexNumber+"]届           开："+parse.str+"\n";
+        String msgRoot="\uE12D\uE12D 第["+indexNumber+"]届      开："+parse.str+"\n";
 
         StringBuilder str;
 
@@ -241,12 +242,13 @@ public class ServerManager2 {
                 str.append("共中"+(count/yin)+"组     共计 "+count+"\n");
                 str.append(" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen);
                 if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
-                    // if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                    SscControl.getIntance().sendMessage(  msgRoot+"-------------------\n"+str.toString(), goupID,false);
-                    //    SscControl.getIntance().sendMessage("##########################\n"+msgRoot,goupID,false);
-                    // }else{
-                    //   SscControl.getIntance().sendMessage("##########################\n"+str.toString(),goupID,false);
-                    // }
+                     if(!TextUtils.isEmpty( DateSaveManager.getIntance().mBaobiao)){
+                         SscControl.getIntance().sendMessage(  DateSaveManager.getIntance().getGroup(goupID).groupName+"\n"+
+                                 msgRoot+"-------------------\n"+str.toString(), DateSaveManager.getIntance().mBaobiao,false);
+
+                     }else{
+                         SscControl.getIntance().sendMessage(  msgRoot+"-------------------\n"+str.toString(), goupID,false);
+                     }
                 }
             }
         }
@@ -284,7 +286,7 @@ public class ServerManager2 {
                 if(bean2.msgId ==msgId){
                     DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,true,1,bean2.count);
                     DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n退成功    补"+bean2.count+"\n剩余"+
+                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
                                     DateSaveManager.getIntance().getGroup( bean.group).fen,
                             bean.group,false);
                     sscBeans.remove(bean2);
@@ -346,7 +348,7 @@ public class ServerManager2 {
                 if(bean2.msgId ==msgId){
                     DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,true,1,bean2.count);
                     DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n退成功    补"+bean2.count+"\n剩余"+
+                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
                                     DateSaveManager.getIntance().getGroup( bean.group).fen,
                             bean.group,false);
                     sscBeans.remove(bean2);
@@ -383,7 +385,7 @@ public class ServerManager2 {
                 if(bean2.mId ==id){
                     DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,true,1,bean2.count);
                     DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n退成功    补"+bean2.count+"\n剩余"+
+                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
                             DateSaveManager.getIntance().getGroup( bean.group).fen,data.groupID,false);
                     sscBeans.remove(bean2);
                     mAllXiazu.remove(id);
@@ -534,7 +536,7 @@ public class ServerManager2 {
                 count += tmp.allCount;
                 str = str+ tmp.toString()+"\n";
             }
-            if( DateSaveManager.getIntance().isFangqun  && count> DateSaveManager.getIntance().getGroup(groupID).fen ){
+            if( DateSaveManager.getIntance().getGroup(groupID).xianer  && count> DateSaveManager.getIntance().getGroup(groupID).fen ){
                 bean.list= null;
                 SscControl.getIntance().sendMessage( message+"\n\uE333操作失败-积分不足\uE333",groupID,false);
                 return;
@@ -545,9 +547,12 @@ public class ServerManager2 {
             DateSaveManager.getIntance().changeGroupFenOrLiang(groupID,true,2,count);
             DateSaveManager.getIntance().changeGroupFenOrLiang(groupID,false,1,count);
             String end = "-------------------\n扣"+bean.count+"   剩余"+DateSaveManager.getIntance().getGroup(groupID).fen+"\n退单撤回下注信息或者发送：退"+bean.mId;
+
             if(!result.isTrue && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
                 SscControl.getIntance().sendMessage(message+"\n--------------\n"+str+end,DateSaveManager.getIntance().mTixing,false);
 
+            }else if(!TextUtils.isEmpty(DateSaveManager.getIntance().mZhengque)){
+                SscControl.getIntance().sendMessage(message+"\n--------------\n"+str+end,DateSaveManager.getIntance().mZhengque,false);
             }else{
                 SscControl.getIntance().sendMessage(message+"\n--------------\n"+str+end,groupID,false);
             }
