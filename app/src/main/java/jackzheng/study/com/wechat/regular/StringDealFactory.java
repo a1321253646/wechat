@@ -212,7 +212,7 @@ public class StringDealFactory {
         }else if(s.contains("任位")){
             s = s.replace("任位","任意位");
         }
-        if(s.contains("合") && !s.contains("单") && !s.contains("双")){
+        if(s.contains("合") ){
             char[] strs = s.toCharArray();
             int count = 0;
             for(char c : strs){
@@ -421,13 +421,14 @@ public class StringDealFactory {
                         bean.dec = new StringDealBean.StringDecBean();
                     }
                     bean.dec.isHeDang = true;
-                    builder.append("合13579死");
+                    //{'拾','壹','贰','叁','肆','伍','陆','柒','捌','玖'}
+                    builder.append("合壹叁伍柒玖死");
                 }else if( cs[i+1] == '双'){
                     if(bean.dec == null){
                         bean.dec = new StringDealBean.StringDecBean();
                     }
                     bean.dec.isHeChuang = true;
-                    builder.append("合02468死");
+                    builder.append("合拾贰肆陆捌死");
                 }
                 i = i+1;
                 continue;
