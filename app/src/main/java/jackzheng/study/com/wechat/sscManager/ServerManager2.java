@@ -531,7 +531,7 @@ public class ServerManager2 {
                 count += tmp.allCount;
                 str = str+ tmp.toString()+"\n";
             }
-            if( DateSaveManager.getIntance().isFangqun  && count> DateSaveManager.getIntance().getGroup(groupID).fen ){
+            if( DateSaveManager.getIntance().getGroup(groupID).xianer  && count> DateSaveManager.getIntance().getGroup(groupID).fen ){
                 bean.list= null;
                 SscControl.getIntance().sendMessage( message+"\n\uE333操作失败-积分不足\uE333",groupID,false);
                 return;

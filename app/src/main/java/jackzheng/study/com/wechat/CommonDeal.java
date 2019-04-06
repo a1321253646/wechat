@@ -68,6 +68,28 @@ public class CommonDeal {
 
             }
             return true;
+        } else if(data.type  == MessageDeal.SET_XIANER_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&
+                DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)
+                ){//设置管理员
+            if(DateSaveManager.getIntance().isJustShou){
+                return true;
+            }
+            DateSaveManager.getIntance().saveXiane(data.groupID,true);
+            return true;
+        } else if(data.type  == MessageDeal.SET_NO_XIANER_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&
+                DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)
+                ){//设置管理员
+            if(DateSaveManager.getIntance().isJustShou){
+                return true;
+            }
+            DateSaveManager.getIntance().saveXiane(data.groupID,false);
+            return true;
         }else if(data.type  == MessageDeal.RECEVI_ZU_INT &&
                 DateSaveManager.getIntance().isHaveGroup(data.groupID) &&
                 DateSaveManager.getIntance().isGuanli(data.TakerId) &&

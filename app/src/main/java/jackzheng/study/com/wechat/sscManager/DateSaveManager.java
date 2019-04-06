@@ -110,6 +110,10 @@ public class DateSaveManager {
         mGroupDate.get(group).yin = yin;
         saveStringDate(+mGroupDate.get(group).index+"yin",mGroupDate.get(group).yin);
     }
+    public void saveXiane(String group,boolean  xiane){
+        mGroupDate.get(group).xianer = xiane;
+        saveStringDate(mGroupDate.get(group).groupID+"xiane",mGroupDate.get(group).xianer);
+    }
 
     public void saveGuanliQun(String guanliqun){
         mGuanliQun = guanliqun;
@@ -200,6 +204,7 @@ public class DateSaveManager {
             editor.remove(group.groupID+"liang").commit();
             editor.remove(group.groupID+"yin").commit();
             editor.remove(group.groupID+"enable").commit();
+            editor.remove(group.groupID+"xiane").commit();
         }
         mGroupDate.clear();
         mIndex = 0;
@@ -209,6 +214,7 @@ public class DateSaveManager {
         editor.remove("maxJie").commit();
         editor.remove("tixing").commit();
         editor.remove("fengliang").commit();
+        editor.remove("baobiao").commit();
 
         mZongQun = null;
         mTixing = null;
@@ -263,6 +269,7 @@ public class DateSaveManager {
                 date.liang = getIntDate(date.groupID+"liang",0);
                 date.yin = getIntDate(date.groupID+"yin",97);
                 date.isEnable = getBooleanDate(date.groupID+"enable");
+                date.xianer = getBooleanDate(date.groupID+"xiane");
                 mGroupDate.put(group,date);
             }
             index ++;
@@ -289,6 +296,7 @@ public class DateSaveManager {
         public int index;
         public String toGroup;
         public int getGroup = 1;
+        public boolean xianer = false;
     }
 
 
