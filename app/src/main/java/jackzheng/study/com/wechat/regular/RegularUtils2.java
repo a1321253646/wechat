@@ -353,7 +353,7 @@ public class RegularUtils2 {
                     if(list.get(i).dec !=null && list.get(i).dec.isXiajiang && !list.get(i).dec.isWuwei){
                         int count = list.get(i).local.size();
                         for(int ii = 0 ; ii< count ;ii++){
-                            list.get(i).local.add(new Integer[]{list.get(i).local.get(i)[1],list.get(i).local.get(i)[0]});
+                            list.get(i).local.add(new Integer[]{list.get(i).local.get(ii)[1],list.get(i).local.get(ii)[0]});
                         }
 
                     }
@@ -428,7 +428,7 @@ public class RegularUtils2 {
             if(list.get(i).dec !=null && list.get(i).dec.isXiajiang && !list.get(i).dec.isWuwei){
                 int count = list.get(i).local.size();
                 for(int ii = 0 ; ii< count ;ii++){
-                    list.get(i).local.add(new Integer[]{list.get(i).local.get(i)[1],list.get(i).local.get(i)[0]});
+                    list.get(i).local.add(new Integer[]{list.get(i).local.get(ii)[1],list.get(i).local.get(ii)[0]});
                 }
 
             }

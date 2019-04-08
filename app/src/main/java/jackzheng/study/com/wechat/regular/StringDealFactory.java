@@ -184,7 +184,7 @@ public class StringDealFactory {
             renyi = "5星";
         }else if(s.contains("全部")){
             renyi = "全部";
-        }else if(s.contains("全位")){
+        }else if(s.contains("全位") && s.contains("奖")){
             renyi = "全位";
         }else if(s.contains("五个位")){
             renyi = "五个位";
@@ -202,6 +202,10 @@ public class StringDealFactory {
         if(s.contains("下奖全")){
             s = s.replace(renyi,"下奖五位");
         }
+        if(s.contains("全位") && !s.contains("奖")){
+            s = s.replace("全位","任意位");
+        }
+
         if(s.contains("五个位") && s.contains("下奖")){
             s = s.replace("五个位","");
             s = s.replace("下奖","下奖五位");
