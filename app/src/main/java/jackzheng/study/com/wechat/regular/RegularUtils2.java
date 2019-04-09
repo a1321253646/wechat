@@ -137,7 +137,7 @@ public class RegularUtils2 {
                     }
 
                     if(bean2.numberCountList.get(0) !=2){
-                        if((stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) ||spile1.contains("-") || spile1.contains("—") || spile1.equals("一") /*|| spile1.equals("。") *//*|| spile1.equals(".")*/){
+                        if((stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) ||spile1.contains("-") || spile1.contains("—") ||spile1.contains("－") || spile1.equals("一") /*|| spile1.equals("。") *//*|| spile1.equals(".")*/){
                             date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
                             date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
                             bean2.mLocalCount.add(0);
@@ -150,7 +150,7 @@ public class RegularUtils2 {
                         if(!date.mHaveGroup ){
                             regu.isTrue = false;
                         }
-                        if( (stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) || spile1.equals("-") || spile1.equals("—")|| spile1.equals("一") ){
+                        if( (stringCount >1 && spile1.equals("/")/* || spile1.equals("，") */) || spile1.equals("-") || spile1.equals("—")|| spile1.equals("一") ||spile1.contains("－")){
                             date.mDataList.add(getIntFormString(bean2.numberList.get(0)));
                             date.mDataList.add(getIntFormString(bean2.numberList.get(1)));
                             bean2.mLocalCount.add(0);

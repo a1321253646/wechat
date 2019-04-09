@@ -156,6 +156,10 @@ public class ServerManager2 {
         if(DateSaveManager.getIntance().isJustShou ){
             return;
         }
+        if(index  > 38 && index < 90){
+            isTime = false;
+            return;
+        }
         String indexNumber =index<10?("00"+index):index<100?("0"+index):""+index;
         String msgRoot="\uE252\uE252 第["+indexNumber+"]届      ：结束\n";
         isTime = false;
@@ -203,7 +207,11 @@ public class ServerManager2 {
     }
 
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
-
+        if(parse.index  > 38 && parse.index < 90){
+            isTime = false;
+            DateSaveManager.getIntance().clearAllGroupFenAndLiang();
+            return;
+        }
         String indexNumber = parse.index<10?("00"+ parse.index):parse.index<100?("0"+parse.index):""+parse.index;
         String msgRoot="\uE12D\uE12D 第["+indexNumber+"]届      开："+parse.str+"\n";
 
@@ -249,6 +257,9 @@ public class ServerManager2 {
                      }else{
                          SscControl.getIntance().sendMessage(  msgRoot+"-------------------\n"+str.toString(), goupID,false);
                      }
+                }
+                if(parse.index == 38){
+                    SscControl.getIntance().sendMessage(  "五分钟后奖清空该群全部分量", goupID,false);
                 }
             }
         }

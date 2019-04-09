@@ -2,13 +2,18 @@ package jackzheng.study.com.wechat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.StringCallback;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import de.robv.android.xposed.XposedBridge;
-import jackzheng.study.com.wechat.regular.StringDealFactory;
+import okhttp3.Call;
 
 
 public class HtmlParse {
@@ -74,56 +79,57 @@ public class HtmlParse {
         }
         return true;
     }
-    public  static MaxIndexResult parseQuite(){
+    private static  MaxIndexResult mGetIndex= null;
+    private static boolean isGetResouce = false;
+    public  static MaxIndexResult parseQuite(final int nowIndex){
+        mGetIndex = null;
+        isGetResouce = false;
         Log.d("zsbin","HtmlParse MaxIndexResult = ");
         MaxIndexResult result = new MaxIndexResult();
         try {
-            Document doc = Jsoup.connect("https://csj.1396j.com/shishicai/?utm=new_csj").get();
-            Elements select = doc.select("table#history.lot-table");
-            //  Log.d("zsbin","select ="+select.toString());
-            for(Element element5 :select){
-                String text = element5.text();
-                int index = text.indexOf("2018", 0);
-                char[] chars = text.toCharArray();
-                StringBuilder build = new StringBuilder();
-                String qishu=null,haoma=null;
-                int count = 0;
-                for(int i =index ;i<chars.length; ){
-                    if(qishu == null &&chars[i]== '-' && i<chars.length -1 && StringDealFactory.isNumber(chars[i+1])){
-                        i++;
-                        while (StringDealFactory.isNumber(chars[i])){
-                            build.append(chars[i]);
-                            i++;
+            OkHttpUtils
+                    .get()
+                    .url("http://156.236.71.178:10086/query?tdsourcetag=s_pctim_aiomsg")
+                    .build()
+                    .execute(new StringCallback()
+                    {
+
+                        @Override
+                        public void onError(Call call, Exception e, int id) {
+                            isGetResouce = true;
                         }
-                        qishu = build.toString();
-                        build = new StringBuilder();
-                    }else if(chars[i] == ' '){
-                        count++;
-                        i++;
-                    }else if(count == 2 && StringDealFactory.isNumber(chars[i])){
-                        for(int ii =0; ii<5 ;ii++ ){
-                            build.append(chars[i]);
-                            if(i < chars.length -2 && chars[i+1] == ' ' && StringDealFactory.isNumber(chars[i+2])){
-                                i= i+2;
-                            }else{
-                                return null;
+
+                        @Override
+                        public void onResponse(String response, int id) {
+                            isGetResouce = true;
+                            try {
+                                JSONObject json = new JSONObject(response);
+                                long index = json.getLong("index");
+                                if(index%1000 == nowIndex){
+                                    MaxIndexResult result = new MaxIndexResult();
+                                    result.index = nowIndex;
+                                    result.str = json.getString("number").replace(",","");
+                                    if(result.index == nowIndex && result.str.length() == 5 && isAllNumber(result.str)){
+                                        mGetIndex = result;
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
                         }
-                        haoma = build.toString();
-                        break;
-                    }else{
-                        i++;
-                    }
-
-                }
-                result.index = Integer.parseInt(qishu);
-                result.str = haoma;
-                return  result;
-            }
+                    });
         }catch(Exception e) {
             e.printStackTrace();
+            isGetResouce = true;
         }
-        return null;
+        while (!isGetResouce){
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return mGetIndex;
     }
 
 

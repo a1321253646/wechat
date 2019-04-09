@@ -2,11 +2,15 @@ package jackzheng.study.com.wechat;
 
 import android.os.Handler;
 
+import com.zhy.http.okhttp.OkHttpUtils;
+
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 import de.robv.android.xposed.XposedBridge;
 import jackzheng.study.com.wechat.sscManager.ServerManager2;
+import okhttp3.OkHttpClient;
 import yaunma.com.myapplication.Tools;
 
 public class SscControl {
@@ -24,13 +28,13 @@ public class SscControl {
     public void kaijaingEnd(HtmlParse.MaxIndexResult parse){
         //TODO 开奖处理
         long delay = getStopTime();
-        if(delay == -1){
+      /*  if(delay == -1){
             mHandler.removeCallbacks(mRequitRun);
             mHandler.postDelayed(mRequitRun,getDelayMs());
-        }else{
+        }else{*/
             mHandler.removeCallbacks(mRequitRun);
             mHandler.postDelayed(mStopRun,delay);
-        }
+       // }
         ServerManager2.getmIntance().kaijiangDeal(parse);
     }
 
@@ -46,14 +50,11 @@ public class SscControl {
                     while(true){
 
                         XposedBridge.log("当前期开奖期数 = "+mCurrentResult.index);
-                        HtmlParse.MaxIndexResult result = HtmlParse.parse(mCurrentResult.index);
+                        HtmlParse.MaxIndexResult result = HtmlParse.parseQuite(mCurrentResult.index);
                         if(result == null){
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }else{
+                            result = HtmlParse.parse(mCurrentResult.index);
+                        }
+                        if(result != null){
                             mCurrentResult = result;
                             kaijaingEnd(mCurrentResult);
                             break;
@@ -169,6 +170,15 @@ public class SscControl {
 
 
     public void init(){
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+//                .addInterceptor(new LoggerInterceptor("TAG"))
+                .connectTimeout(2000L, TimeUnit.MILLISECONDS)
+                .readTimeout(2000L, TimeUnit.MILLISECONDS)
+                //其他配置
+                .build();
+
+        OkHttpUtils.initClient(okHttpClient);
+
         mHandler = new Handler();
         mHandler.post(mTimeRun);
         mHandler.postDelayed(mSendRun,1000);

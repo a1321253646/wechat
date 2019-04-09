@@ -16,7 +16,7 @@ public class StringDealFactory {
     public final static char ALL_SUM_CHAR = '合';
     public final static char COUNT_SIGN_CHAR = '注';
     public final static char KILL_SIGN_CHAR = '杀';
-    private static final char[] ALL_SIGN_LIST = {',','，','.','。','/','、',' ','-','_','—','=','+',':',':','：'};
+    private static final char[] ALL_SIGN_LIST = {',','，','.','。','/','、',' ','-','_','—','=','+',':',':','：','－'};
     private final static String  NEW_SPILE_SIGN = "死";
 
     //目前使用在单组多个位置多注数的情况，合数
