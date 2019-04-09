@@ -32,14 +32,14 @@ public class SscControl {
             mHandler.removeCallbacks(mRequitRun);
             mHandler.postDelayed(mRequitRun,getDelayMs());
         }else{*/
-            mHandler.removeCallbacks(mRequitRun);
+ //           mHandler.removeCallbacks(mRequitRun);
             mHandler.postDelayed(mStopRun,delay);
        // }
         ServerManager2.getmIntance().kaijiangDeal(parse);
     }
 
     HtmlParse.MaxIndexResult mCurrentResult = new HtmlParse.MaxIndexResult();
-    Runnable mRequitRun = new Runnable() {
+  /*  Runnable mRequitRun = new Runnable() {
         @Override
         public void run() {
             mCurrentResult.str = null;
@@ -64,13 +64,13 @@ public class SscControl {
             };
             thread.start();
         }
-    };
+    };*/
     Runnable mStopRun = new Runnable() {
         @Override
         public void run() {
             //TODO 停止下注处理
             mHandler.removeCallbacks(mStopRun);
-            mHandler.postDelayed(mRequitRun,getDelayMs());
+        //    mHandler.postDelayed(mRequitRun,getDelayMs());
             mCurrentResult.index = getIndex();
             ServerManager2.getmIntance().stopDeal(mCurrentResult.index);
         }
@@ -82,14 +82,14 @@ public class SscControl {
                 return;
             }
             long delay = getStopTime();
-            if(delay == -1){
-                mCurrentResult.index = getIndex();
-                mHandler.removeCallbacks(mTimeRun);
-                mHandler.postDelayed(mRequitRun,getDelayMs());
-            }else{
+           // if(delay == -1){
+           //     mCurrentResult.index = getIndex();
+           //     mHandler.removeCallbacks(mTimeRun);
+           //     mHandler.postDelayed(mRequitRun,getDelayMs());
+           // }else{
                 mHandler.removeCallbacks(mTimeRun);
                 mHandler.postDelayed(mStopRun,delay);
-            }
+           // }
         }
     };
 
@@ -143,9 +143,9 @@ public class SscControl {
         int currentS = calendar.get(Calendar.SECOND);
         int currentMs =calendar.get(Calendar.MILLISECOND);
         long time = getTime(currentH, currentM);
-        if(time == 1 && currentS>= 50){
-            return -1;
-        }
+     //   if(time == 1 && currentS>= 50){
+     //       return -1;
+     //   }
         long ms = 0;
         long s = 0;
         if(currentS != 0){

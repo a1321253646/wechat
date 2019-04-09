@@ -50,6 +50,12 @@ public class CommonDeal {
             DateSaveManager.getIntance().saveGuanLiYuan(data.TakerId);
             SscControl.getIntance().sendMessage("添加管理员成功",data.groupID,false);
             return true;
+        } else if(data.type  == MessageDeal.SET_KAI_USER_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isGuanliQun(data.groupID)){//设置管理员
+            DateSaveManager.getIntance().saveKaikaikai(data.TakerId);
+            SscControl.getIntance().sendMessage("添加开开开成功",data.groupID,false);
+            return true;
         } else if(data.type  == MessageDeal.YING_INT &&
                 !TextUtils.isEmpty(data.groupID) &&
                 !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&

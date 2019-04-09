@@ -21,6 +21,7 @@ public class DateSaveManager {
     public  String mFengLiang;
     public  String mZhengque;
     public  String mBaobiao;
+    public  String mKaikaikai;
     public static int mIndex = 0;
     public static int mGuanLiIndex = 0;
     public boolean isJustShou = false;
@@ -131,6 +132,10 @@ public class DateSaveManager {
         mBaobiao = guanliqun;
         saveStringDate("baobiao",guanliqun);
     }
+    public void saveKaikaikai(String guanliqun){
+        mKaikaikai = guanliqun;
+        saveStringDate("kaikaikai",guanliqun);
+    }
     private void saveGroupId(GroupDate group){
 
         saveStringDate("groupId"+group.index,group.groupID);
@@ -215,6 +220,8 @@ public class DateSaveManager {
         editor.remove("tixing").commit();
         editor.remove("fengliang").commit();
         editor.remove("baobiao").commit();
+        editor.remove("kaikaikai").commit();
+        editor.remove("zhengque").commit();
 
         mZongQun = null;
         mTixing = null;
@@ -223,6 +230,7 @@ public class DateSaveManager {
         mFengLiang = null;
         mZhengque = null;
         mBaobiao = null;
+        mKaikaikai = null;
         mMaxJieId = 2;
     }
 
@@ -281,6 +289,7 @@ public class DateSaveManager {
         isFangqun = getBooleanDate("fangqun");
         mZhengque = getStringDate("zhengque");
         mBaobiao = getStringDate("baobiao");
+        mKaikaikai = getStringDate("kaikaikai");
 
     }
 

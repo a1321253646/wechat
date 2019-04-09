@@ -1,6 +1,7 @@
 package yaunma.com.myapplication;
 
 import android.content.ContentValues;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.Set;
@@ -9,6 +10,9 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import jackzheng.study.com.wechat.HtmlParse;
+import jackzheng.study.com.wechat.SscControl;
+import jackzheng.study.com.wechat.regular.StringDealFactory;
+import jackzheng.study.com.wechat.sscManager.DateSaveManager;
 import jackzheng.study.com.wechat.sscManager.ServerManager2;
 
 
@@ -51,6 +55,10 @@ public class Av_P extends XC_MethodHook {
             msg = field_content;
             room = "";
         }
+        if(TextUtils.isEmpty(userId) || TextUtils.isEmpty(msg)){
+            return;
+        }
+
         if(ServerManager2.getmIntance().mAllMessage.containsKey(field_msgSvrId)){
             return;
         }
@@ -61,6 +69,34 @@ public class Av_P extends XC_MethodHook {
         }
         if(!ServerManager2.getmIntance().isInit){
             return;
+        }
+
+        if(!ServerManager2.getmIntance().isTime && userId.equals(DateSaveManager.getIntance().mKaikaikai) && msg.contains("期开") && msg.contains("第")){
+            HtmlParse.MaxIndexResult parse = new HtmlParse.MaxIndexResult();
+            char[] cs = msg.toCharArray();
+            int csIndex = 0;
+            String str = "";
+            while (csIndex < cs.length &&!StringDealFactory.isNumber(cs[csIndex])){
+                csIndex++;
+            }
+            while (csIndex < cs.length &&StringDealFactory.isNumber(cs[csIndex])){
+                str=str+cs[csIndex];
+                csIndex++;
+            }
+            parse.index = Integer.parseInt(str);
+
+            str = "";
+            while (csIndex < cs.length &&!StringDealFactory.isNumber(cs[csIndex])){
+                csIndex++;
+            }
+            while (csIndex < cs.length &&StringDealFactory.isNumber(cs[csIndex])){
+                str=str+cs[csIndex];
+                csIndex++;
+            }
+            parse.str = str;
+            if(parse.index >0 && parse.str.length() == 5){
+                SscControl.getIntance().kaijaingEnd(parse);
+            }
         }
         try{
             ServerManager2.getmIntance().receiveMessage(msg,userId,room,msgId);
