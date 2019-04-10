@@ -207,9 +207,8 @@ public class ServerManager2 {
     }
 
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
-        if(parse.index  > 38 && parse.index < 90){
+        if(parse.index  > 38 && parse.index < 102){
             isTime = false;
-            DateSaveManager.getIntance().clearAllGroupFenAndLiang();
             return;
         }
         String indexNumber = parse.index<10?("00"+ parse.index):parse.index<100?("0"+parse.index):""+parse.index;
@@ -259,10 +258,17 @@ public class ServerManager2 {
                      }
                 }
                 if(parse.index == 38){
-                    SscControl.getIntance().sendMessage(  "五分钟后奖清空该群全部分量", goupID,false);
+                    DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
+                    SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n今日已停潘", goupID,false);
+                    isTime = false;
+                }else if(parse.index == 102){
+                    DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
+                    SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n开始下驻", goupID,false);
+                    isTime = false;
                 }
             }
         }
+        DateSaveManager.getIntance().clearAllGroupFenAndLiang();
         mXiazuMap.clear();
         mAllMessage.clear();
         mAllXiazu.clear();
@@ -393,7 +399,7 @@ public class ServerManager2 {
             for(int i = 0 ;i < sscBeans.size();i++){
                 SscBean bean2 = sscBeans.get(i);
                 XposedBridge.log("bean2 id="+bean2.mId);
-                if(bean2.mId ==id){
+                if(bean2.mId ==id ){
                     DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,true,1,bean2.count);
                     DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,false,2,bean2.count);
                     SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+

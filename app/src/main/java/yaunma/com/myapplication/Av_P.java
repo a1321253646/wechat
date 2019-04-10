@@ -66,6 +66,12 @@ public class Av_P extends XC_MethodHook {
         if (msg.equals("上线")){
             ServerManager2.getmIntance().isInit = true;
             Tools.sendTextToRoom(Tools.mActivity,"已上线",roomId);
+            int index = SscControl.getIntance().getIndex();
+            if(index  > 38 && index < 102){
+                ServerManager2.getmIntance().isTime = false;
+                DateSaveManager.getIntance().clearAllGroupFenAndLiang();
+            }
+            return;
         }
         if(!ServerManager2.getmIntance().isInit){
             return;
