@@ -11,6 +11,7 @@ import de.robv.android.xposed.XposedBridge;
 import jackzheng.study.com.wechat.CommonDeal;
 import jackzheng.study.com.wechat.HtmlParse;
 import jackzheng.study.com.wechat.MessageDeal;
+import jackzheng.study.com.wechat.NetServer;
 import jackzheng.study.com.wechat.SscControl;
 import jackzheng.study.com.wechat.regular.AllXiazuBean;
 import jackzheng.study.com.wechat.regular.DateBean2;
@@ -25,7 +26,7 @@ public class ServerManager2 {
     public long mId = 1;
 
     public int mJieId = 1;
-
+    public long mIssue =0;
 
 //    public ArrayMap<String ,Long > mIdMap = new ArrayMap<>();
     public ArrayMap<Long , Boolean> mAllMessage = new ArrayMap<>();
@@ -207,6 +208,7 @@ public class ServerManager2 {
     }
 
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
+        ServerManager2.getmIntance().mIssue = SscControl.getIntance().getIssue(-1);
         if(parse.index  > 38 && parse.index < 102){
             isTime = false;
             return;
@@ -301,13 +303,11 @@ public class ServerManager2 {
                 SscBean bean2 = sscBeans.get(i);
                 XposedBridge.log("bean2 id="+bean2.mId);
                 if(bean2.msgId ==msgId){
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,true,1,bean2.count);
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
-                                    DateSaveManager.getIntance().getGroup( bean.group).fen,
-                            bean.group,false);
-                    sscBeans.remove(bean2);
-                    mAllXiazu.remove(bean2.mId);
+                    if(DateSaveManager.getIntance().isNet){
+                        NetServer.refund(bean2);
+                    }else{
+                        tuiSuccess(bean2);
+                    }
                     return;
                 }
             }
@@ -363,13 +363,11 @@ public class ServerManager2 {
                 SscBean bean2 = sscBeans.get(i);
                 XposedBridge.log("bean2 id="+bean2.mId);
                 if(bean2.msgId ==msgId){
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,true,1,bean2.count);
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
-                                    DateSaveManager.getIntance().getGroup( bean.group).fen,
-                            bean.group,false);
-                    sscBeans.remove(bean2);
-                    mAllXiazu.remove(bean2.mId);
+                    if(DateSaveManager.getIntance().isNet){
+                        NetServer.refund(bean2);
+                    }else{
+                        tuiSuccess(bean2);
+                    }
                     return;
                 }
             }
@@ -395,17 +393,16 @@ public class ServerManager2 {
         if(mAllXiazu.containsKey(id)){
             XposedBridge.log("mAllXiazu.containsKey id="+id);
             AllXiazuBean bean = mAllXiazu.get(id);
-            ArrayList<SscBean> sscBeans = mXiazuMap.get(bean.group);
+            ArrayList<SscBean> sscBeans = mXiazuMap.get(data.groupID);
             for(int i = 0 ;i < sscBeans.size();i++){
                 SscBean bean2 = sscBeans.get(i);
                 XposedBridge.log("bean2 id="+bean2.mId);
                 if(bean2.mId ==id ){
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,true,1,bean2.count);
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
-                            DateSaveManager.getIntance().getGroup( bean.group).fen,data.groupID,false);
-                    sscBeans.remove(bean2);
-                    mAllXiazu.remove(id);
+                    if(DateSaveManager.getIntance().isNet){
+                        NetServer.refund(bean2);
+                    }else{
+                        tuiSuccess(bean2);
+                    }
                     return;
                 }
             }
@@ -415,7 +412,19 @@ public class ServerManager2 {
         SscControl.getIntance().sendMessage("\uE333["+id+" ]退失败\uE333",data.groupID,false);
     }
 
+    public void  tuiSuccess(SscBean bean2 ){
+        DateSaveManager.getIntance().changeGroupFenOrLiang(bean2.group,true,1,bean2.count);
+        DateSaveManager.getIntance().changeGroupFenOrLiang(bean2.group,false,2,bean2.count);
+        SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
+                DateSaveManager.getIntance().getGroup( bean2.group).fen,bean2.group,false);
+        mXiazuMap.get(bean2.group).remove(bean2);
+        mAllXiazu.remove(bean2.mId);
+    }
+
     private void editDeal(MessageDeal.MessagerDealDate data){
+        if(DateSaveManager.getIntance().isNet){
+            return;
+        }
         long id = -1;
         try{
             String[] strs =data.message.split(MessageDeal.SET_EDIT);
@@ -457,6 +466,7 @@ public class ServerManager2 {
                 bean.msg =message;
                 bean.mId = mId;
                 bean.msgId =msgId;
+                bean.group = groupID;
                 mId++;
                 if(mXiazuMap.containsKey(groupID)){
                     ArrayList<SscBean> mgroupList = mXiazuMap.get(groupID);
@@ -484,6 +494,7 @@ public class ServerManager2 {
             RegularStrBean result = null;
             try {
                 result = RegularUtils2.regularStr(message);
+                bean.isTrue = result.isTrue;
                 if(result != null){
                     dateBean2s = result.list;
                 }
@@ -494,9 +505,9 @@ public class ServerManager2 {
 
             if(dateBean2s == null || dateBean2s.size() < 1){
                 if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                    SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+                    SscControl.getIntance().sendMessage(  ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
                 }else{
-                    SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
+                    SscControl.getIntance().sendMessage(  ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                 }
 
                 return;
@@ -508,9 +519,9 @@ public class ServerManager2 {
                         dateBeanEach.local.size() == 0||
                         dateBeanEach.local.size() != dateBeanEach.mCountList.size() ){
                     if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                        SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+                        SscControl.getIntance().sendMessage(  ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
                     }else{
-                        SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
+                        SscControl.getIntance().sendMessage( ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                     }
 
                     return;
@@ -520,9 +531,9 @@ public class ServerManager2 {
                             tmp.length != 2||
                             tmp[0] <=0 ||  tmp[1] <=0 ||tmp[0] >5 || tmp[1] >5){
                         if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+                            SscControl.getIntance().sendMessage(  ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
                         }else{
-                            SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
+                            SscControl.getIntance().sendMessage( ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                         }
 
                         return;
@@ -531,9 +542,9 @@ public class ServerManager2 {
                 for(Integer tmp : dateBeanEach.mCountList){
                     if(tmp  == null ||tmp <= 0){
                         if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+                            SscControl.getIntance().sendMessage( ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
                         }else{
-                            SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
+                            SscControl.getIntance().sendMessage( ( DateSaveManager.getIntance().isNet?"":"[改"+bean.mId+" ]")+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                         }
 
                         return;
@@ -542,35 +553,43 @@ public class ServerManager2 {
             }
 
             bean.list = dateBean2s;
-            String str = "";
+            bean.issue = mIssue;
             int count  = 0;
-            for(DateBean2 tmp : dateBean2s){
-                count += tmp.allCount;
-                str = str+ tmp.toString()+"\n";
-            }
+
             if( DateSaveManager.getIntance().getGroup(groupID).xianer  && count> DateSaveManager.getIntance().getGroup(groupID).fen ){
                 bean.list= null;
                 SscControl.getIntance().sendMessage( message+"\n\uE333操作失败-积分不足\uE333",groupID,false);
                 return;
             }
-
             bean.count = count;
-
-            DateSaveManager.getIntance().changeGroupFenOrLiang(groupID,true,2,count);
-            DateSaveManager.getIntance().changeGroupFenOrLiang(groupID,false,1,count);
-            String end = "-------------------\n扣"+bean.count+"   剩余"+DateSaveManager.getIntance().getGroup(groupID).fen+"\n退单撤回下注信息或者发送：退"+bean.mId;
-
-            if(!result.isTrue && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
-                SscControl.getIntance().sendMessage(message+"\n--------------\n"+str+end,DateSaveManager.getIntance().mTixing,false);
-
-            }else if(!TextUtils.isEmpty(DateSaveManager.getIntance().mZhengque)){
-                SscControl.getIntance().sendMessage(message+"\n--------------\n"+str+end,DateSaveManager.getIntance().mZhengque,false);
+            if(!DateSaveManager.getIntance().isNet){
+                xiazuSuccess(bean);
             }else{
-                SscControl.getIntance().sendMessage(message+"\n--------------\n"+str+end,groupID,false);
+                NetServer.txtBet(bean);
             }
 
         }else{
             SscControl.getIntance().sendMessage("\uE333操作失败-封潘中\uE333",groupID,false);
+        }
+    }
+
+    public void xiazuFailt(SscBean bean,String msg){
+        SscControl.getIntance().sendMessage( bean.msg+"\n\uE333下驻失败\uE333\n"+msg,bean.group,false);
+    }
+
+    public void xiazuSuccess(SscBean bean){
+
+        DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,true,2,bean.count);
+        DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,false,1,bean.count);
+        String end = "-------------------\n扣"+bean.count+"   剩余"+DateSaveManager.getIntance().getGroup(bean.group).fen+"\n退单撤回下注信息或者发送：退"+bean.mId;
+
+        if(!bean.isTrue && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
+            SscControl.getIntance().sendMessage(bean.msg+"\n--------------\n"+bean.getStr()+end,DateSaveManager.getIntance().mTixing,false);
+
+        }else if(!TextUtils.isEmpty(DateSaveManager.getIntance().mZhengque)){
+            SscControl.getIntance().sendMessage(bean.msg+"\n--------------\n"+bean.getStr()+end,DateSaveManager.getIntance().mZhengque,false);
+        }else{
+            SscControl.getIntance().sendMessage(bean.msg+"\n--------------\n"+bean.getStr()+end,bean.group,false);
         }
     }
 

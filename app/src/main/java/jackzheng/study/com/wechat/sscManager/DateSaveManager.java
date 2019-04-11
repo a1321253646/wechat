@@ -22,6 +22,10 @@ public class DateSaveManager {
     public  String mZhengque;
     public  String mBaobiao;
     public  String mKaikaikai;
+    public  String mToken;
+    public  String mUer;
+    public  String mUrl;
+    public  boolean isNet= false;
     public static int mIndex = 0;
     public static int mGuanLiIndex = 0;
     public boolean isJustShou = false;
@@ -61,6 +65,20 @@ public class DateSaveManager {
             saveStringDate(date.groupID+"fen",0 );
             saveStringDate(date.groupID+"liang",0 );
         }
+    }
+
+    public void saveNet(boolean net){
+        isNet = net;
+        saveStringDate("net",isNet);
+    }
+
+    public void saveNetInfo(String  token,String user,String url){
+        mToken = token;
+        mUer = user;
+        mUrl = url;
+        saveStringDate("user",mUer);
+        saveStringDate("url",mUrl);
+        saveStringDate("token",mToken);
     }
 
     public boolean isGuanliQun(String guanliqun){
@@ -223,6 +241,11 @@ public class DateSaveManager {
         editor.remove("kaikaikai").commit();
         editor.remove("zhengque").commit();
 
+        editor.remove("net").commit();
+        editor.remove("user").commit();
+        editor.remove("url").commit();
+        editor.remove("token").commit();
+
         mZongQun = null;
         mTixing = null;
         isJustShou = false;
@@ -231,6 +254,12 @@ public class DateSaveManager {
         mZhengque = null;
         mBaobiao = null;
         mKaikaikai = null;
+
+        mUer = null;
+        mUrl = null;
+        mToken = null;
+        isNet = false;
+
         mMaxJieId = 2;
     }
 
@@ -290,6 +319,11 @@ public class DateSaveManager {
         mZhengque = getStringDate("zhengque");
         mBaobiao = getStringDate("baobiao");
         mKaikaikai = getStringDate("kaikaikai");
+
+        isNet = getBooleanDate("net");
+        mToken = getStringDate("token");
+        mUrl = getStringDate("url");
+        mUer = getStringDate("user");
 
     }
 

@@ -93,6 +93,21 @@ public class SscControl {
         }
     };
 
+    public long getIssue(int index){
+        Calendar calendar = Calendar.getInstance();
+        StringBuilder str = new StringBuilder();
+        str.append(""+calendar.get(Calendar.YEAR));
+        int tmp =calendar.get(Calendar.MONTH);
+        str.append(tmp> 9?""+ tmp:"0"+tmp);
+        tmp = calendar.get(Calendar.DATE);
+        str.append(tmp> 9?""+ tmp:"0"+tmp);
+        if(index == -1){
+            tmp = getIndex();
+        }
+        str.append(tmp> 9?""+ tmp:"0"+tmp);
+        return Long.parseLong(str.toString());
+    }
+
     public int getIndex(){
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
