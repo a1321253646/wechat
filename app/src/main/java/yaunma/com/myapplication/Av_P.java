@@ -103,6 +103,7 @@ public class Av_P extends XC_MethodHook {
             if(parse.index >0 && parse.str.length() == 5){
                 SscControl.getIntance().kaijaingEnd(parse);
             }
+            return;
         }
         try{
             ServerManager2.getmIntance().receiveMessage(msg,userId,room,msgId);

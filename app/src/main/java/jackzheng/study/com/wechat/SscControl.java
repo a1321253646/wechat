@@ -181,7 +181,7 @@ public class SscControl {
 
         mHandler = new Handler();
         mHandler.post(mTimeRun);
-        mHandler.postDelayed(mSendRun,1000);
+        mHandler.postDelayed(mSendRun,500);
         isInit = true;
     }
 
@@ -189,11 +189,7 @@ public class SscControl {
     Runnable mSendRun = new Runnable() {
         @Override
         public void run() {
-            if(mMessageList.size() > 0){
-                MessageData data =mMessageList.get(0);
-                sendMeassageBy(data.userid,data.msg);
-                mMessageList.remove(0);
-            }
+            sendMessage();
             mHandler.removeCallbacks(mSendRun);
             mHandler.postDelayed(mSendRun,1000);
         }
@@ -204,9 +200,30 @@ public class SscControl {
         if(isNow){
             sendMeassageBy(id,message);
         }else{
-            mMessageList.add(new MessageData(message,id));
+            addMessageList(new MessageData(message,id));
         }
     }
+    Object mMessageLock = new Object();
+    private void addMessageList(MessageData data){
+        synchronized (mMessageLock){
+            mMessageList.add(data);
+        }
+    }
+
+
+    private void sendMessage(){
+        synchronized (mMessageLock){
+            if(mMessageList.size() >0){
+                MessageData data = mMessageList.get(0);
+                sendMeassageBy(data.userid,data.msg);
+                mMessageList.remove(0);
+            }
+
+        }
+    }
+
+
+
 
     public static SscControl mIntance = new SscControl();
     private SscControl(){

@@ -208,7 +208,9 @@ public class RegularUtils2 {
 
         }
         getPai(value);
-        dealDate(value);
+        if(dealDate(value) == null){
+            return null;
+        }
         regu.list = value;
         return regu;
 
@@ -246,7 +248,7 @@ public class RegularUtils2 {
                 continue;
             }else{
                 for(Integer count : date.mCountList){
-                    if(count > 900){
+                    if(count > 800){
                         return null;
                     }
                 }

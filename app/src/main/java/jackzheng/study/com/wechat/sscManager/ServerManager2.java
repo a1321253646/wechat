@@ -92,10 +92,11 @@ public class ServerManager2 {
         if(!haveNumber(data.message)){
             return;
         }
-        if(DateSaveManager.getIntance().getGroup(data.groupID) == null){
+        DateSaveManager.GroupDate groupDate = DateSaveManager.getIntance().getGroup(data.groupID);
+        if(groupDate== null){
             return ;
         }
-        if(!TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(data.groupID).toGroup)){
+        if(!TextUtils.isEmpty(groupDate.toGroup) && DateSaveManager.getIntance().getGroup(groupDate.toGroup).isEnable ){
             String str2 = data.message;
             if(str2.contains("期")){
                 return;
@@ -259,7 +260,8 @@ public class ServerManager2 {
                 }
                 if(parse.index == 38){
                     DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
-                    SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n今日已停潘", goupID,false);
+                    SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n今=/停潘", goupID,false);
+                    DateSaveManager.getIntance().clearAllGroupFenAndLiang();
                     isTime = false;
                 }else if(parse.index == 102){
                     DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
@@ -268,7 +270,7 @@ public class ServerManager2 {
                 }
             }
         }
-        DateSaveManager.getIntance().clearAllGroupFenAndLiang();
+
         mXiazuMap.clear();
         mAllMessage.clear();
         mAllXiazu.clear();
@@ -493,10 +495,9 @@ public class ServerManager2 {
             }
 
             if(dateBean2s == null || dateBean2s.size() < 1){
+                SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                 if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
                     SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-                }else{
-                    SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                 }
 
                 return;
@@ -507,10 +508,11 @@ public class ServerManager2 {
                         dateBeanEach.local == null ||
                         dateBeanEach.local.size() == 0||
                         dateBeanEach.local.size() != dateBeanEach.mCountList.size() ){
+                    SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                     if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
                         SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-                    }else{
-                        SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
+
+
                     }
 
                     return;
@@ -519,21 +521,23 @@ public class ServerManager2 {
                     if(tmp  == null ||
                             tmp.length != 2||
                             tmp[0] <=0 ||  tmp[1] <=0 ||tmp[0] >5 || tmp[1] >5){
+                        SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                         if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
                             SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-                        }else{
-                            SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
+
+
                         }
 
                         return;
                     }
                 }
                 for(Integer tmp : dateBeanEach.mCountList){
+
                     if(tmp  == null ||tmp <= 0){
+                        SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
                         if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
                             SscControl.getIntance().sendMessage(  "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+DateSaveManager.getIntance().getGroup(groupID).groupName+":\n"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-                        }else{
-                            SscControl.getIntance().sendMessage( "[改"+bean.mId+" ]"+(isEdit?( bean.msg+"->"):"")+message+"\n\uE333下驻失败，请修改格式\uE333",groupID,false);
+
                         }
 
                         return;

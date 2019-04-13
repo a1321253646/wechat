@@ -9,12 +9,12 @@ public class MessageDeal {
 
     public static final String QUN_KAI_STR = "开";
     public static final String TING_STR = "关";
-    public static final String SHANG_FEN_STR = "分上";
-    public static final String XIA_FEN_STR = "分下";
-    public static final String SHE_FEN_STR = "分设";
-    public static final String SHANG_LIANG_STR = "量上";
-    public static final String XIA_LIANG__STR = "量下";
-    public static final String SHE_LIANG__STR = "量设";
+    public static final String SHANG_FEN_STR = "上分";
+    public static final String XIA_FEN_STR = "下分";
+    public static final String SHE_FEN_STR = "设分";
+    public static final String SHANG_LIANG_STR = "上量";
+    public static final String XIA_LIANG__STR = "下量";
+    public static final String SHE_LIANG__STR = "设量";
     public static final String GUAN_LI_STR = "馆里";
     public static final String YING_STR = "赢";
     public static final String CHECK_STR = "查";

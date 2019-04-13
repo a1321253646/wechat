@@ -187,8 +187,10 @@ public class StringDealFactory2 {
         }
 
 
-        if(s.contains("5位") && s.contains("奖")){
+        if(s.contains("5位") && s.contains("奖")) {
             renyi = "5位";
+        }else  if(s.contains("全位") && s.contains("奖")){
+            renyi = "全位";
         }else if(s.contains("5个位") ){
             renyi = "5个位";
         }else if(s.contains("5星")){
@@ -210,6 +212,8 @@ public class StringDealFactory2 {
             renyi = "全位";
         }else if(s.contains("任意位") ){
             renyi = "任意位";
+        }else if(s.contains("任意") ){
+            renyi = "任意";
         }
         if(renyi != null){
             s = s.replace(renyi,"任二");

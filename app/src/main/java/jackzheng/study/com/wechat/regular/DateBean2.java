@@ -75,8 +75,8 @@ public class DateBean2 {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         boolean isHaceDec = false;
-        if(dec != null){
-            if(dec.isWuwei){
+/*         if(dec != null){
+           if(dec.isWuwei){
                 builder.append("全位");
                 getOtherLoc(local,false,builder);
                 isHaceDec = true;
@@ -85,13 +85,13 @@ public class DateBean2 {
                 getOtherLoc(local,true,builder);
                 isHaceDec = true;
             }
-        }
-        if(!isHaceDec){
+        }*/
+//        if(!isHaceDec){
             boolean isFirstrLoc = true;
             int leng = local.size();
-            if(dec != null && dec.isXiajiang){
-                leng = leng/2;
-            }
+        //    if(dec != null && dec.isXiajiang){
+        //        leng = leng/2;
+        //    }
             for(int i = 0; i< leng ;i++){
                 Integer[] loc = local.get(i);
                 if(!isFirstrLoc){
@@ -102,10 +102,10 @@ public class DateBean2 {
                 builder.append(StringDealFactory.LOCAL_REPALCE[loc[0]-1]+""+StringDealFactory.LOCAL_REPALCE[loc[1]-1]);
             }
 
-        }
+  //      }
         builder.append(":");
-        isHaceDec = false;
-        if(dec != null){
+   //     isHaceDec = false;
+   /*     if(dec != null){
             if(dec.isXiajiang){
                 builder.append(dec.xiajiangNumber+"下奖");
                 isHaceDec = true;
@@ -119,9 +119,9 @@ public class DateBean2 {
                 builder.append("合单");
                 isHaceDec = true;
             }
-        }
-        if(!isHaceDec){
-            boolean isFirstrLoc = true;
+        }*/
+//        if(!isHaceDec){
+            isFirstrLoc = true;
             if(mDataList.size() >0){
                 for(int i = 0;i <mDataList.size() ;i++){
                     ArrayList<Integer> ss = mDataList.get(i);
@@ -142,8 +142,9 @@ public class DateBean2 {
                     builder.append(""+data[0]+data[1]);
                 }
             }
-        }
-        if((dec == null || (!dec.isHeDang && !dec.isHeChuang))&&isHe != null){
+ //       }
+    //    if((dec == null || (!dec.isHeDang && !dec.isHeChuang))&&isHe != null){
+        if(isHe != null){
             builder.append((isHe?"":"不")+"合");
             for(Integer number : heNumber){
                 builder.append(number);
@@ -171,7 +172,7 @@ public class DateBean2 {
         if(isAllSome){
             builder.append(""+c);
         }else{
-            boolean isFirstrLoc = true;
+            isFirstrLoc = true;
             for(Integer count : mCountList ){
                 if(isFirstrLoc){
                     isFirstrLoc = false;
