@@ -1,6 +1,7 @@
 package jackzheng.study.com.wechat;
 
 import android.os.Handler;
+import android.util.ArrayMap;
 
 import com.zhy.http.okhttp.OkHttpUtils;
 
@@ -18,6 +19,8 @@ public class SscControl {
     private Handler mHandler;
 
     public boolean isInit = false;
+
+
 
 
     public void sendMeassageBy(String id,String str){
@@ -161,7 +164,7 @@ public class SscControl {
             }
             ms = 1000 - currentMs;
         }
-        s = s- 10;
+        s = s- 15;
         long delay =  time * 60000 + s * 1000 + ms;
         XposedBridge.log("mymsg time="+time+" s="+s+" ms="+ms);
         XposedBridge.log("mymsg stop = "+delay);

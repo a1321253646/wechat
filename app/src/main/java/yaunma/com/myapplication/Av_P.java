@@ -55,6 +55,8 @@ public class Av_P extends XC_MethodHook {
             msg = field_content;
             room = "";
         }
+
+
         if(TextUtils.isEmpty(userId) || TextUtils.isEmpty(msg)){
             return;
         }
