@@ -26,6 +26,8 @@ public class ServerManager2 {
 
     public int mJieId = 1;
 
+    public final static int OPEN_INDEX = 42;
+
 
 //    public ArrayMap<String ,Long > mIdMap = new ArrayMap<>();
     public ArrayMap<Long , Boolean> mAllMessage = new ArrayMap<>();
@@ -96,39 +98,40 @@ public class ServerManager2 {
         if(groupDate== null){
             return ;
         }
+        String str2 = data.message;
+        if(str2.contains("期")){
+            return;
+        }else if(str2.contains("补")){
+            //   if(str2.contains("+")|| str2.contains("-")|| str2.contains("一")|| str2.contains("—")){
+            return;
+            // }
+        }else if(str2.contains("量")){
+            return;
+        }else if(str2.contains("减")){
+            return;
+        }else if(str2.startsWith("中")){
+            str2 = str2.replace("中","");
+        }else if(str2.startsWith("下")){
+            str2 = str2.replace("下","");
+        }else if(str2.startsWith("上")){
+            str2 = str2.replace("上","");
+        }else if(str2.startsWith("十")){
+            str2 = str2.replace("十","");
+        }else if(str2.startsWith("+")){
+            str2 = str2.replace("+","");
+        }else if(str2.startsWith("-")){
+            str2 = str2.replace("-","");
+        }else if(str2.startsWith("一")){
+            str2 = str2.replace("一","");
+        }
+
+        if(isAllNumber(str2)){
+            return;
+        }
+
         if(!TextUtils.isEmpty(groupDate.toGroup) && DateSaveManager.getIntance().getGroup(groupDate.toGroup).isEnable ){
-            String str2 = data.message;
-            if(str2.contains("期")){
-                return;
-            }else if(str2.contains("补")){
-             //   if(str2.contains("+")|| str2.contains("-")|| str2.contains("一")|| str2.contains("—")){
-                    return;
-               // }
-            }else if(str2.contains("量")){
-                return;
-            }else if(str2.contains("减")){
-                return;
-            }else if(str2.startsWith("中")){
-                str2 = str2.replace("中","");
-            }else if(str2.startsWith("下")){
-                str2 = str2.replace("下","");
-            }else if(str2.startsWith("上")){
-                str2 = str2.replace("上","");
-            }else if(str2.startsWith("十")){
-                str2 = str2.replace("十","");
-            }else if(str2.startsWith("+")){
-                str2 = str2.replace("+","");
-            }else if(str2.startsWith("-")){
-                str2 = str2.replace("-","");
-            }else if(str2.startsWith("一")){
-                str2 = str2.replace("一","");
-            }
 
 
-
-            if(isAllNumber(str2)){
-                return;
-            }
             SscControl.getIntance().sendMessage(data.message,DateSaveManager.getIntance().getGroup(data.groupID).toGroup,false);
             if(DateSaveManager.getIntance().isJustShou){
 
@@ -157,10 +160,10 @@ public class ServerManager2 {
         if(DateSaveManager.getIntance().isJustShou ){
             return;
         }
-    /*    if(index  > 38 && index < 90){
+        if(index  > 38 && index <= OPEN_INDEX){
             isTime = false;
             return;
-        }*/
+        }
         String indexNumber =index<10?("00"+index):index<100?("0"+index):""+index;
         String msgRoot="\uE252\uE252 第["+indexNumber+"]届      ：结束\n";
         isTime = false;
@@ -208,10 +211,10 @@ public class ServerManager2 {
     }
 
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
- /*       if(parse.index  > 38 && parse.index < 102){
+        if(parse.index  > 38 && parse.index < OPEN_INDEX){
             isTime = false;
             return;
-        }*/
+        }
         String indexNumber = parse.index<10?("00"+ parse.index):parse.index<100?("0"+parse.index):""+parse.index;
         String msgRoot="\uE12D\uE12D 第["+indexNumber+"]届      开："+parse.str+"\n";
 
@@ -263,10 +266,10 @@ public class ServerManager2 {
                     SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n今日停潘", goupID,false);
                     DateSaveManager.getIntance().clearAllGroupFenAndLiang();
                     isTime = false;
-                }else if(parse.index == 102){
+                }else if(parse.index == OPEN_INDEX){
                     DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
                     SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n开始下驻", goupID,false);
-                    isTime = false;
+                    isTime = true;
                 }
             }
         }
@@ -275,7 +278,9 @@ public class ServerManager2 {
         mAllMessage.clear();
         mAllXiazu.clear();
         mId = 1;
-        isTime = true;
+        if(parse.index != 38){
+            isTime = true;
+        }
     }
     public void tuiDeal(String msg){
         AllXiazuBean bean = null;
@@ -397,20 +402,23 @@ public class ServerManager2 {
         if(mAllXiazu.containsKey(id)){
             XposedBridge.log("mAllXiazu.containsKey id="+id);
             AllXiazuBean bean = mAllXiazu.get(id);
-            ArrayList<SscBean> sscBeans = mXiazuMap.get(bean.group);
-            for(int i = 0 ;i < sscBeans.size();i++){
-                SscBean bean2 = sscBeans.get(i);
-                XposedBridge.log("bean2 id="+bean2.mId);
-                if(bean2.mId ==id ){
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,true,1,bean2.count);
-                    DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
-                            DateSaveManager.getIntance().getGroup( bean.group).fen,data.groupID,false);
-                    sscBeans.remove(bean2);
-                    mAllXiazu.remove(id);
-                    return;
+            ArrayList<SscBean> sscBeans = mXiazuMap.get(data.groupID);
+            if(sscBeans != null){
+                for(int i = 0 ;i < sscBeans.size();i++){
+                    SscBean bean2 = sscBeans.get(i);
+                    XposedBridge.log("bean2 id="+bean2.mId);
+                    if(bean2.mId ==id ){
+                        DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,true,1,bean2.count);
+                        DateSaveManager.getIntance().changeGroupFenOrLiang(data.groupID,false,2,bean2.count);
+                        SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
+                                DateSaveManager.getIntance().getGroup( bean.group).fen,data.groupID,false);
+                        sscBeans.remove(bean2);
+                        mAllXiazu.remove(id);
+                        return;
+                    }
                 }
             }
+
         }else{
             XposedBridge.log("! mAllXiazu.containsKey id="+id);
         }
@@ -430,7 +438,13 @@ public class ServerManager2 {
         }
         if(mAllXiazu.containsKey(id)){
             AllXiazuBean bean = mAllXiazu.get(id);
+            if(TextUtils.isEmpty(bean.group) || !bean.group.equals(data.groupID)){
+                SscControl.getIntance().sendMessage(  "\uE333改"+id+" 失败\uE333", data.groupID,false);
+                return;
+            }
             xiazhu(data.message,bean.group,bean.date.msgId,id);
+        }else{
+            SscControl.getIntance().sendMessage(  "\uE333改"+id+" 失败\uE333", data.groupID,false);
         }
 
 
@@ -475,7 +489,8 @@ public class ServerManager2 {
             }else{
                 if(mAllXiazu.containsKey(id)){
                     isEdit = true;
-                    bean = mAllXiazu.get(id).date;
+                    AllXiazuBean xiazuBean = mAllXiazu.get(id);
+                    bean =xiazuBean.date;
                 }else{
                     SscControl.getIntance().sendMessage(  "\uE333改"+id+" 失败\uE333", groupID,false);
                     return;
