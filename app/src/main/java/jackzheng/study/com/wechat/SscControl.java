@@ -164,7 +164,7 @@ public class SscControl {
             }
             ms = 1000 - currentMs;
         }
-        s = s- 10;
+        s = s- 12;
         long delay =  time * 60000 + s * 1000 + ms;
         XposedBridge.log("mymsg time="+time+" s="+s+" ms="+ms);
         XposedBridge.log("mymsg stop = "+delay);

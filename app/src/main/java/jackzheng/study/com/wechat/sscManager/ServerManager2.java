@@ -26,7 +26,7 @@ public class ServerManager2 {
 
     public int mJieId = 1;
 
-    public final static int OPEN_INDEX = 42;
+    public final static int OPEN_INDEX = 107;
 
 
 //    public ArrayMap<String ,Long > mIdMap = new ArrayMap<>();
