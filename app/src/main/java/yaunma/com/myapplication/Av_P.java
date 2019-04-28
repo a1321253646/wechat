@@ -2,6 +2,7 @@ package yaunma.com.myapplication;
 
 import android.content.ContentValues;
 import android.text.TextUtils;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import java.util.Set;
@@ -69,9 +70,17 @@ public class Av_P extends XC_MethodHook {
             ServerManager2.getmIntance().isInit = true;
             Tools.sendTextToRoom(Tools.mActivity,"已上线",roomId);
             int index = SscControl.getIntance().getIndex();
+            ArrayMap<String, DateSaveManager.GroupDate> all = DateSaveManager.getIntance().getAllGroup();
             if(index  > 38 && index < ServerManager2.OPEN_INDEX){
-                ServerManager2.getmIntance().isTime = false;
+
+                for(String g : all.keySet()){
+                    all.get(g).isIntime = false;
+                }
                 DateSaveManager.getIntance().clearAllGroupFenAndLiang();
+            }else{
+                for(String g : all.keySet()){
+                    all.get(g).isIntime = true;
+                }
             }
             return;
         }
@@ -79,7 +88,7 @@ public class Av_P extends XC_MethodHook {
             return;
         }
 
-        if(!ServerManager2.getmIntance().isTime && userId.equals(DateSaveManager.getIntance().mKaikaikai) && msg.contains("期开") && msg.contains("第")){
+        if(userId.equals(DateSaveManager.getIntance().mKaikaikai) && msg.contains("期开") && msg.contains("第")){
             HtmlParse.MaxIndexResult parse = new HtmlParse.MaxIndexResult();
             char[] cs = msg.toCharArray();
             int csIndex = 0;

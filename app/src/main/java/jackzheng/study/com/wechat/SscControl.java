@@ -75,7 +75,7 @@ public class SscControl {
             mHandler.removeCallbacks(mStopRun);
         //    mHandler.postDelayed(mRequitRun,getDelayMs());
             mCurrentResult.index = getIndex();
-            ServerManager2.getmIntance().stopDeal(mCurrentResult.index);
+            ServerManager2.getmIntance().stopDeal(mCurrentResult.index,null);
         }
     };
     Runnable mTimeRun  = new Runnable() {
@@ -164,7 +164,7 @@ public class SscControl {
             }
             ms = 1000 - currentMs;
         }
-        s = s- 12;
+        s = s- 14;
         long delay =  time * 60000 + s * 1000 + ms;
         XposedBridge.log("mymsg time="+time+" s="+s+" ms="+ms);
         XposedBridge.log("mymsg stop = "+delay);
@@ -194,7 +194,7 @@ public class SscControl {
         public void run() {
             sendMessage();
             mHandler.removeCallbacks(mSendRun);
-            mHandler.postDelayed(mSendRun,1000);
+            mHandler.postDelayed(mSendRun,3000);
         }
     };
     ArrayList<MessageData> mMessageList = new ArrayList<>();

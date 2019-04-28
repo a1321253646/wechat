@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import de.robv.android.xposed.XposedBridge;
+
 
 public class StringDealFactory2 {
 
@@ -151,7 +153,9 @@ public class StringDealFactory2 {
     }
     private static String repalaceFrist(String s){
         String renyi = null;
-
+        if(s.contains("包")){
+            s = s.replace("包","五位下奖");
+        }
         if(s.contains("球")){
             s = s.replace("球","位");
         }
@@ -173,6 +177,7 @@ public class StringDealFactory2 {
         if(s.contains("奖") && s.contains("字")){
             s = s.replace("字","");
         }
+
         if(s.contains("，")){
             s = s.replace("，","\n");
         }
@@ -224,7 +229,7 @@ public class StringDealFactory2 {
         }else if(s.contains("合双")){
             s = s.replace("合双","合02468囲");
         }
-
+        XposedBridge.log("repalaceFrist = "+s);
         return s;
     }
 

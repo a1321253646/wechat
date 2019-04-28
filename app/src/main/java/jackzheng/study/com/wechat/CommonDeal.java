@@ -139,6 +139,10 @@ public class CommonDeal {
                 TextUtils.isEmpty(data.groupID)){
             DateSaveManager.getIntance().saveJustShou();
             return true;
+        }else if(data.type == MessageDeal.SET_BEIYONG_INT &&
+                TextUtils.isEmpty(data.groupID)){
+            DateSaveManager.getIntance().saveBeiyong();
+            return true;
         }else if(data.type == MessageDeal.SET_FANG_QUN_INT &&
                 TextUtils.isEmpty(data.groupID)){
             DateSaveManager.getIntance().saveFangqun();
@@ -188,10 +192,14 @@ public class CommonDeal {
             return true;
         }else if(data.type == MessageDeal.SET_YUANQUN_CEXIAO_NT &&
                 !TextUtils.isEmpty(data.groupID) &&
-                DateSaveManager.getIntance().isHaveGroup(data.groupID)){
+                DateSaveManager.getIntance().isHaveGroup(data.groupID)
+                ){
             try {
-                String fen = data.message.replace(MessageDeal.SET_YUANQUN_CEXIAO,"");
-                ServerManager2.getmIntance().tuiDeal(fen);
+                if(DateSaveManager.getIntance().getGroup(data.groupID).isIntime){
+                    String fen = data.message.replace(MessageDeal.SET_YUANQUN_CEXIAO,"");
+                    ServerManager2.getmIntance().tuiDeal(fen);
+                }
+
             }catch (Exception e){
 
             }

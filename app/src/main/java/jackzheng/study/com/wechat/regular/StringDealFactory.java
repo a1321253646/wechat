@@ -5,6 +5,8 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import de.robv.android.xposed.XposedBridge;
+
 
 public class StringDealFactory {
 
@@ -171,10 +173,14 @@ public class StringDealFactory {
     }
     private static String repalaceFrist(String s){
         String renyi = null;
-
+        if(s.contains("包")){
+            s = s.replace("包","五位下奖");
+        }
         if(s.contains("球")){
             s = s.replace("球","位");
         }
+
+
 
         if(s.contains("5位") && s.contains("奖")){
             renyi = "5位";
@@ -229,7 +235,6 @@ public class StringDealFactory {
             if(count == 0){
                 s = "1234567890"+s;
             }
-
         }
 
         if(s.contains("任选二")){
@@ -340,6 +345,7 @@ public class StringDealFactory {
     private static String weirdReplace(String str){
         StringBuilder value = new StringBuilder();
         char[] cs = str.toCharArray();
+        boolean isHasNumber = false;
         for(int i = 0; i<cs.length ;){
             if(cs[i] == NEW_LOCAL_CHAR ){
                 StringBuilder value2 = new StringBuilder();
@@ -370,6 +376,13 @@ public class StringDealFactory {
                     //   i++;
                 }
             }else{
+                if(!isHasNumber){
+                    if(isNumber(cs[i])){
+                        isHasNumber = true;
+                    }else if(isNo(cs[i])){
+                        cs[i] = '杀';
+                    }
+                }
                 value.append(cs[i]);
                 i++;
             }
@@ -509,6 +522,9 @@ public class StringDealFactory {
             }else if(cs[i] == '共') {
                 builder.append(StringDealFactory.NEW_SPLIE_CHAR);
                 i++;
+                while (i < cs.length && cs[i]== ' ' ) {
+                    i++;
+                }
                 while (i < cs.length && StringDealFactory.isNumber(cs[i])) {
                     i++;
                 }
@@ -520,6 +536,20 @@ public class StringDealFactory {
                 yuanindex--;
                 builder.delete( builder.length() - yuanindex , builder.length());
                 builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+            }else if(cs[i]== '（' ||cs[i]== '(') {
+                builder.append(cs[i]);
+                int yuanindex = 1;
+                while (i+ yuanindex<cs.length && cs[i+yuanindex] != ')' && cs[i+yuanindex]!= '）') {
+                    builder.append(cs[i+yuanindex]);
+                    yuanindex++;
+                }
+                i = i+yuanindex;
+                if( cs[i] == ')' || cs[i]== '）'){
+                    builder.append(cs[i]);
+                    builder.delete( builder.length() - yuanindex -1 , builder.length());
+                    builder.append(StringDealFactory.NEW_SPLIE_CHAR);
+                }
+
             }else if(cs[i] == '下'){
 
                 if(i< cs.length-1 && cs[i+1]== '奖' ){
@@ -540,6 +570,7 @@ public class StringDealFactory {
             }
         }
         bean.str =  builder.toString();
+        XposedBridge.log("bean.str  ==="+bean.str );
         return builder.toString();
     }
 
