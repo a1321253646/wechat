@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import java.sql.DatabaseMetaData;
 import java.util.Set;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -68,7 +69,13 @@ public class Av_P extends XC_MethodHook {
         ServerManager2.getmIntance().mAllMessage.put(field_msgSvrId,true);
         if (msg.equals("上线")){
             ServerManager2.getmIntance().isInit = true;
-            Tools.sendTextToRoom(Tools.mActivity,"已上线",roomId);
+            String text = "";
+            if(DateSaveManager.getIntance().isJustShou){
+                text = "已上线";
+            }else{
+                text = "解已上线";
+            }
+            Tools.sendTextToRoom(Tools.mActivity,text,roomId);
             int index = SscControl.getIntance().getIndex();
             ArrayMap<String, DateSaveManager.GroupDate> all = DateSaveManager.getIntance().getAllGroup();
             if(index  > 38 && index < ServerManager2.OPEN_INDEX){
@@ -84,35 +91,63 @@ public class Av_P extends XC_MethodHook {
             }
             return;
         }
+
+        if(!DateSaveManager.getIntance().isJustShou && msg.equals("解已上线") && !TextUtils.isEmpty(room) && DateSaveManager.getIntance().isGuanliQun(room)){
+            if(!ServerManager2.getmIntance().mIgnoeList.containsKey(userId)){
+                ServerManager2.getmIntance().mIgnoeList.put(userId,true);
+            }
+            return;
+        }
+
+        if(ServerManager2.getmIntance().mIgnoeList.size() > 0 &&  ServerManager2.getmIntance().mIgnoeList.containsKey(userId)){
+            return;
+        }
+
         if(!ServerManager2.getmIntance().isInit){
             return;
         }
 
-        if(userId.equals(DateSaveManager.getIntance().mKaikaikai) && msg.contains("期开") && msg.contains("第")){
-            HtmlParse.MaxIndexResult parse = new HtmlParse.MaxIndexResult();
-            char[] cs = msg.toCharArray();
-            int csIndex = 0;
-            String str = "";
-            while (csIndex < cs.length &&!StringDealFactory.isNumber(cs[csIndex])){
-                csIndex++;
-            }
-            while (csIndex < cs.length &&StringDealFactory.isNumber(cs[csIndex])){
-                str=str+cs[csIndex];
-                csIndex++;
-            }
-            parse.index = Integer.parseInt(str);
+        if(msg.contains("期开") && msg.contains("第")){
+            if(userId.equals(DateSaveManager.getIntance().mKaikaikai)||
+                    (!TextUtils.isEmpty(room) && DateSaveManager.getIntance().isHaveGroup(room))){
 
-            str = "";
-            while (csIndex < cs.length &&!StringDealFactory.isNumber(cs[csIndex])){
-                csIndex++;
-            }
-            while (csIndex < cs.length &&StringDealFactory.isNumber(cs[csIndex])){
-                str=str+cs[csIndex];
-                csIndex++;
-            }
-            parse.str = str;
-            if(parse.index >0 && parse.str.length() == 5){
-                SscControl.getIntance().kaijaingEnd(parse);
+                HtmlParse.MaxIndexResult parse = new HtmlParse.MaxIndexResult();
+                char[] cs = msg.toCharArray();
+                int csIndex = 0;
+                String str = "";
+                while (csIndex < cs.length &&!StringDealFactory.isNumber(cs[csIndex])){
+                    csIndex++;
+                }
+                while (csIndex < cs.length &&StringDealFactory.isNumber(cs[csIndex])){
+                    str=str+cs[csIndex];
+                    csIndex++;
+                }
+                parse.index = Integer.parseInt(str);
+
+                str = "";
+                while (csIndex < cs.length &&!StringDealFactory.isNumber(cs[csIndex])){
+                    csIndex++;
+                }
+                while (csIndex < cs.length &&StringDealFactory.isNumber(cs[csIndex])){
+                    str=str+cs[csIndex];
+                    csIndex++;
+                }
+                parse.str = str;
+                if(parse.index >0 && parse.index<300 && parse.str.length() == 5 ){
+                    if(DateSaveManager.getIntance().isJustShou &&
+                            DateSaveManager.getIntance().isHaveGroup(room) &&
+                            DateSaveManager.getIntance().getGroup(room).isEnable &&
+                            !TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(room).toGroup) &&
+                            DateSaveManager.getIntance().getGroup(DateSaveManager.getIntance().getGroup(room).toGroup).isEnable
+                            ){
+                        SscControl.getIntance().sendMessage(msg,DateSaveManager.getIntance().getGroup(room).toGroup,false);
+                    }
+
+                    if(ServerManager2.getmIntance().mOpenIndex != parse.index){
+                        SscControl.getIntance().kaijaingEnd(parse);
+
+                    }
+                }
             }
             return;
         }

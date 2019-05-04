@@ -579,7 +579,7 @@ public class RegularUtils2 {
                     if (local[0] != -1 && local[1] != -1) {
                         i = i + 3;
                         deal.mLocal.add(local);
-                        // XposedBridge.log("  .add(local) = "+  local[0]+","+local[1] );
+                         XposedBridge.log("  .add(local) = "+  local[0]+","+local[1] );
                     }
                     int count = 0;
                     while (i < cs.length && StringDealFactory.chinaToNumber(cs[i]) != -1) {
@@ -588,7 +588,7 @@ public class RegularUtils2 {
                     }
                     if (count != 0) {
                         deal.mLocalCount.add(count);
-                        // XposedBridge.log("  .add(count) = "+  count );
+                         XposedBridge.log("  .add(count) = "+  count );
                     }
 
 
