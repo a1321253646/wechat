@@ -24,7 +24,10 @@ public class SscControl {
 
 
     public void sendMeassageBy(String id,String str){
-        Tools.sendTextToRoom(Tools.mActivity,str,id);
+
+        if(ServerManager2.getmIntance().isWork){
+            Tools.sendTextToRoom(Tools.mActivity,str,id);
+        }
 
     }
 

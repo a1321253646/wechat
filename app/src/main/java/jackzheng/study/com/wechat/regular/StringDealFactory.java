@@ -166,6 +166,7 @@ public class StringDealFactory {
             StringDealBean.StringSimpleDealBean bean = result.get(i);
             repalace(bean);
             bean.str = weirdReplace(bean.str);
+            bean.str = shaReplace(bean.str);
             Log.d("zsbin","repalace:str ="+bean.str);
 
         }
@@ -216,7 +217,9 @@ public class StringDealFactory {
             s = s.replace("五个位","");
             s = s.replace("下奖","下奖五位");
         }
-
+        if(s.contains("除双重")){
+            s = s.replace("除双重","排");
+        }
         if(s.contains("任二")){
             s = s.replace("任二","任意位");
         }else if(s.contains("任位")){
@@ -376,20 +379,32 @@ public class StringDealFactory {
                     //   i++;
                 }
             }else{
-                if(!isHasNumber){
-                    if(isNumber(cs[i])){
-                        isHasNumber = true;
-                    }else if(isNo(cs[i])){
-                        cs[i] = '杀';
-                    }
-                }
                 value.append(cs[i]);
                 i++;
             }
         }
         return value.toString();
-
     }
+
+    private static String shaReplace(String str){
+        StringBuilder value = new StringBuilder();
+        char[] cs = str.toCharArray();
+        boolean isHasNumber = false;
+        for(int i = 0; i<cs.length ;){
+            if(!isHasNumber){
+                if(isNumber(cs[i])){
+                    isHasNumber = true;
+                }else if(isNo(cs[i])){
+                    cs[i] = '杀';
+                    isHasNumber = true;
+                }
+            }
+            value.append(cs[i]);
+            i++;
+        }
+        return value.toString();
+    }
+
 
 
     //特殊字符替代

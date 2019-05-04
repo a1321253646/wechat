@@ -184,6 +184,17 @@ public class CommonDeal {
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
             DateSaveManager.getIntance().clearAll();
             return true;
+        }else if(data.type == MessageDeal.SET_WORK_START_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)){
+            ServerManager2.getmIntance().isWork = true;
+            DateSaveManager.getIntance().clearAllGroupFenAndLiang();
+            return true;
+        }else if(data.type == MessageDeal.SET_WORK_END_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)){
+            ServerManager2.getmIntance().isWork = false;
+            return true;
         }else if(data.type == MessageDeal.SET_YUANQUN_CEXIAO_NT &&
                 !TextUtils.isEmpty(data.groupID) &&
                 DateSaveManager.getIntance().isHaveGroup(data.groupID)

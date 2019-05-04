@@ -22,12 +22,16 @@ import yaunma.com.myapplication.Av_P;
 public class ServerManager2 {
   //  public boolean isTime = true;
     public boolean isInit = false;
+    public boolean isWork = false;
+
     public ArrayMap<String , ArrayList<SscBean> > mXiazuMap = new ArrayMap<>();
+    public ArrayMap<String , Boolean > mIgnoeList = new ArrayMap<>();
     public long mId = 1;
 
     public int mJieId = 1;
 
     public final static int OPEN_INDEX = 107;
+    public int mOpenIndex = -1;
 
 
 //    public ArrayMap<String ,Long > mIdMap = new ArrayMap<>();
@@ -118,7 +122,9 @@ public class ServerManager2 {
             return;
         }else if(str2.contains("减")){
             return;
-        }else if(str2.startsWith("中")){
+        }else if(str2.startsWith("中") || str2.startsWith("仲") ){
+            return;
+        }else if(str2.contains("剩余") ){
             return;
         }else if(str2.startsWith("下")){
             str2 = str2.replace("下","");
@@ -246,6 +252,8 @@ public class ServerManager2 {
                 }else{
                     SscControl.getIntance().sendMessage(  str.toString(),
                             goupID,false);
+                    SscControl.getIntance().sendMessage(  "下"+count+" 量"+DateSaveManager.getIntance().getGroup(goupID).liang,
+                            goupID,false);
                 }
             }
             if(!isAll &&goupID.equals(group)){
@@ -255,6 +263,7 @@ public class ServerManager2 {
     }
 
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
+        ServerManager2.getmIntance().mOpenIndex = parse.index;
         if(parse.index  > 38 && parse.index < OPEN_INDEX){
             ArrayMap<String, DateSaveManager.GroupDate> all = DateSaveManager.getIntance().getAllGroup();
             for(String g : all.keySet()){
@@ -262,6 +271,7 @@ public class ServerManager2 {
             }
             return;
         }
+
         String indexNumber = parse.index<10?("00"+ parse.index):parse.index<100?("0"+parse.index):""+parse.index;
         String msgRoot="\uE12D\uE12D 第["+indexNumber+"]届      开："+parse.str+"\n";
 
@@ -313,6 +323,8 @@ public class ServerManager2 {
 
                      }else{
                          SscControl.getIntance().sendMessage(  msgRoot+"-------------------\n"+str.toString(), goupID,false);
+                         SscControl.getIntance().sendMessage(  "共中"+(count/yin)+",剩余 "+DateSaveManager.getIntance().getGroup(goupID).fen,
+                                 goupID,false);
                      }
                 }
                 if(parse.index == 38  ){
