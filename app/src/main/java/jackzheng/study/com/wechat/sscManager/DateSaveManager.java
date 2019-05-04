@@ -24,7 +24,7 @@ public class DateSaveManager {
     public  String mKaikaikai;
     public static int mIndex = 0;
     public static int mGuanLiIndex = 0;
-    public boolean isJustShou = false;
+//    public boolean isJustShou = false;
     public boolean isBeiyong = false;
     public boolean isFangqun= false;
     public int mMaxJieId = 2;
@@ -163,8 +163,8 @@ public class DateSaveManager {
     }
 
     public void saveJustShou(){
-        isJustShou = true;
-        saveStringDate("justShou",true);
+//        isJustShou = true;
+//        saveStringDate("justShou",true);
     }
     public void saveBeiyong(){
         isBeiyong = true;
@@ -232,7 +232,7 @@ public class DateSaveManager {
 
         mZongQun = null;
         mTixing = null;
-        isJustShou = false;
+//        isJustShou = false;
         isBeiyong = false;
         isFangqun = false;
         mFengLiang = null;
@@ -290,7 +290,7 @@ public class DateSaveManager {
             }
             index ++;
         }
-        isJustShou = getBooleanDate("justShou");
+//        isJustShou = getBooleanDate("justShou");
         isBeiyong = getBooleanDate("justShou");
         mZongQun = getStringDate("zong");
         mTixing = getStringDate("tixing");
