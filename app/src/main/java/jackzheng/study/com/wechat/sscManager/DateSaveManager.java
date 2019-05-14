@@ -28,6 +28,8 @@ public class DateSaveManager {
     public boolean isBeiyong = false;
     public boolean isFangqun= false;
     public int mMaxJieId = 2;
+    public int mRobatIndex = -1;
+
     public boolean isHaveGroup (String group){
         if(mGroupDate.containsKey(group)){
             return true;
@@ -91,6 +93,10 @@ public class DateSaveManager {
     public void saveGet(String group,int get){
         mGroupDate.get(group).getGroup = get;
         saveStringDate(group+"get",get);
+    }
+    public void saveRobatNumber(int number){
+        saveStringDate("robat",number);
+        mRobatIndex = number;
     }
 
     public void saveMaxJieId(){
@@ -228,7 +234,7 @@ public class DateSaveManager {
         editor.remove("kaikaikai").commit();
         editor.remove("zhengque").commit();
         editor.remove("beiyong").commit();
-
+        editor.remove("robat").commit();
 
         mZongQun = null;
         mTixing = null;
@@ -240,6 +246,7 @@ public class DateSaveManager {
         mBaobiao = null;
         mKaikaikai = null;
         mMaxJieId = 2;
+        mRobatIndex = -1;
     }
 
 
@@ -250,6 +257,8 @@ public class DateSaveManager {
             return;
         }
         mMaxJieId = getIntDate("maxJie",2);
+        mRobatIndex = getIntDate("robat",-1);
+
         int index = 1;
         while (true){
             String guanli = getStringDate("guanli"+index);

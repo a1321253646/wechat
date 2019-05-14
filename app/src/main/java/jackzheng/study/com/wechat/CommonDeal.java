@@ -184,14 +184,23 @@ public class CommonDeal {
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
             DateSaveManager.getIntance().clearAll();
             return true;
+        }else if(data.type == MessageDeal.SET_ROBAT_NUMBER_INT &&
+                TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)){
+            int fen =0;
+            try {
+                fen = Integer.parseInt(data.message.replace(MessageDeal.SET_ROBAT_NUMBER,""));
+                DateSaveManager.getIntance().saveRobatNumber(fen);
+            }catch (Exception e){
+
+            }
+            return true;
         }else if(data.type == MessageDeal.SET_WORK_START_INT &&
-                !TextUtils.isEmpty(data.groupID) &&
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
             ServerManager2.getmIntance().isWork = true;
             DateSaveManager.getIntance().clearAllGroupFenAndLiang();
             return true;
         }else if(data.type == MessageDeal.SET_WORK_END_INT &&
-                !TextUtils.isEmpty(data.groupID) &&
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
             ServerManager2.getmIntance().isWork = false;
             return true;

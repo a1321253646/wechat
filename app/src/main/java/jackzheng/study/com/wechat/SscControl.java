@@ -7,6 +7,7 @@ import com.zhy.http.okhttp.OkHttpUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import de.robv.android.xposed.XposedBridge;
@@ -20,12 +21,14 @@ public class SscControl {
 
     public boolean isInit = false;
 
+    public long mMessageCount = 0;
 
 
 
     public void sendMeassageBy(String id,String str){
 
         if(ServerManager2.getmIntance().isWork){
+            mMessageCount++;
             Tools.sendTextToRoom(Tools.mActivity,str,id);
         }
 
@@ -197,7 +200,7 @@ public class SscControl {
         public void run() {
             sendMessage();
             mHandler.removeCallbacks(mSendRun);
-            mHandler.postDelayed(mSendRun,3000);
+            mHandler.postDelayed(mSendRun,3000+mRandom.nextInt(500));
         }
     };
     ArrayList<MessageData> mMessageList = new ArrayList<>();
@@ -232,8 +235,9 @@ public class SscControl {
 
 
     public static SscControl mIntance = new SscControl();
+    Random mRandom  = null;
     private SscControl(){
-
+        mRandom = new Random(134);
     }
     public static SscControl getIntance(){
         return mIntance;

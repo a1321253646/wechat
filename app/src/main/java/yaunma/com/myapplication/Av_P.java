@@ -38,8 +38,18 @@ public class Av_P extends XC_MethodHook {
         final long isSend = XposedHelpers.getLongField(param.thisObject, "field_isSend");
         final long msgId = XposedHelpers.getLongField(param.thisObject, "field_msgId");
 
+        XposedBridge.log("roomID= "+roomId);
+        XposedBridge.log("field_content= "+field_content);
 
         if(isSend == 1 || field_type != 1){
+            if(isSend == 1 && TextUtils.isEmpty(ServerManager2.getmIntance().mMysId)){
+                if(roomId.endsWith("@chatroom")){
+                    String[] strs =  field_content.split(":\n");
+                    ServerManager2.getmIntance().mMysId = strs[0];
+                }else{
+                    ServerManager2.getmIntance().mMysId = roomId;
+                }
+            }
             return;
         }
 
@@ -70,11 +80,11 @@ public class Av_P extends XC_MethodHook {
         if (msg.equals("上线")){
             ServerManager2.getmIntance().isInit = true;
             String text = "";
-            if(DateSaveManager.getIntance().isJustShou){
-                text = "已上线";
-            }else{
-                text = "解已上线";
-            }
+        //    if(DateSaveManager.getIntance().isJustShou){
+                text = DateSaveManager.getIntance().mRobatIndex+"已上线20190508";
+          //  }else{
+         //       text = "解已上线";
+          //  }
             Tools.sendTextToRoom(Tools.mActivity,text,roomId);
             int index = SscControl.getIntance().getIndex();
             ArrayMap<String, DateSaveManager.GroupDate> all = DateSaveManager.getIntance().getAllGroup();
@@ -92,12 +102,12 @@ public class Av_P extends XC_MethodHook {
             return;
         }
 
-        if(!DateSaveManager.getIntance().isJustShou && msg.equals("解已上线") && !TextUtils.isEmpty(room) && DateSaveManager.getIntance().isGuanliQun(room)){
+/*        if(!DateSaveManager.getIntance().isJustShou && msg.equals("解已上线") && !TextUtils.isEmpty(room) && DateSaveManager.getIntance().isGuanliQun(room)){
             if(!ServerManager2.getmIntance().mIgnoeList.containsKey(userId)){
                 ServerManager2.getmIntance().mIgnoeList.put(userId,true);
             }
             return;
-        }
+        }*/
 
         if(ServerManager2.getmIntance().mIgnoeList.size() > 0 &&  ServerManager2.getmIntance().mIgnoeList.containsKey(userId)){
             return;
@@ -134,7 +144,7 @@ public class Av_P extends XC_MethodHook {
                 }
                 parse.str = str;
                 if(parse.index >0 && parse.index<300 && parse.str.length() == 5 ){
-                    if(DateSaveManager.getIntance().isJustShou &&
+/*                    if(DateSaveManager.getIntance().isJustShou &&
                             DateSaveManager.getIntance().isHaveGroup(room) &&
                             DateSaveManager.getIntance().getGroup(room).isEnable &&
                             !TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(room).toGroup) &&
@@ -142,7 +152,7 @@ public class Av_P extends XC_MethodHook {
                             ){
                         SscControl.getIntance().sendMessage(msg,DateSaveManager.getIntance().getGroup(room).toGroup,false);
                     }
-
+*/
                     if(ServerManager2.getmIntance().mOpenIndex != parse.index){
                         SscControl.getIntance().kaijaingEnd(parse);
 
