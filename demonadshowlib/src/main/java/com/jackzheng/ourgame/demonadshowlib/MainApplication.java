@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
+import com.nearme.game.sdk.GameCenterSDK;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.commonsdk.UMConfigure;
 
@@ -40,6 +41,9 @@ public class MainApplication extends Application {
         UMConfigure.setLogEnabled(true);
         UMConfigure.init(this, mAppKeyUmeng[Integer.parseInt(name)], "Umeng", UMConfigure.DEVICE_TYPE_PHONE,null);
 
+
+        String appSecret = "30fe6b1d10cb4fd89234309e0be9b288";
+        GameCenterSDK.init(appSecret, this);
     }
 
 }
