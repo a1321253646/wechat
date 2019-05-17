@@ -5,8 +5,450 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 
 import de.robv.android.xposed.XposedBridge;
+import jackzheng.study.com.wechat.sscManager.DateSaveManager;
 
 public class RegularUtils2 {
+
+    public static DateBean2 getThirdOne(String str){
+        int otherCount = 0;
+        DateBean2 date = new DateBean2();
+        boolean isThird = false;
+        char[] cs = str.toCharArray();
+        Integer[] local = new Integer[]{-1,-1,-1,-1};
+        date.local.add(local);
+        for(int i = 0 ; i < cs.length ; ){
+            XposedBridge.log("getThirdOne cs[ "+i+"]="+cs[i]);
+            if(StringDealFactory.isLocal(cs[i])){
+                boolean isAdd = false;
+                for(int ii =0;ii< 4;ii++){
+                    if(local[ii] == -1){
+                        local[ii] = StringDealFactory.getLocalData(cs[i]);
+                        isAdd = true;
+                        break;
+                    }
+                }
+                if(!isAdd){
+                    return null;
+                }
+                i++;
+            }else if(StringDealFactory.isNumber(cs[i])){
+                ArrayList<Integer> num = new ArrayList<>();
+                while (i  < cs.length && StringDealFactory.isNumber(cs[i])){
+                    int numTmp = cs[i]-'0';
+                    boolean isHave = false;
+                    for(Integer tmp : num){
+                        if(tmp == numTmp){
+                            isHave = true;
+                        }
+                    }
+                    if(!isHave){
+                        num.add(numTmp);
+                    }
+                    i++;
+                }
+                if(i  < cs.length && cs[i]== '.'){
+                    StringBuilder b = new StringBuilder();
+                    for(Integer numInt : num){
+                        b.append(""+numInt);
+                    }
+                    b.append(".");
+                    i++;
+                    if(i  < cs.length && StringDealFactory.isNumber(cs[i])){
+                        while (i  < cs.length && StringDealFactory.isNumber(cs[i])){
+                            b.append(cs[i]);
+                            i++;
+                        }
+                        date.mEachMoney = Float.parseFloat(b.toString());
+                        isThird  =true;
+                    }else{
+                        return null;
+                    }
+                }else{
+                    date.mDataList.add(num);
+                }
+
+
+            }else if(StringDealFactory.isNo(cs[i])){
+                if(i < cs.length-2 && cs[i+1] == '三' &&(cs[i+2] == '重' ||cs[i+2] == '从'  )){
+                    i = i+3;
+                    if(date.mThirdPai  == -1 || date.mThirdPai  > 3){
+                        date.mThirdPai = 3;
+                    }
+
+                }else if(i < cs.length-2 && cs[i+1] == '四' &&(cs[i+2] == '重' ||cs[i+2] == '从'  )){
+                    i = i+3;
+                    if(date.mThirdPai  == -1 || date.mThirdPai  > 4){
+                        date.mThirdPai = 4;
+                    }
+                }else if(i < cs.length-2 && cs[i+1] == '双' &&(cs[i+2] == '重' ||cs[i+2] == '从'  )){
+                    i = i+3;
+                    if(date.mThirdPai  == -1 || date.mThirdPai  > 2){
+                        date.mThirdPai = 2;
+                    }
+                }else if(i < cs.length-1 && cs[i+1] == '合') {
+                    i = i + 2;
+                    date.isThirdHe = false;
+                    if (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+                        while (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+                            date.heNumber.add(cs[i] - '0');
+                            i++;
+                        }
+                    } else {
+                        return null;
+                    }
+                }else if(i < cs.length-3 && cs[i+1] == '双' && cs[i+2] == '双'  && (cs[i+3] == '重' ||cs[i+3] == '从')  ) {
+                    i=i+4;
+                    date.isPaiChongChong = true;
+                    date.mIsFour = true;
+                    isThird = true;
+                }
+                else if( i < cs.length-3 && cs[i+1]== '二' && cs[i+2]== '兄' && cs[i+3]=='弟'){
+                    i = i+4;
+                    if(date.mXiongdi  == -1 || date.mXiongdi  > 2){
+                        date.mXiongdi = 2;
+                    }
+
+                    isThird = true;
+                }else if(i < cs.length-3 && cs[i+1]== '三' && cs[i+2]== '兄' && cs[i+3]=='弟'){
+                    i = i+4;
+                    if(date.mXiongdi  == -1 || date.mXiongdi  > 3){
+                        date.mXiongdi = 3;
+                    }
+
+                    isThird = true;
+                }else if(i < cs.length-3 && cs[i+1]== '四' && cs[i+2]== '兄' && cs[i+3]=='弟'){
+                    i = i+4;
+                    if(date.mXiongdi  == -1 || date.mXiongdi  > 4){
+                        date.mXiongdi = 4;
+                    }
+                    isThird = true;
+                }else{
+                    i++;
+                    if(date.mThirdPai  == -1 || date.mThirdPai  > 2){
+                        date.mThirdPai = 2;
+                    }
+                }
+            }else if(cs[i]=='含'){
+                i++;
+                isThird = true;
+                date.mIsFour = true;
+                if (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+                    while (i  < cs.length && StringDealFactory.isNumber(cs[i])){
+                        date.mHan.add(cs[i]-'0');
+                        i++;
+                    }
+                    ArrayList<Integer> tmp = new ArrayList<Integer>();
+                    for(int tmpi = 0 ;tmpi < 10;tmpi++){
+                        tmp.add(tmpi);
+                    }
+                    date.mDataList.add(tmp);
+                    date.mDataList.add(tmp);
+                    date.mDataList.add(tmp);
+                    date.mDataList.add(tmp);
+                }else{
+                    return null;
+                }
+            }else if(cs[i]=='值'){
+                i++;
+                isThird = true;
+                date.mIsFour = true;
+                if (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+                    StringBuilder build = new StringBuilder();
+                    while (i  < cs.length && StringDealFactory.isNumber(cs[i])){
+                        build.append(cs[i]);
+                        i++;
+                    }
+                    date.mZhi.add(Integer.parseInt(build.toString()));
+                    if(i < cs.length && cs[i]=='-' && i< cs.length-1 && StringDealFactory.isNumber(cs[i+1]) ){
+                        i++;
+                        build = new StringBuilder();
+                        while (i  < cs.length && StringDealFactory.isNumber(cs[i])){
+                            build.append(cs[i]);
+                            i++;
+                        }
+                        int end = Integer.parseInt(build.toString());
+                        for(int ii = date.mZhi.get(0)+1; ii<= end;ii++){
+                            date.mZhi.add(ii);
+                        }
+                    }
+                }else{
+                    return null;
+                }
+            }else if(cs[i]=='-' || cs[i]=='一' || cs[i]== '-' || cs[i]== '各'){
+                i++;
+            }else{
+                return null;
+            }
+        }
+        XposedBridge.log("全部解析完成");
+        date.isThirdDate = true;
+        XposedBridge.log("date = "+date.toString());
+        if(date.local.size() == 0){
+            if((date.mDataList.size() == 5 && date.mEachMoney == 0 )|| (date.mDataList.size() == 4 && date.mEachMoney != 0 ) ){
+                Integer[] tmp = new Integer[]{0,1,2,3};
+                date.local.add(tmp);
+            }else{
+                return null;
+            }
+        }
+        XposedBridge.log("date.mDataList.size() = "+date.mDataList.size()+
+        "date.local.size() ="+date.local.get(0).length +" date.mEachMoney ="+date.mEachMoney );
+        if(date.mDataList.size() == 3 && date.local.get(0).length ==3 && date.mEachMoney != 0){
+            isThird = true;
+            date.mIsFour = false;
+        }else if(date.mDataList.size() == 4 && date.local.get(0).length  ==3 && date.mEachMoney == 0){
+            isThird = true;
+            date.mIsFour = false;
+            ArrayList<Integer> tmp = date.mDataList.get(3);
+            StringBuilder tmpb = new StringBuilder();
+            for(Integer tmpi : tmp){
+                tmpb.append(""+tmpi);
+            }
+            date.mEachMoney = Float.parseFloat(tmpb.toString());
+            date.mDataList.remove(3);
+
+        }else if(date.mDataList.size() == 4 && date.local.get(0).length ==4 && date.mEachMoney != 0){
+            isThird = true;
+            date.mIsFour = true;
+        }else if(date.mDataList.size() == 5 && date.local.get(0).length ==4 && date.mEachMoney == 0){
+            isThird = true;
+            date.mIsFour = true;
+            ArrayList<Integer> tmp = date.mDataList.get(4);
+            StringBuilder tmpb = new StringBuilder();
+            for(Integer tmpi : tmp){
+                tmpb.append(""+tmpi);
+            }
+            date.mEachMoney = Float.parseFloat(tmpb.toString());
+            date.mDataList.remove(4);
+        }else{
+            XposedBridge.log("不是大奖三字");
+            return null;
+        }
+        XposedBridge.log("为大奖三字");
+        int deleteCount = 0;
+
+
+        int sameNum = -1;
+        for(int level1 = 0 ; level1 < date.mDataList.get(0).size() ; level1++){
+            int numLevel1 = date.mDataList.get(0).get(level1);
+            int paiLevel1 = 0;
+            for(int level2 = 0 ; level2 < date.mDataList.get(1).size() ; level2++){
+                int numLevel2 = date.mDataList.get(1).get(level2);
+                int paiLevel2 = paiLevel1;
+                if(numLevel1==numLevel2){
+                    paiLevel2 =2;
+                    sameNum = numLevel2;
+                }
+                for(int level3 = 0 ; level3 < date.mDataList.get(2).size() ; level3++){
+                    int numLevel3 = date.mDataList.get(2).get(level3);
+                    int paiLevel3 = paiLevel2;
+                    if(paiLevel3 == 2 && numLevel2==numLevel3){
+                        paiLevel3 =3;
+                    }else if(numLevel1== numLevel3 || numLevel2 == numLevel3){
+                        paiLevel3 =2;
+                        sameNum = numLevel3;
+                    }
+                    int level4 = -1;
+                    while (true){
+
+                        level4++;
+                        if(!date.mIsFour && level4 != 0){
+                            break;
+                        }
+                        int numLevel4 = -1;
+                        int paiLevel4 = paiLevel3;
+                        int zhi2 = numLevel1+numLevel2+numLevel3;
+                        if(date.mIsFour){
+                            if( level4 >= date.mDataList.get(3).size()){
+                                break;
+                            }
+                            numLevel4 = date.mDataList.get(3).get(level4);
+                            zhi2+=numLevel4;
+                            if(paiLevel4 ==3 && numLevel3 == numLevel4 ){
+                                paiLevel4 =4;
+                            }else if(paiLevel4 == 2 && sameNum== numLevel4 ){
+                                paiLevel4 =3;
+                            }else if(numLevel1 == numLevel4 || numLevel2 ==numLevel4 || numLevel3 == numLevel4){
+                                paiLevel4 = 2;
+                            }
+                        }
+                    //    String db = ""+numLevel1+numLevel2+numLevel3+numLevel4+":";
+                        if(date.heNumber.size() >0){
+                            boolean isDelete = false;
+                            for(Integer tmp : date.heNumber){
+                                if(!date.isThirdHe && zhi2%10 ==tmp){
+                                    deleteCount++;
+                                    isDelete = true;
+                                 //   XposedBridge.log(db+"删除：不合 "+tmp);
+                                    break;
+                                }else if(date.isThirdHe && zhi2%10 !=tmp){
+                                    deleteCount++;
+                                    isDelete = true;
+                                 //   XposedBridge.log(db+"删除：合 "+tmp);
+                                    break;
+                                }
+                            }
+                            if(isDelete){
+                                continue;
+                            }
+                        }
+                        if(date.mIsFour){
+                            if(date.isPaiChongChong){
+                                if(numLevel1 == numLevel2 && numLevel3==numLevel4){
+                                    deleteCount++;
+                                //    XposedBridge.log(db+"删除：双双排重 ");
+                                    continue;
+                                }else if(numLevel1 == numLevel3 && numLevel2 == numLevel4){
+                                    deleteCount++;
+                                //    XposedBridge.log(db+"删除：双双排重 ");
+                                    continue;
+                                }else if(numLevel1 == numLevel4 && numLevel2==numLevel3){
+                                    deleteCount++;
+                                //    XposedBridge.log(db+"删除：双双排重 ");
+                                    continue;
+                                }
+                            }
+                        }
+                        if(date.mThirdPai != -1 ){
+                            if((date.mIsFour && paiLevel4 >= date.mThirdPai )|| (!date.mIsFour && paiLevel3 >= date.mThirdPai )){
+                                deleteCount++;
+                             //   XposedBridge.log(db+"删除：排"+date.mThirdPai +"重");
+                                continue;
+                            }
+                        }
+                        if(date.mZhi.size() > 0){
+                            boolean isHave = false;
+                            for(Integer tmp :date.mZhi){
+                                if(zhi2 == tmp){
+                                    isHave = true;
+                                    break;
+                                }
+                            }
+                            if(!isHave){
+                                deleteCount++;
+                             //   XposedBridge.log(db+"删除：值zhi="+zhi2);
+
+                                continue;
+                            }
+                        }
+                        if(date.mHan.size() >0){
+                            boolean isHave = false;
+                            for(Integer tmp :date.mHan){
+                                if(level1 == tmp || level2 == tmp || level3 == tmp || level4 == tmp){
+                                    isHave = true;
+                                    break;
+                                }
+                            }
+                            if(!isHave){
+                                deleteCount++;
+                             //   XposedBridge.log(db+"删除：含");
+                                continue;
+                            }
+                        }
+                        if(date.mXiongdi != -1){
+                            ArrayList<Integer> numberList = new ArrayList<>();
+                            numberList.add(numLevel1);
+                            if(numLevel2< numLevel1){
+                                numberList.add(0,numLevel2);
+                            }else{
+                                numberList.add(numLevel2);
+                            }
+                            if(numLevel3< numberList.get(0)){
+                                numberList.add(0,numLevel3);
+                            }else if(numLevel3< numberList.get(1)){
+                                numberList.add(1,numLevel3);
+                            }else{
+                                numberList.add(numLevel3);
+                            }
+                            if(date.mIsFour){
+                                if(numLevel4< numberList.get(0)){
+                                    numberList.add(0,numLevel4);
+                                }else if(numLevel4< numberList.get(1)){
+                                    numberList.add(1,numLevel4);
+                                }else if(numLevel4< numberList.get(2)){
+                                    numberList.add(2,numLevel4);
+                                }else{
+                                    numberList.add(numLevel4);
+                                }
+                            }
+
+                            if(getXiongDi(numberList,date.mXiongdi )){
+                                deleteCount++;
+                             //   XposedBridge.log(db+"删除：排"+date.mXiongdi +"兄弟");
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        int count = 1;
+        for(ArrayList<Integer> list : date.mDataList){
+            count *= list.size();
+        }
+        count = count - deleteCount;
+        date.allCount = count;
+        date.mAllMoney = count * date.mEachMoney;
+        date.isThirdDate = true;
+        return date;
+    }
+    private static boolean getXiongDi(ArrayList<Integer> list ,int targetXiongdi){
+        if(targetXiongdi == 2){
+            for(int i = 0 ; i< list.size() -1 ;i++){
+                if(list.get(i) == list.get(i+1) -1 ){
+                    return true;
+                }
+            }
+            if(list.get(0)==0 && list.get(list.size() -1)==9){
+                return true;
+            }
+            return false;
+        }else if(targetXiongdi == 3){
+            if(list.size() == 3){
+                if(list.get(0)== list.get(1)-1 && list.get(1) == list.get(2)-1){
+                    return true;
+                }else if(list.get(0)==0 && list.get(2)==9 && (list.get(1)==1 || list.get(1)== 8)){
+                    return true;
+                }
+            }else if(list.size() == 4){
+                if(list.get(0)== list.get(1)-1 && list.get(1) == list.get(2)-1) {
+                    return true;
+                }else if(list.get(1)== list.get(2)-1 && list.get(2) == list.get(3)-1){
+                    return true;
+                }else if(list.get(3)-2 == list.get(0) && list.get(1)-1==list.get(0) ){
+                    return true;
+                }else if(list.get(0)==0 && list.get(3)==9 && (list.get(1)==1 || list.get(2)== 1|| list.get(1)==8 || list.get(2)==8) ){
+                    return true;
+                }
+            }
+        }else if(targetXiongdi == 4 && list.size() == 4){
+            boolean isTrue = true;
+            for(int i = 0 ; i< list.size() -1 ;i++){
+                if(list.get(i) != list.get(i+1) -1 ){
+                    isTrue= false;
+                    break;
+                }
+            }
+            if(isTrue){
+                return true;
+            }else if(list.get(0)==0 && list.get(3)==9){
+                if(list.get(1)== 1){
+                    if(list.get(2)== 2){
+                        return true   ;
+                    }else if(list.get(2)== 8){
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }else if(list.get(1)==7 && list.get(2)==8){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
 
     public static RegularStrBean regularStr(String str){
 
@@ -25,10 +467,23 @@ public class RegularUtils2 {
         //regu.list = value;
 
         boolean isDuoZhu =stringCount > 1 ? true:false ;
+        boolean isThirdModel = false;
         for(int iii = 0;iii < list.size();iii++){
             StringDealBean.StringSimpleDealBean data = list.get(iii);
 
             if(TextUtils.isEmpty(data.str) || StringDealFactory.haveNumCount(data.str) == 0){
+                continue;
+            }
+            if((iii ==0 || isThirdModel) &&DateSaveManager.getIntance().isThird){
+                DateBean2 dateBean2= getThirdOne(data.str);
+                dateBean2.message = data.str;
+                XposedBridge.log("zsbin\n"+dateBean2.toString());
+                if(dateBean2 != null){
+                    value.add(dateBean2);
+                    isThirdModel = true;
+                }else{
+                    return null;
+                }
                 continue;
             }
             int numberCount = StringDealFactory.haveNumCount(data.str);

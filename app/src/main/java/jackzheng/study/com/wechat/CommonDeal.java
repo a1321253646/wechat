@@ -195,6 +195,30 @@ public class CommonDeal {
 
             }
             return true;
+        }else if(data.type == MessageDeal.SET_MODOL_INDEX_INT &&
+                TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)){
+            int index =0;
+            try {
+                index = Integer.parseInt(data.message.replace(MessageDeal.SET_MODOL_INDEX,""));
+                DateSaveManager.getIntance().saveModelNumber(index);
+            }catch (Exception e){
+
+            }
+            return true;
+        }else if(data.type == MessageDeal.SET_THIRD_MODOL_OPEN_INT &&
+                TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)){
+
+            DateSaveManager.getIntance().saveThridModel(true);
+            return true;
+        }else if(data.type == MessageDeal.SET_THIRD_MODOL_CLOSE_INT &&
+                TextUtils.isEmpty(data.groupID) &&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)){
+
+            DateSaveManager.getIntance().saveThridModel(false);
+            return true;
+
         }else if(data.type == MessageDeal.SET_WORK_START_INT &&
                 DateSaveManager.getIntance().isGuanli(data.TakerId)){
             ServerManager2.getmIntance().isWork = true;

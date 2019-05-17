@@ -8,6 +8,7 @@ public class SscBean {
     public int count = 0;
     public long mId = -1;
     public long msgId = -1;
+    public boolean isThirdModel = false;
     @Override
     public String toString() {
         return "["+mId +"] "+msg+" 共"+count;

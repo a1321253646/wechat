@@ -14,10 +14,23 @@ public class DateBean2 {
     public  ArrayList<Integer> mCountList = new ArrayList<>();
     public Boolean isHe ;
     public Boolean mHaveGroup ;
+
     public ArrayList<Integer> heNumber = new ArrayList<>();
     public int allCount;
     public boolean isALlUserFri = false;
     public boolean isALlUserLast = false;
+
+
+    public boolean isThirdDate = false;
+    public int mThirdPai = -1;
+    public int mXiongdi = -1;
+    public ArrayList<Integer> mZhi = new ArrayList<>();
+    public ArrayList<Integer> mHan = new ArrayList<>();
+    public boolean isThirdHe = true;
+    public boolean isPaiChongChong = false;
+    public Boolean mIsFour = false ;
+    public float mEachMoney = 0;
+    public float mAllMoney = 0;
 
     public StringDealBean.StringDecBean  dec= null;
 
@@ -74,6 +87,55 @@ public class DateBean2 {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        if(isThirdDate){
+            builder.append(message+"\n");
+            for(int i = 0 ; i< mDataList.size();i++){
+                for(Integer inte : mDataList.get(i)){
+                    builder.append(""+inte);
+                }
+                builder.append("-");
+            }
+            builder.append(":");
+            for(Integer[] list : local){
+                for(Integer inte : list){
+                    builder.append(inte+"");
+                }
+                builder.append("位");
+            }
+            if(mXiongdi!= -1){
+                builder.append("排"+mXiongdi+"兄弟");
+            }
+            if(mThirdPai != -1){
+                builder.append("排"+mThirdPai+"重");
+            }
+            if(mThirdPai != -1){
+                builder.append("排"+mThirdPai+"重");
+            }
+            if(heNumber.size() >0){
+                builder.append(isThirdHe?"合":"不合");
+                for(Integer inte : heNumber){
+                    builder.append(""+inte);
+                }
+            }
+            if(mZhi.size() >0){
+                for(Integer inte : mZhi){
+                    builder.append("值"+inte);
+                }
+            }
+            if(mHan.size() >0){
+                for(Integer inte : mHan){
+                    builder.append("含"+inte);
+                }
+            }
+            if(isPaiChongChong){
+                builder.append("排双双重");
+            }
+            builder.append("共"+allCount);
+            builder.append("每一注"+mEachMoney);
+            builder.append("总"+mAllMoney);
+            return builder.toString();
+        }
+
         boolean isHaceDec = false;
 /*         if(dec != null){
            if(dec.isWuwei){

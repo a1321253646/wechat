@@ -29,6 +29,9 @@ public class DateSaveManager {
     public boolean isFangqun= false;
     public int mMaxJieId = 2;
     public int mRobatIndex = -1;
+    public int mModelIndex = -1;
+    public boolean isThird = false;
+
 
     public boolean isHaveGroup (String group){
         if(mGroupDate.containsKey(group)){
@@ -46,7 +49,6 @@ public class DateSaveManager {
         date.groupID = group;
         saveGroupId(date);
         mGroupDate.put(group,date);
-
         saveGroupEnable(group,true);
     }
     public GroupDate getGroup(String group){
@@ -98,6 +100,15 @@ public class DateSaveManager {
         saveStringDate("robat",number);
         mRobatIndex = number;
     }
+    public void saveModelNumber(int number){
+        saveStringDate("model",number);
+        mModelIndex = number;
+    }
+    public void saveThridModel(boolean isthird){
+        saveStringDate("third",isthird);
+        isThird = isthird;
+    }
+
 
     public void saveMaxJieId(){
 
@@ -235,6 +246,8 @@ public class DateSaveManager {
         editor.remove("zhengque").commit();
         editor.remove("beiyong").commit();
         editor.remove("robat").commit();
+        editor.remove("model").commit();
+        editor.remove("third").commit();
 
         mZongQun = null;
         mTixing = null;
@@ -247,6 +260,8 @@ public class DateSaveManager {
         mKaikaikai = null;
         mMaxJieId = 2;
         mRobatIndex = -1;
+        mModelIndex = -1;
+        isThird = false;
     }
 
 
@@ -308,6 +323,8 @@ public class DateSaveManager {
         mZhengque = getStringDate("zhengque");
         mBaobiao = getStringDate("baobiao");
         mKaikaikai = getStringDate("kaikaikai");
+        mModelIndex = getIntDate("model",-1);
+        isThird = getBooleanDate("third");
 
     }
 

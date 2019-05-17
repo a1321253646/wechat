@@ -4,8 +4,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import de.robv.android.xposed.XposedBridge;
+import jackzheng.study.com.wechat.sscManager.DateSaveManager;
 
 
 public class StringDealFactory {
@@ -24,7 +26,7 @@ public class StringDealFactory {
     //目前使用在单组多个位置多注数的情况，合数
     private static char[] NUMBER_REPALACE = {'拾','壹','贰','叁','肆','伍','陆','柒','捌','玖'};
 
-    public static char[] LOCAL_REPALCE = {'万','千','百','十','个'};
+    public static char[]  LOCAL_REPALCE = {'万','千','百','十','个'};
     public static char[] ALL_NUMBER_REPALCE = {'0','1','2','3','4','5','6','7','8','9'};
     public static int[] ALL_NUMBER_REPALCE_INT = {0,1,2,3,4,5,6,7,8,9};
 
@@ -35,8 +37,29 @@ public class StringDealFactory {
     private static final char[] DUPLICATE_SIGN_LIST = {'重','从'};
 
     private static final char[] UNUSER_SIGN_LIST = {'头','尾'};
+
     public static ArrayList<StringDealBean.StringSimpleDealBean> stringDeal(String str){
         // Log.d("zsbin","str ="+str+"***************************************************************************************************\n");
+
+        if(DateSaveManager.getIntance().isThird){
+            String[] split = str.split("\n");
+            if(split != null && split.length > 0){
+                DateBean2 thirdOne = RegularUtils2.getThirdOne(split[0]);
+                if(thirdOne != null){
+                    XposedBridge.log("zsbin\n"+thirdOne.toString());
+                    ArrayList<StringDealBean.StringSimpleDealBean> list =  new ArrayList<>();
+                    for(String s : split){
+                        StringDealBean.StringSimpleDealBean sb = new StringDealBean.StringSimpleDealBean();
+                        sb.str = s;
+                        list.add(sb);
+                    }
+                    return list;
+                }
+            }
+        }
+
+        str = replaceXieXian(str);
+        Log.d("zsbin","replaceXieXian str ="+str+"***************************************************************************************************\n");
         str = repalaceFrist(str);
         str = rejectNouserChar(str);
         //       Log.d("zsbin","rejectNouserChar:str ="+str);
@@ -47,10 +70,11 @@ public class StringDealFactory {
 
 //        Log.d("zsbin","weirdReplace:str ="+str);
         ArrayList<String> list =  spileStringNew(str);
-
+      //  list = repalaceDianDian(list);
         for(int i= 0;i< list.size() ;i++){
             StringDealBean.StringSimpleDealBean strDec = new StringDealBean.StringSimpleDealBean();
             String s = list.get(i);
+            Log.d("zsbin","repalaceX str ="+str+"***************************************************************************************************\n");
             Log.d("zsbin","repalace:s ="+s);
             if(s.contains("下奖") || s.contains("上奖") ){
                 strDec.dec = new StringDealBean.StringDecBean();
@@ -167,11 +191,187 @@ public class StringDealFactory {
             repalace(bean);
             bean.str = weirdReplace(bean.str);
             bean.str = shaReplace(bean.str);
+            bean.str =  repalaceX(bean.str);
             Log.d("zsbin","repalace:str ="+bean.str);
 
         }
         return  result;
     }
+
+    private static String replaceXieXian(String s){
+
+        if(DateSaveManager.getIntance().mModelIndex != 5){
+            return s;
+        }
+        if(!s.contains("//")){
+            return s;
+        }
+        s = s.replace("////","//");
+        s = s.replace("///","//");
+        s = s.replace("//",",");
+        return s;
+    }
+
+
+    private static ArrayList<String>  repalaceDianDian(ArrayList<String> list){
+        if(DateSaveManager.getIntance().mModelIndex != 5){
+            return list;
+        }
+        ArrayList<String> newList = new ArrayList<>();
+        for(String s : list){
+            if(!s.contains("…")){
+                newList.add(s);
+            }
+            s = s.replace("…………","…");
+            s = s.replace("………","…");
+            s = s.replace("……","…");
+            StringBuilder values = new StringBuilder();
+            String[] strs = s.split("…");
+            if(strs.length <3){
+                newList.add(s);
+            }else{
+                for(int i = 0;i <strs.length ;){
+                    if(i< strs.length-1){
+                        newList.add(strs[i]+"="+ strs[i+1]);
+                        i= i+2;
+                    }else{
+                        newList.add(strs[i]);
+                        i++;
+                    }
+                }
+
+            }
+        }
+        return newList;
+
+    }
+    private static String repalaceX(String s){
+        Log.d("zsbin","repalaceX DateSaveManager.getIntance().mModelIndex="+DateSaveManager.getIntance().mModelIndex);
+        if(DateSaveManager.getIntance().mModelIndex != 5){
+            return s;
+        }
+        if(!s.contains("x") && !s.contains("X")){
+            return s;
+        }
+        ArrayList<String> numbers =  new ArrayList<>();
+        ArrayList<Integer> locals =  new ArrayList<>();
+        StringBuilder builderBumber = new StringBuilder();
+        StringBuilder values = new StringBuilder();
+        int localIndex = 0;
+        boolean isFinish = false;
+        char[] cs = s.toCharArray();
+        for(int i = 0 ;i < cs.length; ){
+            if(isFinish){
+                values.append(cs[i]);
+                i++;
+            }else if(isNumber(cs[i])){
+                localIndex++;
+                while (i< cs.length && isNumber(cs[i])){
+                    builderBumber.append(cs[i]);
+                    i++;
+                }
+                Log.d("zsbin","  numbers.add builderBumber.toString()="+builderBumber.toString());
+                numbers.add(builderBumber.toString());
+                builderBumber = new StringBuilder();
+                if(numbers.size() == 2 && locals.size()== 3){
+                    isFinish = true;
+                    values.append(numbers.get(0));
+                    values.append("-");
+                    values.append(numbers.get(1));
+                    for(int ii = 0 ; ii < 5 ;ii++){
+                        boolean isHaveLocal = false;
+                        for(int iii  : locals){
+                            if(iii == ii){
+                                isHaveLocal = true;
+                                break;
+                            }
+                        }
+                        if(!isHaveLocal){
+                            values.append("囲"+LOCAL_REPALCE[ii]);
+                        }
+                    }
+                }else if( numbers.size() == 1 &&numbers.get(0).length() == 2  && locals.size()== 3){
+                    isFinish = true;
+                    values.append(numbers.get(0).getBytes()[0]-'0');
+                    values.append("-");
+                    values.append(numbers.get(0).getBytes()[1]-'0');
+                    for(int ii = 0 ; ii < 5 ;ii++){
+                        boolean isHaveLocal = false;
+                        for(int iii  : locals){
+                            if(iii == ii){
+                                isHaveLocal = true;
+                                break;
+                            }
+                        }
+                        if(!isHaveLocal){
+                            values.append("囲"+LOCAL_REPALCE[ii]);
+                            values.append("囲"+LOCAL_REPALCE[ii+1]);
+                            break;
+                        }
+                    }
+                }else if(numbers.size() > 2){
+                    return s;
+                }
+            }else if(cs[i] == 'X' || cs[i]=='x'){
+                i++;
+                if(localIndex <LOCAL_REPALCE.length){
+                    locals.add(localIndex);
+                    Log.d("zsbin","  locals.add localIndex="+localIndex);
+                    localIndex++;
+
+
+                    if(numbers.size() == 2 && locals.size()== 3){
+                        isFinish = true;
+                        values.append(numbers.get(0));
+                        values.append("-");
+                        values.append(numbers.get(1));
+                        for(int ii = 0 ; ii < 5 ;ii++){
+                            boolean isHaveLocal = false;
+                            for(int iii  : locals){
+                                if(iii == ii){
+                                    isHaveLocal = true;
+                                    break;
+                                }
+                            }
+                            if(!isHaveLocal){
+                                values.append("囲"+LOCAL_REPALCE[ii]);
+                            }
+                        }
+                    }else if( numbers.size() == 1 &&numbers.get(0).length() == 2  && locals.size()== 3){
+                        isFinish = true;
+                        values.append(numbers.get(0).getBytes()[0]-'0');
+                        values.append("-");
+                        values.append(numbers.get(0).getBytes()[1]-'0');
+                        for(int ii = 0 ; ii < 5 ;ii++){
+                            boolean isHaveLocal = false;
+                            for(int iii  : locals){
+                                if(iii == ii){
+                                    isHaveLocal = true;
+                                    break;
+                                }
+                            }
+                            if(!isHaveLocal){
+                                values.append("囲"+LOCAL_REPALCE[ii]);
+                                values.append("囲"+LOCAL_REPALCE[ii+1]);
+                                break;
+                            }
+                        }
+                    }else if( locals.size()> 3){
+                        return s;
+                    }
+                }else{
+                    return s;
+                }
+
+            }else{
+                values.append(cs[i]);
+                i++;
+            }
+        }
+        return  values.toString();
+
+    }
+
     private static String repalaceFrist(String s){
         String renyi = null;
         if(s.contains("包")){
@@ -838,7 +1038,7 @@ public class StringDealFactory {
         return  true;
     }
 
-    private static boolean isNo(char c){
+    public static boolean isNo(char c){
         for(char cc :NOREPEAT_SIGN_LIST){
             if(cc == c){
                 return true;
