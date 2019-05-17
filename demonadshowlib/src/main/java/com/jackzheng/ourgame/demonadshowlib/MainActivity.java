@@ -1,10 +1,5 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.util.Log;
-
-import com.umeng.analytics.MobclickAgent;
 import com.unity3d.player.UnityPlayerActivity;
 
 public class MainActivity extends UnityPlayerActivity {
@@ -12,16 +7,12 @@ public class MainActivity extends UnityPlayerActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("jackzhng","onResume===========================");
-        MobclickAgent.onResume(this);
     }
 
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d("jackzhng","onPause===========================");
-        MobclickAgent.onPause(this);
     }
 
     public String showTaptap(String str){
