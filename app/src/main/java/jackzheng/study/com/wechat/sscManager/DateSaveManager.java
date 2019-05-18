@@ -63,8 +63,8 @@ public class DateSaveManager {
             GroupDate date = mGroupDate.get(id);
             date.fen = 0;
             date.liang = 0;
-            saveStringDate(date.groupID+"fen",0 );
-            saveStringDate(date.groupID+"liang",0 );
+            saveFloatDate(date.groupID+"fen",0 );
+            saveFloatDate(date.groupID+"liang",0 );
         }
     }
 
@@ -191,16 +191,16 @@ public class DateSaveManager {
         isFangqun = true;
         saveStringDate("fangqun",true);
     }
-    public void changeGroupFenOrLiang(String group,boolean isFen,int action,int value){
+    public void changeGroupFenOrLiang(String group,boolean isFen,int action,float value){
         if(isFen){
             mGroupDate.get(group).fen = saveFenOrLiangeActionValue(mGroupDate.get(group).fen,action,value);
-            saveStringDate(mGroupDate.get(group).groupID+"fen",mGroupDate.get(group).fen );
+            saveFloatDate(mGroupDate.get(group).groupID+"fen",mGroupDate.get(group).fen );
         }else{
             mGroupDate.get(group).liang = saveFenOrLiangeActionValue(mGroupDate.get(group).liang,action,value);
-            saveStringDate(mGroupDate.get(group).groupID+"liang",mGroupDate.get(group).liang );
+            saveFloatDate(mGroupDate.get(group).groupID+"liang",mGroupDate.get(group).liang );
         }
     }
-    private int saveFenOrLiangeActionValue(int old,int action,int value){
+    private float saveFenOrLiangeActionValue(float old,int action,float value){
         if(action == 3){
             return value;
         }else if(action == 1){
@@ -305,8 +305,8 @@ public class DateSaveManager {
                 date.groupName = getStringDate(date.groupID+"name");
                 date.toGroup = getStringDate(date.groupID+"to");
                 date.getGroup = getIntDate(date.groupID+"get",1);
-                date.fen = getIntDate(date.groupID+"fen",0);
-                date.liang = getIntDate(date.groupID+"liang",0);
+                date.fen = getFloatDate(date.groupID+"fen",0);
+                date.liang = getFloatDate(date.groupID+"liang",0);
                 date.yin = getIntDate(date.groupID+"yin",97);
                 date.isEnable = getBooleanDate(date.groupID+"enable");
                 date.xianer = getBooleanDate(date.groupID+"xiane");
@@ -334,8 +334,8 @@ public class DateSaveManager {
         public String groupID;
         public String groupName;
         public boolean isEnable = true;
-        public int fen = 0;
-        public int liang = 0;
+        public float fen = 0;
+        public float liang = 0;
         public int yin = 97;
         public int index;
         public String toGroup;
@@ -379,8 +379,17 @@ public class DateSaveManager {
         boolean value = intance.getBoolean(key, false);
         XposedBridge.log("getBooleanDate key= "+key+" value= "+value);
         return  value;
-
     }
+
+    private void saveFloatDate(String key , float value){
+        editor.putFloat(key,value).commit();
+    }
+
+    private float getFloatDate(String key , float def){
+        float value = intance.getFloat(key,def);
+        return value;
+    }
+
     private String getStringDate(String key){
 
         String value = intance.getString(key, "");

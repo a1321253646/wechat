@@ -631,6 +631,11 @@ public class ServerManager2 {
             }catch (Exception e){
 
             }
+            if(dateBean2s == null){
+                XposedBridge.log("RegularUtils2.regularStr end null");
+            }else{
+                XposedBridge.log("RegularUtils2.regularStr end dateBean2s.size()="+dateBean2s.size());
+            }
 
             if(dateBean2s == null || dateBean2s.size() < 1){
                     if(TextUtils.isEmpty(sendGroup)){
@@ -645,79 +650,89 @@ public class ServerManager2 {
 
                 return;
             }
-            for(DateBean2 dateBeanEach : dateBean2s){
-                if(dateBeanEach.mCountList== null ||
-                        dateBeanEach.mCountList.size() == 0 ||
-                        dateBeanEach.local == null ||
-                        dateBeanEach.local.size() == 0||
-                        dateBeanEach.local.size() != dateBeanEach.mCountList.size() ){
 
-                    if(TextUtils.isEmpty(sendGroup)){
-                        SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
-                    }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                        SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
+            XposedBridge.log("RegularUtils2.regularStr dateBean2s.get(0).mIsFour= "+dateBean2s.get(0).mIsFour);
+
+            if(!dateBean2s.get(0).isThirdDate){
+                for(DateBean2 dateBeanEach : dateBean2s){
+                    if(dateBeanEach.mCountList== null ||
+                            dateBeanEach.mCountList.size() == 0 ||
+                            dateBeanEach.local == null ||
+                            dateBeanEach.local.size() == 0||
+                            dateBeanEach.local.size() != dateBeanEach.mCountList.size() ){
+
+                        if(TextUtils.isEmpty(sendGroup)){
+                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
+                        }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
+                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
+                        }
+
+
+                        if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
+                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+
+                        }
+
+                        return;
                     }
-
-
-                    if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                        SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-
-                    }
-
-                    return;
-                }
-                for(Integer[] tmp : dateBeanEach.local){
-                    if(tmp  == null ||
-                            tmp.length != 2||
-                            tmp[0] <=0 ||  tmp[1] <=0 ||tmp[0] >5 || tmp[1] >5){
-                        if(tmp.length == 2 && tmp[1]== 0 &&  tmp[0] > 0 && tmp[0] <= 5 && dateBeanEach.local.size() == 1 &&
-                                dateBeanEach.mDataList != null && dateBeanEach.mDataList.size() == 2 && dateBeanEach.mDataList.get(1).size() == 10){
-                            if(tmp[0]== 5){
-                                tmp[1] = 4;
-                            }else{
-                                tmp[1] = 5;
+                    for(Integer[] tmp : dateBeanEach.local){
+                        if(tmp  == null ||
+                                tmp.length != 2||
+                                tmp[0] <=0 ||  tmp[1] <=0 ||tmp[0] >5 || tmp[1] >5){
+                            if(tmp.length == 2 && tmp[1]== 0 &&  tmp[0] > 0 && tmp[0] <= 5 && dateBeanEach.local.size() == 1 &&
+                                    dateBeanEach.mDataList != null && dateBeanEach.mDataList.size() == 2 && dateBeanEach.mDataList.get(1).size() == 10){
+                                if(tmp[0]== 5){
+                                    tmp[1] = 4;
+                                }else{
+                                    tmp[1] = 5;
+                                }
+                                break;
                             }
-                            break;
+
+                            if(TextUtils.isEmpty(sendGroup)){
+                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
+                            }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
+                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
+
+                            }
+
+                            if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
+                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+                            }
+
+                            return;
                         }
-
-                        if(TextUtils.isEmpty(sendGroup)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
-                        }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
-
-                        }
-
-                        if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-                        }
-
-                        return;
                     }
-                }
-                for(Integer tmp : dateBeanEach.mCountList){
+                    for(Integer tmp : dateBeanEach.mCountList){
 
-                    if(tmp  == null ||tmp <= 0){
-                        if(TextUtils.isEmpty(sendGroup)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
-                        }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
+                        if(tmp  == null ||tmp <= 0){
+                            if(TextUtils.isEmpty(sendGroup)){
+                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
+                            }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
+                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
+                            }
+
+                            if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
+                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+
+                            }
+
+                            return;
                         }
-
-                        if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-
-                        }
-
-                        return;
                     }
                 }
             }
 
+
             bean.list = dateBean2s;
             String str = "";
-            int count  = 0;
+            float count  = 0;
             for(DateBean2 tmp : dateBean2s){
-                count += tmp.allCount;
+                if(tmp.isThirdDate){
+                    count+= tmp.mAllMoney;
+                }else{
+                    count += tmp.allCount;
+                }
                 str = str+ tmp.toString()+"\n";
             }
             if( DateSaveManager.getIntance().getGroup(groupID).xianer  && count> DateSaveManager.getIntance().getGroup(groupID).fen ){
@@ -750,8 +765,6 @@ public class ServerManager2 {
             }else{
                 SscControl.getIntance().sendMessage(message+"\n\n--------------\n"+str+end,sendGroup,false);
             }
-
-
 
         }else{
             if(TextUtils.isEmpty(sendGroup)){

@@ -93,7 +93,10 @@ public class DateBean2 {
                 for(Integer inte : mDataList.get(i)){
                     builder.append(""+inte);
                 }
-                builder.append("-");
+                if(i!= mDataList.size()-1){
+                    builder.append("-");
+                }
+
             }
             builder.append(":");
             for(Integer[] list : local){
@@ -104,9 +107,6 @@ public class DateBean2 {
             }
             if(mXiongdi!= -1){
                 builder.append("排"+mXiongdi+"兄弟");
-            }
-            if(mThirdPai != -1){
-                builder.append("排"+mThirdPai+"重");
             }
             if(mThirdPai != -1){
                 builder.append("排"+mThirdPai+"重");

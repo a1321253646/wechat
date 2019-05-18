@@ -14,20 +14,26 @@ public class RegularUtils2 {
         DateBean2 date = new DateBean2();
         boolean isThird = false;
         char[] cs = str.toCharArray();
-        Integer[] local = new Integer[]{-1,-1,-1,-1};
-        date.local.add(local);
+
+        ArrayList<Integer>local = new ArrayList<>();
+
         for(int i = 0 ; i < cs.length ; ){
             XposedBridge.log("getThirdOne cs[ "+i+"]="+cs[i]);
             if(StringDealFactory.isLocal(cs[i])){
                 boolean isAdd = false;
-                for(int ii =0;ii< 4;ii++){
-                    if(local[ii] == -1){
-                        local[ii] = StringDealFactory.getLocalData(cs[i]);
+                int localData = StringDealFactory.getLocalData(cs[i]);
+                for(Integer tmp : local){
+                    if(tmp == localData){
                         isAdd = true;
                         break;
                     }
                 }
-                if(!isAdd){
+                if(isAdd){
+                    return null;
+                }else{
+                    local.add(localData);
+                }
+                if(local.size() > 4){
                     return null;
                 }
                 i++;
@@ -148,6 +154,17 @@ public class RegularUtils2 {
                 }else{
                     return null;
                 }
+            }else if( cs[i] == '合') {
+                i ++;
+                date.isThirdHe = true;
+                if (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+                    while (i < cs.length && StringDealFactory.isNumber(cs[i])) {
+                        date.heNumber.add(cs[i] - '0');
+                        i++;
+                    }
+                } else {
+                    return null;
+                }
             }else if(cs[i]=='值'){
                 i++;
                 isThird = true;
@@ -180,10 +197,18 @@ public class RegularUtils2 {
                 return null;
             }
         }
+        if(local.size() > 0){
+            Integer[] localDate = new Integer[local.size()];
+            for(int i = 0 ;i< local.size();i++){
+                localDate[i] = local.get(i);
+            }
+            date.local.add(localDate);
+        }
+
         XposedBridge.log("全部解析完成");
         date.isThirdDate = true;
         XposedBridge.log("date = "+date.toString());
-        if(date.local.size() == 0){
+        if( date.local.size() == 0 ||date.local.get(0).length  == 0){
             if((date.mDataList.size() == 5 && date.mEachMoney == 0 )|| (date.mDataList.size() == 4 && date.mEachMoney != 0 ) ){
                 Integer[] tmp = new Integer[]{0,1,2,3};
                 date.local.add(tmp);
@@ -272,19 +297,19 @@ public class RegularUtils2 {
                                 paiLevel4 = 2;
                             }
                         }
-                    //    String db = ""+numLevel1+numLevel2+numLevel3+numLevel4+":";
+                        String db = ""+numLevel1+numLevel2+numLevel3+numLevel4+":";
                         if(date.heNumber.size() >0){
                             boolean isDelete = false;
                             for(Integer tmp : date.heNumber){
                                 if(!date.isThirdHe && zhi2%10 ==tmp){
                                     deleteCount++;
                                     isDelete = true;
-                                 //   XposedBridge.log(db+"删除：不合 "+tmp);
+                                    XposedBridge.log(db+"删除：不合 "+tmp);
                                     break;
                                 }else if(date.isThirdHe && zhi2%10 !=tmp){
                                     deleteCount++;
                                     isDelete = true;
-                                 //   XposedBridge.log(db+"删除：合 "+tmp);
+                                    XposedBridge.log(db+"删除：合 "+tmp);
                                     break;
                                 }
                             }
@@ -661,6 +686,10 @@ public class RegularUtils2 {
             }
             value.add(date);
 
+        }
+        if(isThirdModel){
+            regu.list = value;
+            return regu;
         }
         getPai(value);
         if(dealDate(value) == null){
