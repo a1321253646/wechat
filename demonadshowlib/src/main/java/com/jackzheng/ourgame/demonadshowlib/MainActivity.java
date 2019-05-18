@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+import com.nearme.game.sdk.GameCenterSDK;
+import com.nearme.game.sdk.callback.GameExitCallback;
 import com.umeng.analytics.MobclickAgent;
+import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
 public class MainActivity extends UnityPlayerActivity {
@@ -40,4 +43,15 @@ public class MainActivity extends UnityPlayerActivity {
         return "";
     }
 
+    public String exitGame(String str){
+        Log.d("jackzhng","exitGame===========================");
+        GameCenterSDK.getInstance().onExit(this, new GameExitCallback(){
+
+            @Override
+            public void exitGame() {
+                UnityPlayer.UnitySendMessage("Main Camera", "exitGame", "退出");
+            }
+        });
+        return "";
+    }
 }
