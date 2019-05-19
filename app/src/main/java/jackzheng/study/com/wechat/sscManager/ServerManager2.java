@@ -276,7 +276,59 @@ public class ServerManager2 {
     private ArrayMap<Integer,OpenNumberDeal> openNumberDeal(HtmlParse.MaxIndexResult parse){
 
         int[] numbers = parse.getNumber();
-        
+        ArrayMap<Integer,OpenNumberDeal> value  = new ArrayMap<>();
+        for(int i = 0 ;i<4;i++){
+            for(int ii = i+1; ii<5 ;ii++){
+                OpenNumberDeal date = new OpenNumberDeal();
+                ArrayList<Integer> numberList = new ArrayList<>();
+                int zhi = 0;
+                for(int iii = 0; iii< 5;iii++){
+                    if(iii != i && iii != ii){
+                        zhi+=numbers[iii];
+                        date.han.add(numbers[iii]);
+                        if(numberList.size() == 0){
+                            numberList.add(iii);
+                        }else{
+                            boolean isAdd = false;
+                           for(int iiii = 0 ;iiii < numberList.size(); iiii++ ){
+                               if(numbers[iii] < numberList.get(iiii)){
+                                   numberList.add(iiii,numbers[iii]);
+                                   isAdd = true;
+                               }
+                           }
+                           if(!isAdd){
+                               numberList.add(numbers[iii]);
+                           }
+                        }
+                    }
+                }
+                date.zhi = zhi;
+                 if(RegularUtils2.getXiongDi(numberList, 3)){
+                     date.xiongdi = 3;
+                 }else if(RegularUtils2.getXiongDi(numberList, 2)){
+                     date.xiongdi = 2;
+                 }
+                 int maxSame = 0;
+                 for(int sameLevel1 = 0 ; sameLevel1 < 5 ;sameLevel1 ++){
+                     int  same = 0;
+                     for(int sameLevel2 = 0 ; sameLevel2 < 5 ;sameLevel2 ++){
+                         if(sameLevel1 == sameLevel2){
+                             continue;
+                         }else{
+                            if(numbers[sameLevel1]==numbers[sameLevel2]){
+                                same++;
+                            }
+                         }
+                     }
+                     if(same > maxSame){
+                         maxSame = same;
+                     }
+                 }
+                 date.chong = maxSame;
+            }
+        }
+
+        return value;
     }
 
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){

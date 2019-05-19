@@ -417,7 +417,7 @@ public class RegularUtils2 {
         date.isThirdDate = true;
         return date;
     }
-    private static boolean getXiongDi(ArrayList<Integer> list ,int targetXiongdi){
+    public static boolean getXiongDi(ArrayList<Integer> list ,int targetXiongdi){
         if(targetXiongdi == 2){
             for(int i = 0 ; i< list.size() -1 ;i++){
                 if(list.get(i) == list.get(i+1) -1 ){
