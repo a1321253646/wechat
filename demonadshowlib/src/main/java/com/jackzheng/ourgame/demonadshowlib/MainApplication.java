@@ -3,12 +3,12 @@ package com.jackzheng.ourgame.demonadshowlib;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+
 import android.text.TextUtils;
 
-import com.umeng.analytics.MobclickAgent;
+import com.miui.zeus.mimo.sdk.MimoSdk;
 import com.umeng.commonsdk.UMConfigure;
 
-import org.apache.commons.logging.Log;
 
 public class MainApplication extends Application {
 
@@ -39,7 +39,9 @@ public class MainApplication extends Application {
         android.util.Log.d("jackzhng","mAppKeyUmeng id = "+mAppKeyUmeng[Integer.parseInt(name)]);
         UMConfigure.setLogEnabled(true);
         UMConfigure.init(this, mAppKeyUmeng[Integer.parseInt(name)], "Umeng", UMConfigure.DEVICE_TYPE_PHONE,null);
+        MimoSdk.init(this, "appid:2882303761518007399", "fake_app_key", "fake_app_token");
 
+        MimoSdk.setDebugOn();
     }
 
 }
