@@ -21,54 +21,64 @@ import miui.os.zeus.Build;
 public class MainActivity extends UnityPlayerActivity {
 
     private IAdWorker mAdWorker;
-    public static final String TAG = "HorizonInterstitial";
+    public static final String TAG = "jackzhng";
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        try {
-            mAdWorker = AdWorkerFactory.getAdWorker(this, (ViewGroup) getWindow().getDecorView(), new MimoAdListener() {
-                @Override
-                public void onAdPresent() {
-                    Log.e(TAG, "onAdPresent");
-                }
-
-                @Override
-                public void onAdClick() {
-                    Log.e(TAG, "onAdClick");
-                }
-
-                @Override
-                public void onAdDismissed() {
-                    Log.e(TAG, "onAdDismissed");
-                    try {
-                        mAdWorker.load("b90939fae6df77c0b5989fbac3ef810a");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onAdFailed(String s) {
-                    Log.e(TAG, "onAdFailed");
-
-                }
-
-                @Override
-                public void onAdLoaded(int size) {
-                    Log.e(TAG, "ad loaded");
-
-                }
-
-                @Override
-                public void onStimulateSuccess() {
-                }
-            }, AdType.AD_INTERSTITIAL);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        getmAdWorker();
     }
 
+
+    private IAdWorker getmAdWorker(){
+        if(mAdWorker != null){
+            return  mAdWorker;
+        }else{
+            try {
+                mAdWorker = AdWorkerFactory.getAdWorker(this, (ViewGroup) getWindow().getDecorView(), new MimoAdListener() {
+                    @Override
+                    public void onAdPresent() {
+                        Log.e(TAG, "onAdPresent");
+                    }
+
+                    @Override
+                    public void onAdClick() {
+                        Log.e(TAG, "onAdClick");
+                    }
+
+                    @Override
+                    public void onAdDismissed() {
+                        Log.e(TAG, "onAdDismissed");
+                        try {
+                            getmAdWorker().load("b90939fae6df77c0b5989fbac3ef810a");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onAdFailed(String s) {
+                        Log.e(TAG, "onAdFailed");
+
+                    }
+
+                    @Override
+                    public void onAdLoaded(int size) {
+                        Log.e(TAG, "ad loaded");
+
+                    }
+
+
+                    @Override
+                    public void onStimulateSuccess() {
+                    }
+                }, AdType.AD_INTERSTITIAL);
+                return mAdWorker;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
 
     @Override
     protected void onResume() {
@@ -87,14 +97,19 @@ public class MainActivity extends UnityPlayerActivity {
     }
 
     public boolean isAdInit(String str){
-        return MimoSdk.isSdkReady();
+
+        boolean isReady  = MimoSdk.isSdkReady();
+        Log.d("jackzhng","isAdInit==========================="+isReady);
+        return isReady;
     }
 
     public boolean isInserAdReady(String str){
+
         try {
-            boolean ready =  mAdWorker.isReady();
+            boolean ready =  getmAdWorker().isReady();
+            Log.d("jackzhng","isInserAdReady==========================="+ready);
             if(!ready){
-                mAdWorker.load("b90939fae6df77c0b5989fbac3ef810a");
+                getmAdWorker().load("b90939fae6df77c0b5989fbac3ef810a");
             }
             return ready;
         } catch (Exception e) {
@@ -103,12 +118,18 @@ public class MainActivity extends UnityPlayerActivity {
         return false;
     }
 
-    public void playInerAd(String str){
+    public boolean playInerAd(String str){
+        Log.d("jackzhng","playInerAd===========================");
         try {
-            mAdWorker.show();
+            getmAdWorker().show();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return true;
+    }
+
+    public void startGameOrPause(boolean isStart){
+
     }
     public String showTaptap(String str){
   /*      Log.d("jackzhng","playAd===========================");
@@ -130,7 +151,7 @@ public class MainActivity extends UnityPlayerActivity {
     protected void onDestroy() {
         try {
             super.onDestroy();
-            mAdWorker.recycle();
+            getmAdWorker().recycle();
         } catch (Exception e) {
         }
     }

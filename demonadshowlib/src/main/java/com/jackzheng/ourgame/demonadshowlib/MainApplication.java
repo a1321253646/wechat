@@ -42,6 +42,7 @@ public class MainApplication extends Application {
         MimoSdk.init(this, "appid:2882303761518007399", "fake_app_key", "fake_app_token");
 
         MimoSdk.setDebugOn();
+
     }
 
 }
