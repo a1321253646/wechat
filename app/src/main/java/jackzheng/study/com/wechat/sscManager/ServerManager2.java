@@ -266,6 +266,18 @@ public class ServerManager2 {
             }
         }
     }
+    class OpenNumberDeal{
+        public int zhi = 1;
+        public ArrayList<Integer> han = new ArrayList<>();
+        public int chong = 1;
+        public int xiongdi = -1;
+    }
+
+    private ArrayMap<Integer,OpenNumberDeal> openNumberDeal(HtmlParse.MaxIndexResult parse){
+
+        int[] numbers = parse.getNumber();
+        
+    }
 
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
         ServerManager2.getmIntance().mOpenIndex = parse.index;
