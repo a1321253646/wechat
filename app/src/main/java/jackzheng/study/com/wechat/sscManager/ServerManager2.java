@@ -271,6 +271,7 @@ public class ServerManager2 {
         public ArrayList<Integer> han = new ArrayList<>();
         public int chong = 1;
         public int xiongdi = -1;
+        public boolean isChongChong = false;
     }
 
     private ArrayMap<Integer,OpenNumberDeal> openNumberDeal(HtmlParse.MaxIndexResult parse){
@@ -282,8 +283,12 @@ public class ServerManager2 {
                 OpenNumberDeal date = new OpenNumberDeal();
                 ArrayList<Integer> numberList = new ArrayList<>();
                 int zhi = 0;
+                int local = 0;
                 for(int iii = 0; iii< 5;iii++){
                     if(iii != i && iii != ii){
+                        int localTmp = 1;
+                        localTmp = 1 << iii;
+                        local |= localTmp;
                         zhi+=numbers[iii];
                         date.han.add(numbers[iii]);
                         if(numberList.size() == 0){
@@ -309,25 +314,77 @@ public class ServerManager2 {
                      date.xiongdi = 2;
                  }
                  int maxSame = 0;
-                 for(int sameLevel1 = 0 ; sameLevel1 < 5 ;sameLevel1 ++){
-                     int  same = 0;
-                     for(int sameLevel2 = 0 ; sameLevel2 < 5 ;sameLevel2 ++){
-                         if(sameLevel1 == sameLevel2){
-                             continue;
-                         }else{
-                            if(numbers[sameLevel1]==numbers[sameLevel2]){
-                                same++;
-                            }
-                         }
-                     }
-                     if(same > maxSame){
-                         maxSame = same;
-                     }
+                 int preNumber= -1;
+                 int samTmp = 1;
+                 for(int sam = 0 ; sam < numberList.size();sam++){
+                    if(preNumber == numberList.get(sam)){
+                        samTmp ++;
+                    }else{
+                        preNumber = numberList.get(sam);
+                        if(samTmp > maxSame){
+                            maxSame = samTmp;
+                        }
+                        samTmp = 1;
+                    }
                  }
                  date.chong = maxSame;
+                value.put(local , date);
             }
         }
-
+        for(int i = 0 ; i < 5 ;i++) {
+            int local = 0;
+            int zhi = 0;
+            OpenNumberDeal date = new OpenNumberDeal();
+            ArrayList<Integer> numberList = new ArrayList<>();
+            for (int ii = 0; ii < 5; ii++) {
+                int localTmp = 1;
+                localTmp = 1 << ii;
+                local |= localTmp;
+                zhi += numbers[ii];
+                date.han.add(numbers[ii]);
+                if (numberList.size() == 0) {
+                    numberList.add(ii);
+                } else {
+                    boolean isAdd = false;
+                    for (int iiii = 0; iiii < numberList.size(); iiii++) {
+                        if (numbers[ii] < numberList.get(iiii)) {
+                            numberList.add(iiii, numbers[ii]);
+                            isAdd = true;
+                        }
+                    }
+                    if (!isAdd) {
+                        numberList.add(numbers[ii]);
+                    }
+                }
+            }
+            date.zhi = zhi;
+            if(RegularUtils2.getXiongDi(numberList, 4)){
+                date.xiongdi = 4;
+            }else if(RegularUtils2.getXiongDi(numberList, 3)){
+                date.xiongdi = 3;
+            }else if(RegularUtils2.getXiongDi(numberList, 2)){
+                date.xiongdi = 2;
+            }
+            int maxSame = 0;
+            int preNumber= -1;
+            int samTmp = 1;
+            for(int sam = 0 ; sam < numberList.size();sam++){
+                if(preNumber == numberList.get(sam)){
+                    samTmp ++;
+                }else{
+                    preNumber = numberList.get(sam);
+                    if(samTmp > maxSame){
+                        maxSame = samTmp;
+                    }
+                    samTmp = 1;
+                }
+            }
+            date.chong = maxSame;
+            if(numberList.get(0)== numberList.get(1) && numberList.get(2)== numberList.get(3)){
+                date.isChongChong = true;
+            }
+            value.put(local , date);
+        }
         return value;
     }
 
@@ -340,7 +397,10 @@ public class ServerManager2 {
             }
             return;
         }
-
+        ArrayMap<Integer,OpenNumberDeal> mOpenValueList = null;
+        if(DateSaveManager.getIntance().isThird){
+            mOpenValueList = openNumberDeal(parse);
+        }
         String indexNumber = parse.index<10?("00"+ parse.index):parse.index<100?("0"+parse.index):""+parse.index;
         String msgRoot="\uE12D\uE12D 第["+indexNumber+"]届      开："+parse.str+"\n";
 
@@ -365,9 +425,16 @@ public class ServerManager2 {
                         if(bean1.list == null){
                             continue;
                         }
+                        boolean isThird = bean1.list.get(0).isThirdDate;
                         eachCount= 0;
+
                         for(DateBean2 bean :bean1.list){
-                            eachCount +=getZhongjianCount(bean,parse.getNumber(),yin);
+                            if(!isThird){
+                                eachCount +=getZhongjianCount(bean,parse.getNumber(),yin);
+                            }else{
+                                eachCount += getCountMoneyThird(bean,parse.getNumber(),yin,mOpenValueList);
+                            }
+
                         }
                         if(eachCount >0){
                             str.append(bean1.msg);
@@ -427,6 +494,87 @@ public class ServerManager2 {
             SscControl.getIntance().sendMessage(  "总共"+(SscControl.getIntance().mMessageCount+1), DateSaveManager.getIntance().mGuanliQun,false);
         }
     }
+
+    private float getCountMoneyThird(DateBean2 bean ,int[] numbers,int yin,ArrayMap<Integer,OpenNumberDeal> openDeal2){
+        Integer[] integers = bean.local.get(0);
+        int local = 0;
+        float value = 0;
+        for(Integer localTmp : integers){
+            int tmp = 1 << localTmp;
+            local |= tmp;
+        }
+        OpenNumberDeal date = openDeal2.get(local);
+
+        if(bean.mXiongdi != -1){
+            if(bean.mXiongdi <= date.xiongdi){
+                return 0;
+            }
+        }
+        if(bean.mThirdPai != 1){
+            if(bean.mThirdPai <= date.chong){
+                return 0;
+            }
+        }
+        if(bean.mZhi.size() > 0){
+            boolean  isHave = false;
+            for(Integer tmp : bean.mZhi){
+                if(tmp ==date.zhi){
+                    isHave = true;
+                    break;
+                }
+            }
+            if(!isHave){
+                return  0 ;
+            }
+        }
+        int he = date.zhi % 10;
+        if(bean.heNumber.size() > 0){
+            if(bean.isHe){
+                boolean  isHave = false;
+                for(Integer tmp : bean.heNumber){
+                    if(tmp == he){
+                        isHave = true;
+                        break;
+                    }
+                }
+                if(!isHave){
+                    return 0;
+                }
+            }else{
+                for(Integer tmp : bean.heNumber){
+                    if(tmp == he){
+                        return 0;
+                    }
+                }
+            }
+        }
+        if(bean.mHan.size() >0){
+            for(Integer tmp : bean.mHan){
+                for(Integer tmp2 : date.han){
+                    if(tmp == tmp2){
+                        value += yin*bean.mEachMoney;
+                    }
+                }
+            }
+            return value;
+        }
+        for(int i = 0 ; i< bean.local.get(0).length;i++){
+            ArrayList<Integer> integers1 = bean.mDataList.get(i);
+            int localIndex = bean.local.get(0)[i];
+            boolean isHave = false;
+            for(Integer tmp : integers1){
+                if(tmp == numbers[localIndex]){
+                    isHave = true;
+                    break;
+                }
+            }
+            if(!isHave){
+                return 0;
+            }
+        }
+        return bean.mEachMoney * yin;
+    }
+
     public void tuiDeal(String msg){
         AllXiazuBean bean = null;
         long msgId = -1;
