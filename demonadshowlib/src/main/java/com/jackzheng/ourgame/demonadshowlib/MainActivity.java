@@ -27,47 +27,18 @@ import com.xiaomi.ad.common.pojo.AdType;
 
 import miui.os.zeus.Build;
 
-public class MainActivity extends UnityPlayerActivity {
+public class MainActivity extends MainActivityBase {
 
     private IAdWorker mAdWorker;
     IAdWorker mBannerAd;
     IAdWorker mSplashAd;
-    public static final String TAG = "jackzhng";
+
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-
         getmAdWorker();
-        mHandler=new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                if(msg.what == 1){
-                    playInerAdDeal();
-                }else if(msg.what == 2){
-                    mHandler.removeMessages(2);
-                    if(isAdInit("")){
-                        startShowBannerDeal();
-                    }else{
-                        mHandler.sendEmptyMessageDelayed(2,500);
-                    }
-
-                }else if(msg.what == 3){
-                    playSplashAdDeal();
-                }else if(msg.what == 4){
-                    mHandler.removeMessages(4);
-                    if(isAdInit("")){
-                        playSplashAdDeal();
-                    }else{
-                        mHandler.sendEmptyMessageDelayed(4,500);
-                    }
-                }
-            }
-        };
     }
 
-
-    private Handler mHandler= null;
 
     private IAdWorker getmAdWorker(){
         if(mAdWorker != null){
@@ -78,13 +49,13 @@ public class MainActivity extends UnityPlayerActivity {
                     @Override
                     public void onAdPresent() {
 
-                        Log.e(TAG, "onAdPresent");
+                        Log.e(TAG, "mAdWorker onAdPresent");
                         startGameOrPause(false);
                     }
 
                     @Override
                     public void onAdClick() {
-                        Log.e(TAG, "onAdClick");
+                        Log.e(TAG, "mAdWorker onAdClick");
                         try {
                             startGameOrPause(true);
                             getmAdWorker().recycle();
@@ -96,7 +67,7 @@ public class MainActivity extends UnityPlayerActivity {
 
                     @Override
                     public void onAdDismissed() {
-                        Log.e(TAG, "onAdDismissed");
+                        Log.e(TAG, "mAdWorker onAdDismissed");
                         try {
                             startGameOrPause(true);
                             getmAdWorker().recycle();
@@ -108,19 +79,20 @@ public class MainActivity extends UnityPlayerActivity {
 
                     @Override
                     public void onAdFailed(String s) {
-                        Log.e(TAG, "onAdFailed");
+                        Log.e(TAG, "onAdFailed s="+s);
 
                     }
 
                     @Override
                     public void onAdLoaded(int size) {
-                        Log.e(TAG, "ad loaded");
+                        Log.e(TAG, "mAdWorker ad loaded");
 
                     }
 
 
                     @Override
                     public void onStimulateSuccess() {
+                        Log.e(TAG, "mAdWorker ad onStimulateSuccess");
                     }
                 }, AdType.AD_INTERSTITIAL);
                 return mAdWorker;
@@ -131,34 +103,19 @@ public class MainActivity extends UnityPlayerActivity {
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d("jackzhng","onResume===========================");
-        MobclickAgent.onResume(this);
-    //    mHandler.sendEmptyMessageDelayed(4,500);
-    }
-
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d("jackzhng","onPause===========================");
-        MobclickAgent.onPause(this);
-    }
-
     public boolean isAdInit(String str){
-
         boolean isReady  = MimoSdk.isSdkReady();
-        Log.d("jackzhng","isAdInit==========================="+isReady);
+        Log.d(TAG,"isAdInit==========================="+isReady);
         return isReady;
     }
-
+    @Override
     public boolean isInserAdReady(String str){
 
         try {
             boolean ready =  getmAdWorker().isReady();
-            Log.d("jackzhng","isInserAdReady==========================="+ready);
+            Log.d(TAG,"isInserAdReady==========================="+ready);
             if(!ready){
                 getmAdWorker().load(MainApplication.INSERT_ID);
             }
@@ -169,21 +126,11 @@ public class MainActivity extends UnityPlayerActivity {
         return false;
     }
 
-    public boolean playInerAd(String str){
-        Log.d("jackzhng","playInerAd===========================");
-        mHandler.sendEmptyMessage(1);
-
-        return true;
-    }
-    public boolean playSplashAd(String str){
-        Log.d("jackzhng","playSplashAd===========================");
-        mHandler.sendEmptyMessage(3);
-        return true;
-    }
     ViewGroup mSplashView;
-    private void playSplashAdDeal( ){
+    @Override
+    public void playSplashAdDeal( ){
         mSplashView = new FrameLayout(this) ;
-        Log.d("jackzhng","playSplashAdDeal===========================");
+        Log.d(TAG,"playSplashAdDeal===========================");
         String[]  strs = mBannerPoint.split(",");
         WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics dm = new DisplayMetrics();
@@ -197,42 +144,44 @@ public class MainActivity extends UnityPlayerActivity {
         mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
         mWindowManager.addView(mSplashView, mWmParams);
 
-        Log.d("jackzhng","playInerAd===========================");
+        Log.d(TAG,"playSplashAdDeal===========================");
         try {
             mSplashAd = AdWorkerFactory.getAdWorker(this, mSplashView, new MimoAdListener() {
                 @Override
                 public void onAdPresent() {
                     // 开屏广告展示
-                    Log.d(TAG, "onAdPresent");
+                    Log.d(TAG, "playSplashAdDeal onAdPresent");
                 }
 
                 @Override
                 public void onAdClick() {
                     //用户点击了开屏广告
-                    Log.d(TAG, "onAdClick");
+                    Log.d(TAG, "playSplashAdDeal onAdClick");
                     mSplashView.setVisibility(View.GONE);
                 }
 
                 @Override
                 public void onAdDismissed() {
                     //这个方法被调用时，表示从开屏广告消失。
-                    Log.d(TAG, "onAdDismissed");
+                    Log.d(TAG, "playSplashAdDeal onAdDismissed");
                     mSplashView.setVisibility(View.GONE);
                 }
 
                 @Override
                 public void onAdFailed(String s) {
-                    Log.e(TAG, "ad fail message : " + s);
+                    Log.e(TAG, "playSplashAdDeal ad fail message : " + s);
                     mSplashView.setVisibility(View.GONE);
                 }
 
                 @Override
                 public void onAdLoaded(int size) {
                     //do nothing
+                    Log.d(TAG, "playSplashAdDeal onAdLoaded");
                 }
 
                 @Override
                 public void onStimulateSuccess() {
+                    Log.d(TAG, "playSplashAdDeal  Log.d(TAG, \"playSplashAdDeal onAdLoaded\");");
                 }
             }, AdType.AD_SPLASH);
 
@@ -243,8 +192,9 @@ public class MainActivity extends UnityPlayerActivity {
         }
     }
 
-
-    private void playInerAdDeal(){
+    @Override
+    public void playInerAdDeal(){
+        Log.d(TAG, "playInerAdDeal");
         try {
             getmAdWorker().show();
         } catch (Exception e) {
@@ -252,43 +202,13 @@ public class MainActivity extends UnityPlayerActivity {
         }
     }
 
-    public void startGameOrPause(boolean isStart){
-        String action = "";
-        if(isStart){
-            action = "start";
-        }else{
-            action = "pause";
-        }
-        UnityPlayer.UnitySendMessage("Main Camera", "startOrPause", action);
-    }
-    public String showTaptap(String str){
-  /*      Log.d("jackzhng","playAd===========================");
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setData(Uri.parse("taptap://taptap.com/app?app_id=150760&source=outer"));
-        if (intent != null && intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        }else{
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setData(Uri.parse("http://d.taptap.com/latest?app_id=150760"));
-            startActivity(intent);
-        }*/
-        return "";
-    }
-
     private boolean isShowBanner = false;
-    private String mBannerPoint = "";
-    public boolean startShowBanner(String point){
-        mBannerPoint = point;
-        mHandler.sendEmptyMessage(2);
 
-        return true;
-    }
     ViewGroup mBannerView;
-    private void startShowBannerDeal(){
+    @Override
+    public void startShowBannerDeal(){
 
-        Log.e(TAG, "startShowBanner");
+        Log.e(TAG, "startShowBannerDeal");
         if(isShowBanner){
             return ;
         }
