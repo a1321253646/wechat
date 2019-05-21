@@ -227,8 +227,8 @@ public class MainActivity extends MainActivityBase {
             mWmParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
             mWmParams.height =(int)( 54 *density);
             mWmParams.width = (int)weight;
-            mWmParams.gravity = Gravity.TOP|Gravity.CENTER;
-            mWmParams.y = (int)(screenHeight- y);
+            mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
+            mWmParams.y = (int) y - mWmParams.height;
             mWindowManager.addView(mBannerView, mWmParams);
         }
 
