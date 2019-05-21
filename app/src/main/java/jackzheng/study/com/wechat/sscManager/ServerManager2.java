@@ -299,6 +299,7 @@ public class ServerManager2 {
                                if(numbers[iii] < numberList.get(iiii)){
                                    numberList.add(iiii,numbers[iii]);
                                    isAdd = true;
+                                   break;
                                }
                            }
                            if(!isAdd){
@@ -328,6 +329,7 @@ public class ServerManager2 {
                     }
                  }
                  date.chong = maxSame;
+                 XposedBridge.log("openNumberDeal add local="+local);
                 value.put(local , date);
             }
         }
@@ -337,6 +339,9 @@ public class ServerManager2 {
             OpenNumberDeal date = new OpenNumberDeal();
             ArrayList<Integer> numberList = new ArrayList<>();
             for (int ii = 0; ii < 5; ii++) {
+                if(i == ii){
+                    continue;
+                }
                 int localTmp = 1;
                 localTmp = 1 << ii;
                 local |= localTmp;
@@ -350,6 +355,7 @@ public class ServerManager2 {
                         if (numbers[ii] < numberList.get(iiii)) {
                             numberList.add(iiii, numbers[ii]);
                             isAdd = true;
+                            break;
                         }
                     }
                     if (!isAdd) {
@@ -383,6 +389,7 @@ public class ServerManager2 {
             if(numberList.get(0)== numberList.get(1) && numberList.get(2)== numberList.get(3)){
                 date.isChongChong = true;
             }
+            XposedBridge.log("openNumberDeal add local="+local);
             value.put(local , date);
         }
         return value;
@@ -499,10 +506,12 @@ public class ServerManager2 {
         Integer[] integers = bean.local.get(0);
         int local = 0;
         float value = 0;
-        for(Integer localTmp : integers){
-            int tmp = 1 << localTmp;
+        for(int i = 0 ;i< integers.length ;i++){
+            integers[i] = integers[i]-1;
+            int tmp = 1 << integers[i];
             local |= tmp;
         }
+        XposedBridge.log("getCountMoneyThird  local="+local);
         OpenNumberDeal date = openDeal2.get(local);
 
         if(bean.mXiongdi != -1){
@@ -510,7 +519,7 @@ public class ServerManager2 {
                 return 0;
             }
         }
-        if(bean.mThirdPai != 1){
+        if(bean.mThirdPai != -1){
             if(bean.mThirdPai <= date.chong){
                 return 0;
             }
