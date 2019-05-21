@@ -51,7 +51,7 @@ public class MainApplication extends Application {
         UMConfigure.init(this, mAppKeyUmeng[Integer.parseInt(name)], "Umeng", UMConfigure.DEVICE_TYPE_PHONE,null);
         MimoSdk.init(this, APP_ID, "fake_app_key", "fake_app_token");
 
-        MimoSdk.setDebugOn();
+        //MimoSdk.setDebugOn();
 
     }
 

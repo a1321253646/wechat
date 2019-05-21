@@ -202,18 +202,17 @@ public class MainActivity extends MainActivityBase {
         }
     }
 
-    private boolean isShowBanner = false;
-
     ViewGroup mBannerView;
+
+    private int mBannerViewHight = 0;
+    private int mBannerViewWight = 0;
     @Override
     public void startShowBannerDeal(){
 
         Log.e(TAG, "startShowBannerDeal");
-        if(isShowBanner){
-            return ;
-        }
         if(mBannerView == null){
             mBannerView = new FrameLayout(this) ;
+
             String[]  strs = mBannerPoint.split(",");
             float weight = Float.parseFloat(strs[0]);
             float y = Float.parseFloat(strs[1]);
@@ -225,12 +224,20 @@ public class MainActivity extends MainActivityBase {
             WindowManager mWindowManager = (WindowManager) MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
             WindowManager.LayoutParams mWmParams = new WindowManager.LayoutParams();
             mWmParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-            mWmParams.height =(int)( 54 *density);
-            mWmParams.width = (int)weight;
+            mBannerViewHight = (int)( 54 *density);
+            mBannerViewWight = (int)weight;
+            mWmParams.height =mBannerViewHight;
+            mWmParams.width = mBannerViewWight;
             mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
             mWmParams.y = (int) y - mWmParams.height;
             mWindowManager.addView(mBannerView, mWmParams);
-        }
+        }//else{
+            mBannerView.setVisibility(View.VISIBLE);
+/*            ViewGroup.LayoutParams layoutParams = mBannerView.getLayoutParams();
+            layoutParams.width =mBannerViewWight;
+            layoutParams.height =mBannerViewHight;
+            mBannerView.setLayoutParams(layoutParams);*/
+       // }
 
         if(mBannerAd == null){
             try {
@@ -243,7 +250,12 @@ public class MainActivity extends MainActivityBase {
                     @Override
                     public void onAdClick() {
                         Log.e(TAG, "startShowBannerDeal onAdClick");
-                     /*   try {
+                        mBannerView.setVisibility(View.GONE);
+/*                        ViewGroup.LayoutParams layoutParams = mBannerView.getLayoutParams();
+                        layoutParams.width =1;
+                        layoutParams.height =1;
+                        mBannerView.setLayoutParams(layoutParams);*/
+                       /* try {
                             mBannerAd.loadAndShow("6a5cfe092eb49ba667221ea9189e0cd9");
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -253,6 +265,11 @@ public class MainActivity extends MainActivityBase {
                     @Override
                     public void onAdDismissed() {
                         Log.e(TAG, "startShowBannerDeal onAdDismissed");
+                        mBannerView.setVisibility(View.GONE);
+/*                        ViewGroup.LayoutParams layoutParams = mBannerView.getLayoutParams();
+                        layoutParams.width =1;
+                        layoutParams.height =1;
+                        mBannerView.setLayoutParams(layoutParams);*/
                      /*   try {
                             mBannerAd.loadAndShow("6a5cfe092eb49ba667221ea9189e0cd9");
                         } catch (Exception e) {
@@ -263,12 +280,12 @@ public class MainActivity extends MainActivityBase {
                     @Override
                     public void onAdFailed(String s) {
                         Log.e(TAG, "startShowBannerDeal onAdFailed :"+s);
-                        try {
-                            isShowBanner = false;
+                        mBannerView.setVisibility(View.GONE);
+                     /*   try {
                             mHandler.sendEmptyMessageDelayed(2,500);
                         } catch (Exception e) {
                             e.printStackTrace();
-                        }
+                        }*/
                     }
 
                     @Override
@@ -287,7 +304,6 @@ public class MainActivity extends MainActivityBase {
         }
         try{
             mBannerAd.loadAndShow(MainApplication.BANNER_ID);
-            isShowBanner = true;
         }catch (Exception e) {
             e.printStackTrace();
         }

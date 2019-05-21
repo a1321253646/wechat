@@ -21,6 +21,9 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     public String mBannerPoint = "";
 
     public void startGameOrPause(boolean isStart){
+        if(!isStart && isPause){
+            return;
+        }
         String action = "";
         if(isStart){
             action = "start";
@@ -61,7 +64,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
         mHandler.sendEmptyMessageDelayed(3,500);
     }
 
-
+    private boolean isPause = false;
     @Override
     protected void onPause() {
         super.onPause();
