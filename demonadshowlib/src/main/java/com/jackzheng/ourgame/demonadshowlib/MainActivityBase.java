@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.nearme.game.sdk.GameCenterSDK;
+import com.nearme.game.sdk.callback.GameExitCallback;
 import com.umeng.analytics.MobclickAgent;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
@@ -101,6 +103,18 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             intent.setData(Uri.parse("http://d.taptap.com/latest?app_id=150760"));
             startActivity(intent);
         }*/
+        return "";
+    }
+    public String exitGame(String str){
+        //Log.d("jackzhng","exitGame===========================");
+        android.util.Log.d("jackzhng","exitGame===========================");
+        GameCenterSDK.getInstance().onExit(this, new GameExitCallback(){
+
+            @Override
+            public void exitGame() {
+                UnityPlayer.UnitySendMessage("Main Camera", "exitGame", "退出");
+            }
+        });
         return "";
     }
 }
