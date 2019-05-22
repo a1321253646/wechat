@@ -54,4 +54,5 @@ dependencies {
     implementation files('libs/umeng-common-1.4.4.jar')
     implementation files('libs/utdid4all-1.1.5.3_proguard.jar')
     implementation files('libs/unityutil.jar')
+    implementation 'com.zhy:okhttputils:2.6.2'
 }
