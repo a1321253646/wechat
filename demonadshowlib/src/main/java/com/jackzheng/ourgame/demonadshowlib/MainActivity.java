@@ -3,6 +3,7 @@ package com.jackzheng.ourgame.demonadshowlib;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -12,10 +13,19 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.gundam.sdk.shell.even.SDKEventKey;
+import cn.gundam.sdk.shell.even.SDKEventReceiver;
+import cn.gundam.sdk.shell.even.Subscribe;
+import cn.gundam.sdk.shell.exception.AliLackActivityException;
+import cn.gundam.sdk.shell.open.ParamInfo;
+import cn.gundam.sdk.shell.open.UCOrientation;
+import cn.gundam.sdk.shell.param.SDKParamKey;
+import cn.gundam.sdk.shell.param.SDKParams;
 import cn.sirius.nga.NGASDK;
 import cn.sirius.nga.NGASDKFactory;
 import cn.sirius.nga.properties.NGABannerController;
@@ -27,6 +37,8 @@ import cn.sirius.nga.properties.NGAInsertProperties;
 import cn.sirius.nga.properties.NGAWelcomeListener;
 import cn.sirius.nga.properties.NGAWelcomeProperties;
 import cn.sirius.nga.properties.NGAdController;
+import cn.uc.gamesdk.UCGameSdk;
+import cn.uc.paysdk.face.commons.Response;
 
 public class MainActivity extends MainActivityBase {
 
@@ -251,7 +263,97 @@ public class MainActivity extends MainActivityBase {
              //   throwable.printStackTrace();
             }
         });
+        UCGameSdk.defaultSdk().registerSDKEventReceiver(receiver);
+        ucSdkInit();
     }
+    /**
+     *回调事件
+     */
+    private SDKEventReceiver receiver = new SDKEventReceiver() {
+
+        @Subscribe(event = SDKEventKey.ON_EXIT_SUCC)
+        private void onExit(String desc) {
+            Log.d(TAG, "ON_EXIT_SUCC");
+            //Toast.makeText(MainActivity.this, ">> 游戏即将退出", Toast.LENGTH_LONG).show();
+
+            exitApp();
+        }
+
+        @Subscribe(event = SDKEventKey.ON_EXIT_CANCELED)
+        private void onExitCanceled(String desc) {
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    //Toast.makeText(MainActivity.this, ">> 继续游戏", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        @Subscribe(event = SDKEventKey.ON_INIT_SUCC)
+        private void onInitSucc() {
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, ">> 初始化成功", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        @Subscribe(event = SDKEventKey.ON_INIT_FAILED)
+        private void onInitFailed(String msg) {
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, ">> 初始化失败", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+
+    };
+
+    /**
+     * 退出游戏前，请调用本方法
+     * @param view
+     */
+    public void exit(View  view) {
+
+        try {
+            UCGameSdk.defaultSdk().exit(this, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            exitApp();
+        }
+    }
+    private void exitApp() {
+        finish();
+        //退出程序
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
+    private void ucSdkInit() {
+        ParamInfo gameParamInfo = new ParamInfo();
+
+        gameParamInfo.setGameId(1112585);
+        gameParamInfo.setOrientation(UCOrientation.LANDSCAPE);
+
+        SDKParams sdkParams = new SDKParams();
+        sdkParams.put(SDKParamKey.GAME_PARAMS, gameParamInfo);
+
+        try {
+            //初始化SDK
+            UCGameSdk.defaultSdk().initSdk(this, sdkParams);
+        } catch (AliLackActivityException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void initSdk(Activity activity, final NGASDK.InitCallback initCallback) {
         // 重新初始化sdk
         NGASDK ngasdk = NGASDKFactory.getNGASDK();

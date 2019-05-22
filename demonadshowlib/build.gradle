@@ -54,4 +54,8 @@ dependencies {
     implementation files('libs/utdid4all-1.1.5.3_proguard.jar')
     implementation files('libs/unityutil.jar')
     compileOnly files('libs/ngad-sdk-release-2.5.40.aar')
+    implementation files('libs/alipaySdk-20170309.jar')
+    implementation files('libs/ipaynow_onlywechat_v2.0.1.jar')
+    implementation files('libs/UCGameSaSdk-ninegame-8.1.0.jar')
+    implementation files('libs/ugpsdk-7.0.3.1-product-release.jar')
 }
