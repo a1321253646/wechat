@@ -32,6 +32,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
         }
         UnityPlayer.UnitySendMessage("Main Camera", "startOrPause", action);
     }
+    private boolean isStartSplash = false;
     @Override
     protected void onResume() {
         super.onResume();
@@ -40,6 +41,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
         mHandler=new Handler(){
             @Override
             public void handleMessage(Message msg) {
+                Log.d(TAG,"handleMessage msg.what="+msg.what);
                 super.handleMessage(msg);
                 if(msg.what == 1){
                     playInerAdDeal();
@@ -52,16 +54,20 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                     }
 
                 }else if(msg.what == 3){
-                    mHandler.removeMessages(4);
+                    mHandler.removeMessages(3);
                     if(isAdInit("")){
                         playSplashAdDeal();
                     }else{
-                        mHandler.sendEmptyMessageDelayed(4,500);
+                        mHandler.sendEmptyMessageDelayed(3,500);
                     }
                 }
             }
         };
-        mHandler.sendEmptyMessageDelayed(3,500);
+        if(!isStartSplash){
+            mHandler.sendEmptyMessageDelayed(3,500);
+            isStartSplash = true;
+        }
+
     }
 
     private boolean isPause = false;
