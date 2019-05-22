@@ -53,9 +53,9 @@ dependencies {
     implementation files('libs/umeng-common-1.4.4.jar')
     implementation files('libs/utdid4all-1.1.5.3_proguard.jar')
     implementation files('libs/unityutil.jar')
-<<<<<<< HEAD
     implementation files('libs/gamesdk-20190227.jar')
-=======
-    implementation 'com.zhy:okhttputils:2.6.2'
->>>>>>> gamebase
+    compileOnly files('libs/okhttputils-2.6.2.aar')
+    implementation files('libs/okhttp-3.3.1.jar')
+    implementation files('libs/oppo_mobad_api_v301_2018_12_07_release.jar')
+
 }

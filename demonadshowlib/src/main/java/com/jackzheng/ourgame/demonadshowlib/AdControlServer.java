@@ -17,9 +17,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
-import okhttp3.Response;
 
 import static com.jackzheng.ourgame.demonadshowlib.HttpUtils.sdkversion;
 
@@ -32,6 +32,7 @@ public class AdControlServer {
     public long cntime   = -1;
 
     private static  AdControlServer mIntance= new AdControlServer();
+
     OkHttpClient okHttpClient = null;
     private AdControlServer(){
 
@@ -91,8 +92,9 @@ public class AdControlServer {
         }
         allParams.put("uuid",TelephoneUtils.getUniqueUuid(context));
         String postStr =   mapToJson(allParams);
+        Log.d("jackzheng","postStr="+postStr );
         final String postString = "dsf=" + URLEncoder.encode(HttpUtils.encryptData(postStr));
-
+        Log.d("jackzheng","postString="+postString );
         OkHttpUtils
                 .post()
                 .url(path)
