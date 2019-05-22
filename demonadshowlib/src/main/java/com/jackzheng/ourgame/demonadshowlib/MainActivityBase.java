@@ -52,11 +52,11 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                     }
 
                 }else if(msg.what == 3){
-                    mHandler.removeMessages(4);
+                    mHandler.removeMessages(3);
                     if(isAdInit("")){
                         playSplashAdDeal();
                     }else{
-                        mHandler.sendEmptyMessageDelayed(4,500);
+                        mHandler.sendEmptyMessageDelayed(3,500);
                     }
                 }
             }
