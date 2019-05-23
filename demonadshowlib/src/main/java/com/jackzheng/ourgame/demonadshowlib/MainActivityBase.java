@@ -65,7 +65,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                 }
             }
         };
-        mHandler.sendEmptyMessageDelayed(3,500);
+    //    mHandler.sendEmptyMessageDelayed(3,500);
     }
 
     private boolean isPause = false;

@@ -9,7 +9,6 @@ import com.nearme.game.sdk.GameCenterSDK;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.commonsdk.UMConfigure;
 
-import org.apache.commons.logging.Log;
 
 public class MainApplication extends Application {
 

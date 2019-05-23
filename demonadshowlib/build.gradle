@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 25
 
     buildscript {
         repositories {
@@ -57,5 +57,6 @@ dependencies {
     compileOnly files('libs/okhttputils-2.6.2.aar')
     implementation files('libs/okhttp-3.3.1.jar')
     implementation files('libs/oppo_mobad_api_v301_2018_12_07_release.jar')
-
+    implementation files('libs/android-support-v4-25.3.1.jar')
+    implementation files('libs/android-support-annotations-25.3.1.jar')
 }
