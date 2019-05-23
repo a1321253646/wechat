@@ -73,15 +73,16 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
     private long mPreShowInsertTime = -1;
     @Override
     public void playInerAdDeal() {
+        if(!AdControlServer.getmIntance().chaping ){
+            return;
+        }
         if(mPreShowInsertTime != -1 && AdControlServer.getmIntance().bntime != -1){
             long time = System.currentTimeMillis();
             if(time - mPreShowInsertTime < AdControlServer.getmIntance().bntime *1000){
                 return;
             }
         }
-        if(!AdControlServer.getmIntance().chaping ){
-            return;
-        }
+
 
 
         mInterstitialAd = new InterstitialAd(this,INSERT_ID[mInsertIndex%4]);
@@ -91,7 +92,7 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
             @Override
             public void onAdShow() {
                 Log.d("jackzheng", "playInerAdDeal onAdShow ");
-
+                mPreShowInsertTime = System.currentTimeMillis();
             }
 
             @Override
@@ -132,15 +133,16 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
     private long mPreShowBannerTime = -1;
     @Override
     public void startShowBannerDeal() {
+        if(!AdControlServer.getmIntance().banner ){
+            return;
+        }
         if(mPreShowBannerTime != -1 && AdControlServer.getmIntance().bntime != -1){
             long time = System.currentTimeMillis();
             if(time - mPreShowBannerTime < AdControlServer.getmIntance().bntime *1000){
                 return;
             }
         }
-        if(!AdControlServer.getmIntance().banner ){
-            return;
-        }
+
 
         mBannerAd = new BannerAd(this,BANNER_ID[mBannerIndex%2]);
         mBannerIndex++;
@@ -294,7 +296,7 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
     @Override
     public void onAdShow() {
         Log.d("jackzheng", "mBannerView onAdShow");
-
+        mPreShowBannerTime = System.currentTimeMillis();
     }
 
     @Override
