@@ -30,7 +30,7 @@ public class AdControlServer {
     public long adtime   = -1;
     public long bntime   = -1;
     public long cntime   = -1;
-    public boolean isGetAdControl = false;
+
     private static  AdControlServer mIntance= new AdControlServer();
 
     OkHttpClient okHttpClient = null;

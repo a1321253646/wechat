@@ -32,6 +32,7 @@ public class HttpUtils {
     public static String sdkversion = "1.0.0";
     private final static String KEY="BUi%gs@*jPoC*#sc";
     private final static String IV="T43k&(Jsd8&9UUI9";
+
 /**
      * aes 加密
      * @param data
@@ -85,6 +86,7 @@ public class HttpUtils {
         }
         return null;
     }
+
     public static JSONObject httpPostJson(String path, Map<String,String> params, Activity context)
             throws Exception {
 
@@ -154,6 +156,12 @@ public class HttpUtils {
                 Log.d("jackzheng","string:"+string);
 
                 JSONObject jo = new JSONObject(string.replace("\0",""));
+                AdControlServer.getmIntance().chaping = jo.getInt("chaping")==1;
+                AdControlServer.getmIntance().shiping = jo.getInt("shiping")==1;
+                AdControlServer.getmIntance().banner = jo.getInt("banner")==1;
+                AdControlServer.getmIntance().adtime = jo.getInt("adtime");
+                AdControlServer.getmIntance().bntime = jo.getInt("bntime");
+                AdControlServer.getmIntance().cntime = jo.getInt("cntime");
                 return jo;
             }
 
