@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.oppo.mobad.api.InitParams;
 import com.oppo.mobad.api.MobAdManager;
+import com.oppo.mobad.api.ad.BannerAd;
 import com.oppo.mobad.api.ad.SplashAd;
 import com.oppo.mobad.api.listener.ISplashAdListener;
 import com.oppo.mobad.api.params.SplashAdParams;
@@ -30,7 +31,8 @@ public class MainActivity extends MainActivityBase {
 
     public final static String  APP_ID = "30085137";
     public final static String  SPLASH_ID = "60939";
-
+    public final static String[]  BANNER_ID = {"60970","60972"};
+    private BannerAd mBannerAd;
 
     @Override
     public boolean isAdInit(String str) {
@@ -56,10 +58,13 @@ public class MainActivity extends MainActivityBase {
            startActivity(intent);
     }
 
-
+    private int mBannerIndex = 0;
     @Override
     public void playInerAdDeal() {
 
+        mBannerAd = new BannerAd(this,BANNER_ID[mBannerIndex%2]);
+        mBannerIndex++;
+        
     }
 
     @Override
@@ -82,7 +87,7 @@ public class MainActivity extends MainActivityBase {
                 .setDebug(true)
                 .build();
         MobAdManager.getInstance().init(this,APP_ID, initParams);
-        checkAndRequestPermissions();
+   //     checkAndRequestPermissions();
     }
     ArrayList<String> mNeedRequestPMSList = new ArrayList<>();
     private void checkAndRequestPermissions() {

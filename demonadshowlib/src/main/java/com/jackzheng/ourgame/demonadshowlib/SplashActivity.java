@@ -55,6 +55,7 @@ public class SplashActivity extends Activity implements ISplashAdListener {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.d(TAG,"onCreate");
         super.onCreate(savedInstanceState);
         //
         setContentView(R.layout.activity_splash);
@@ -84,6 +85,7 @@ public class SplashActivity extends Activity implements ISplashAdListener {
     }
 
     private void fetchSplashAd() {
+        Log.d(TAG,"fetchSplashAd");
         try {
             /**
              * SplashAd初始化参数、这里可以设置获取广告最大超时时间，
@@ -116,6 +118,7 @@ public class SplashActivity extends Activity implements ISplashAdListener {
      * 结束闪屏页面，跳转主页面。
      */
     private void next() {
+        Log.d(TAG,"next");
         if (mCanJump) {
          //   Intent intent = new Intent(this, MainActivity.class);
          //   startActivity(intent);
