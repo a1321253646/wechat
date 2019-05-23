@@ -1,16 +1,21 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.uniplay.adsdk.utils.Base64;
 
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -29,6 +34,7 @@ public class HttpUtils {
     public static String sdkversion = "1.0.0";
     private final static String KEY="BUi%gs@*jPoC*#sc";
     private final static String IV="T43k&(Jsd8&9UUI9";
+
 /**
      * aes 加密
      * @param data
@@ -83,9 +89,6 @@ public class HttpUtils {
         return null;
     }
 
-    /**
-     *   packageName, packageVer,adType,
-     */
     public static JSONObject httpPostJson(String path, Map<String,String> params, Activity context)
             throws Exception {
 
@@ -115,6 +118,7 @@ public class HttpUtils {
         allParams.put("uuid",TelephoneUtils.getUniqueUuid(context));
         String postStr = mapTojson(allParams);
         final String postString = "dsf=" + URLEncoder.encode(HttpUtils.encryptData(postStr));
+        Log.d("jackzheng","postString:"+postString);
 //        System.out.println(postString);
         try {
 
@@ -147,14 +151,19 @@ public class HttpUtils {
 //            System.out.println("response code:" + httpURLConnection.getResponseCode());
             if (httpURLConnection.getResponseCode() == 200) {// 判断请求码是否200，否则为失败
                 InputStream is = httpURLConnection.getInputStream(); // 获取输入流
-                byte[] data = readStream(is); // 把输入流转换成字符串组
-                String json = new String(data); // 把字符串组转换成字符串
-            
+                String json = stream2string(is,"utf-8"); // 把字符串组转换成字符串
+
                 // 数据形式：{"total":2,"success":true,"arrayData":[{"id":1,"name":"张三"},{"id":2,"name":"李斯"}]}
                 String string = HttpUtils.decryptData(json);
-            
+                Log.d("jackzheng","string:"+string);
 
                 JSONObject jo = new JSONObject(string.replace("\0",""));
+                AdControlServer.getmIntance().chaping = jo.getInt("chaping")==1;
+                AdControlServer.getmIntance().shiping = jo.getInt("shiping")==1;
+                AdControlServer.getmIntance().banner = jo.getInt("banner")==1;
+                AdControlServer.getmIntance().adtime = jo.getInt("adtime");
+                AdControlServer.getmIntance().bntime = jo.getInt("bntime");
+                AdControlServer.getmIntance().cntime = jo.getInt("cntime");
                 return jo;
             }
 
@@ -165,6 +174,28 @@ public class HttpUtils {
         }
 
         return null;
+
+
+    }
+
+    public static String stream2string(InputStream is, String encode) {
+        if (is != null) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, encode));
+                StringBuilder sb = new StringBuilder();
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                is.close();
+                return sb.toString();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
     }
 
     public static String mapTojson(Map<String,String> params){
