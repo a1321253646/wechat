@@ -26,11 +26,11 @@ import static com.jackzheng.ourgame.demonadshowlib.HttpUtils.sdkversion;
 public class AdControlServer {
     public boolean chaping = true;
     public boolean shiping  = true;
-    public boolean banner = true;
+    public boolean banner = false;
     public long adtime   = -1;
     public long bntime   = -1;
     public long cntime   = -1;
-
+    public boolean isGetAdControl = false;
     private static  AdControlServer mIntance= new AdControlServer();
 
     OkHttpClient okHttpClient = null;
@@ -66,67 +66,20 @@ public class AdControlServer {
         }
     }
 
-    public void getInitDate(String path, Map<String,String> params, Activity context) throws JSONException {
-        Map<String,String> allParams = new HashMap<String,String>();
-        allParams.putAll(params);
-        allParams.put("imsi",TelephoneUtils.getIMSI(context));
-        allParams.put("imei",TelephoneUtils.getIMEI(context));
-        allParams.put("phoneModel",TelephoneUtils.getSystemModel());
-        allParams.put("sysVersion",TelephoneUtils.getSystemVersion());
-        allParams.put("packageName",TelephoneUtils.getPackageName(context));
-        allParams.put("packageVer",TelephoneUtils.getVersionCode(context));
+    public void getInitDate(final String path,final Map<String,String> params,final Activity context) throws JSONException {
 
-        final JSONObject jsonObject = TelephoneUtils.getGSMCellLocationInfo(context);
-        if (jsonObject != null){
+        Thread t = new Thread(){
+            @Override
+            public void run() {
+                try {
 
-            allParams.put("lac",jsonObject.getString("lac"));
-            allParams.put("celid",jsonObject.getString("cid"));
-        }
-        allParams.put("sdkVersion",sdkversion);
-        if (TelephoneUtils.isBackground(context)){
-            allParams.put("foreground","0");
-            System.out.println("00000================foreground:");
-        }else{
-            allParams.put("foreground","1");
-            System.out.println("11111================foreground:");
-        }
-        allParams.put("uuid",TelephoneUtils.getUniqueUuid(context));
-        String postStr =   mapToJson(allParams);
-        Log.d("jackzheng","postStr="+postStr );
-        final String postString = "dsf=" + URLEncoder.encode(HttpUtils.encryptData(postStr));
-        Log.d("jackzheng","postString="+postString );
-        OkHttpUtils
-                .post()
-                .url(path)
-                .addParams("dsf", postString)
-                .build()
-                .execute(new StringCallback() {
-                    @Override
-                    public void onError(Call call, Exception e, int id) {
-
-                    }
-
-                    @Override
-                    public void onResponse(String response, int id) {
-                        Log.d("jackzheng","onResponse response="+response);
-                        String string = HttpUtils.decryptData(response);
-                        if(!TextUtils.isEmpty(string)){
-                            try {
-                                JSONObject jb = new JSONObject(string);
-                                Log.d("jackzheng","onResponse response decryptData="+string);
-                                chaping = jb.getInt("chaping")==1;
-                                shiping = jb.getInt("shiping")==1;
-                                banner = jb.getInt("banner")==1;
-                                adtime = jb.getLong("adtime");
-                                bntime = jb.getLong("bntime");
-                                cntime = jb.getLong("cntime");
-                                Log.d("jackzheng","chaping="+chaping+" shiping="+shiping+" banner="+banner+" adtime="+adtime+" bntime="+bntime+" cntime="+cntime);
-                            } catch (JSONException e1) {
-                                e1.printStackTrace();
-                            }
-                        }
-                    }
-                });
+                    HttpUtils.httpPostJson(path,params,context);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        t.start();
     }
 
 }

@@ -36,6 +36,8 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
         }
         UnityPlayer.UnitySendMessage("Main Camera", "startOrPause", action);
     }
+
+    private boolean isShowSplash = false;
     @Override
     protected void onResume() {
         super.onResume();
@@ -65,7 +67,6 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                 }
             }
         };
-    //    mHandler.sendEmptyMessageDelayed(3,500);
     }
 
     private boolean isPause = false;

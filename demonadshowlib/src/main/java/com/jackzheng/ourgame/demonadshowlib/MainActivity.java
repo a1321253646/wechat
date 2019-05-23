@@ -70,8 +70,20 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
 
     private InterstitialAd mInterstitialAd;
     private int mInsertIndex = 0;
+    private long mPreShowInsertTime = -1;
     @Override
     public void playInerAdDeal() {
+        if(mPreShowInsertTime != -1 && AdControlServer.getmIntance().bntime != -1){
+            long time = System.currentTimeMillis();
+            if(time - mPreShowInsertTime < AdControlServer.getmIntance().bntime *1000){
+                return;
+            }
+        }
+        if(!AdControlServer.getmIntance().chaping ){
+            return;
+        }
+
+
         mInterstitialAd = new InterstitialAd(this,INSERT_ID[mInsertIndex%4]);
         mInsertIndex++;
         mInterstitialAd.setAdListener( new IInterstitialAdListener(){
@@ -103,6 +115,7 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
             @Override
             public void onAdClose() {
                 Log.d("jackzheng", "playInerAdDeal onAdClose ");
+                mPreShowInsertTime = System.currentTimeMillis();
                 startGameOrPause(true);
                 mInterstitialAd.destroyAd();
             }
@@ -115,8 +128,20 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
     FrameLayout mBannerView;
     private int mBannerViewHight;
     private int mBannerViewWight;
+
+    private long mPreShowBannerTime = -1;
     @Override
     public void startShowBannerDeal() {
+        if(mPreShowBannerTime != -1 && AdControlServer.getmIntance().bntime != -1){
+            long time = System.currentTimeMillis();
+            if(time - mPreShowBannerTime < AdControlServer.getmIntance().bntime *1000){
+                return;
+            }
+        }
+        if(!AdControlServer.getmIntance().banner ){
+            return;
+        }
+
         mBannerAd = new BannerAd(this,BANNER_ID[mBannerIndex%2]);
         mBannerIndex++;
         if(mBannerView == null){
@@ -260,6 +285,7 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
     @Override
     public void onAdClose() {
         Log.d("jackzheng", "mBannerView onAdClose");
+        mPreShowBannerTime = System.currentTimeMillis();
         mBannerView.setVisibility(View.GONE);
         mBannerView.removeAllViews();
         mBannerAd.destroyAd();
