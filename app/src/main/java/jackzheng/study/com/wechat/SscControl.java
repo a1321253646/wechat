@@ -78,6 +78,7 @@ public class SscControl {
         @Override
         public void run() {
             //TODO 停止下注处理
+            XposedBridge.log("mStopRun = ");
             mHandler.removeCallbacks(mStopRun);
         //    mHandler.postDelayed(mRequitRun,getDelayMs());
             mCurrentResult.index = getIndex();
@@ -87,7 +88,10 @@ public class SscControl {
     Runnable mTimeRun  = new Runnable() {
         @Override
         public void run() {
+            XposedBridge.log("mTimeRun isInit= "+isInit);
             if(!isInit){
+                mHandler.removeCallbacks(mTimeRun);
+                mHandler.postDelayed(mTimeRun,5000);
                 return;
             }
             long delay = getStopTime();

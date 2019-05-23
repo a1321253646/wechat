@@ -538,7 +538,7 @@ public class ServerManager2 {
         }
         int he = date.zhi % 10;
         if(bean.heNumber.size() > 0){
-            if(bean.isHe){
+            if(bean.isThirdHe){
                 boolean  isHave = false;
                 for(Integer tmp : bean.heNumber){
                     if(tmp == he){
