@@ -22,8 +22,10 @@ import android.widget.Toast;
 import com.oppo.mobad.api.InitParams;
 import com.oppo.mobad.api.MobAdManager;
 import com.oppo.mobad.api.ad.BannerAd;
+import com.oppo.mobad.api.ad.InterstitialAd;
 import com.oppo.mobad.api.ad.SplashAd;
 import com.oppo.mobad.api.listener.IBannerAdListener;
+import com.oppo.mobad.api.listener.IInterstitialAdListener;
 import com.oppo.mobad.api.listener.ISplashAdListener;
 import com.oppo.mobad.api.params.SplashAdParams;
 
@@ -34,11 +36,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends MainActivityBase implements IBannerAdListener {
+public class MainActivity extends MainActivityBase implements IBannerAdListener  {
 
     public final static String  APP_ID = "30085137";
     public final static String  SPLASH_ID = "60939";
     public final static String[]  BANNER_ID = {"60970","60972"};
+    public final static String[]  INSERT_ID = {"60969","60973","60950","60945"};
     private BannerAd mBannerAd;
 
     @Override
@@ -65,10 +68,46 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
            startActivity(intent);
     }
 
-
+    private InterstitialAd mInterstitialAd;
+    private int mInsertIndex = 0;
     @Override
     public void playInerAdDeal() {
+        mInterstitialAd = new InterstitialAd(this,INSERT_ID[mInsertIndex%4]);
+        mInsertIndex++;
+        mInterstitialAd.setAdListener( new IInterstitialAdListener(){
 
+            @Override
+            public void onAdShow() {
+                Log.d("jackzheng", "playInerAdDeal onAdShow ");
+
+            }
+
+            @Override
+            public void onAdFailed(String s) {
+                Log.d("jackzheng", "playInerAdDeal onAdFailed s="+s);
+                mInterstitialAd.destroyAd();
+            }
+
+            @Override
+            public void onAdClick() {
+                Log.d("jackzheng", "playInerAdDeal onAdClick ");
+            }
+
+            @Override
+            public void onAdReady() {
+                Log.d("jackzheng", "playInerAdDeal onAdReady ");
+                mInterstitialAd.showAd();
+                startGameOrPause(false);
+            }
+
+            @Override
+            public void onAdClose() {
+                Log.d("jackzheng", "playInerAdDeal onAdClose ");
+                startGameOrPause(true);
+                mInterstitialAd.destroyAd();
+            }
+        });
+        mInterstitialAd.loadAd();
 
         
     }
@@ -215,33 +254,34 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
 
     @Override
     public void onAdReady() {
-        Log.d("jackzheng", "onAdReady");
+        Log.d("jackzheng", "mBannerView onAdReady");
     }
 
     @Override
     public void onAdClose() {
-        Log.d("jackzheng", "onAdClose");
+        Log.d("jackzheng", "mBannerView onAdClose");
         mBannerView.setVisibility(View.GONE);
         mBannerView.removeAllViews();
-        startGameOrPause(true);
+        mBannerAd.destroyAd();
     }
 
     @Override
     public void onAdShow() {
-        Log.d("jackzheng", "onAdShow");
-        startGameOrPause(false);
+        Log.d("jackzheng", "mBannerView onAdShow");
+
     }
 
     @Override
     public void onAdFailed(String s) {
-        Log.d("jackzheng", "onAdFailed:errMsg=" + (null != s ? s : "原因不明"));
+        Log.d("jackzheng", "mBannerView onAdFailed:errMsg=" + (null != s ? s : "原因不明"));
         mBannerView.setVisibility(View.GONE);
         mBannerView.removeAllViews();
+        mBannerAd.destroyAd();
     }
 
     @Override
     public void onAdClick() {
-        Log.d("jackzheng", "onAdClick");
+        Log.d("jackzheng", "mBannerView onAdClick");
         mBannerView.setVisibility(View.GONE);
         mBannerView.removeAllViews();
     }
