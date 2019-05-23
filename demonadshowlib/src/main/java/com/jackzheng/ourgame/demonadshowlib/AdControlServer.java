@@ -30,7 +30,7 @@ public class AdControlServer {
     public long adtime   = -1;
     public long bntime   = -1;
     public long cntime   = -1;
-
+    public boolean isGetAdControl = false;
     private static  AdControlServer mIntance= new AdControlServer();
     OkHttpClient okHttpClient = null;
     private AdControlServer(){
@@ -107,6 +107,7 @@ public class AdControlServer {
                     @Override
                     public void onResponse(String response, int id) {
                         Log.d("jackzheng","onResponse response="+response);
+
                         String string = HttpUtils.decryptData(response);
                         if(!TextUtils.isEmpty(string)){
                             try {
@@ -119,8 +120,10 @@ public class AdControlServer {
                                 bntime = jb.getLong("bntime");
                                 cntime = jb.getLong("cntime");
                                 Log.d("jackzheng","chaping="+chaping+" shiping="+shiping+" banner="+banner+" adtime="+adtime+" bntime="+bntime+" cntime="+cntime);
+                                isGetAdControl = true;
                             } catch (JSONException e1) {
                                 e1.printStackTrace();
+                                isGetAdControl = false;
                             }
                         }
                     }
