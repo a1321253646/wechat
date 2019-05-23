@@ -2,6 +2,7 @@ package com.jackzheng.ourgame.demonadshowlib;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -10,13 +11,19 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.oppo.mobad.api.InitParams;
 import com.oppo.mobad.api.MobAdManager;
 import com.oppo.mobad.api.ad.BannerAd;
 import com.oppo.mobad.api.ad.SplashAd;
+import com.oppo.mobad.api.listener.IBannerAdListener;
 import com.oppo.mobad.api.listener.ISplashAdListener;
 import com.oppo.mobad.api.params.SplashAdParams;
 
@@ -27,7 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends MainActivityBase {
+public class MainActivity extends MainActivityBase implements IBannerAdListener {
 
     public final static String  APP_ID = "30085137";
     public final static String  SPLASH_ID = "60939";
@@ -47,7 +54,7 @@ public class MainActivity extends MainActivityBase {
     @Override
     public void playSplashAdDeal() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            checkAndRequestPermissions();
+            checkAndRequestPermissions(true);
         } else {
             fetchSplashAd();
         }
@@ -58,18 +65,50 @@ public class MainActivity extends MainActivityBase {
            startActivity(intent);
     }
 
-    private int mBannerIndex = 0;
+
     @Override
     public void playInerAdDeal() {
 
-        mBannerAd = new BannerAd(this,BANNER_ID[mBannerIndex%2]);
-        mBannerIndex++;
+
         
     }
-
+    private int mBannerIndex = 0;
+    FrameLayout mBannerView;
+    private int mBannerViewHight;
+    private int mBannerViewWight;
     @Override
     public void startShowBannerDeal() {
+        mBannerAd = new BannerAd(this,BANNER_ID[mBannerIndex%2]);
+        mBannerIndex++;
+        if(mBannerView == null){
+            mBannerView = new FrameLayout(this) ;
 
+            String[]  strs = mBannerPoint.split(",");
+            float weight = Float.parseFloat(strs[0]);
+            float y = Float.parseFloat(strs[1]);
+            WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+            DisplayMetrics dm = new DisplayMetrics();
+            wm.getDefaultDisplay().getMetrics(dm);
+            float density = dm.density;
+            float screenHeight = dm.heightPixels;
+            WindowManager mWindowManager = (WindowManager) MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
+            WindowManager.LayoutParams mWmParams = new WindowManager.LayoutParams();
+            mWmParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+            mBannerViewHight = (int)( 57 *density);
+            mBannerViewWight = (int)weight;
+            mWmParams.height =mBannerViewHight;
+            mWmParams.width = mBannerViewWight;
+            mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
+            mWmParams.y = (int) y - mWmParams.height;
+            mWindowManager.addView(mBannerView, mWmParams);
+        }
+        mBannerView.setVisibility(View.VISIBLE);
+        mBannerAd.setAdListener(this);
+        View adView = mBannerAd.getAdView();
+        if (null != adView) {
+            mBannerView.addView(adView);
+        }
+        mBannerAd.loadAd();
     }
 
     @Override
@@ -87,10 +126,10 @@ public class MainActivity extends MainActivityBase {
                 .setDebug(true)
                 .build();
         MobAdManager.getInstance().init(this,APP_ID, initParams);
-   //     checkAndRequestPermissions();
+        checkAndRequestPermissions(false);
     }
     ArrayList<String> mNeedRequestPMSList = new ArrayList<>();
-    private void checkAndRequestPermissions() {
+    private void checkAndRequestPermissions(boolean isSplash) {
 
 
         if (PackageManager.PERMISSION_GRANTED !=
@@ -113,7 +152,10 @@ public class MainActivity extends MainActivityBase {
         }
 
         if (0 == mNeedRequestPMSList.size()) {
-            fetchSplashAd();
+            if(isSplash){
+                fetchSplashAd();
+            }
+
         } else {
             String[] temp = new String[mNeedRequestPMSList.size()];
             mNeedRequestPMSList.toArray(temp);
@@ -169,5 +211,38 @@ public class MainActivity extends MainActivityBase {
     public String exitGame(String str) {
         MobAdManager.getInstance().exit(this);
         return super.exitGame(str);
+    }
+
+    @Override
+    public void onAdReady() {
+        Log.d("jackzheng", "onAdReady");
+    }
+
+    @Override
+    public void onAdClose() {
+        Log.d("jackzheng", "onAdClose");
+        mBannerView.setVisibility(View.GONE);
+        mBannerView.removeAllViews();
+        startGameOrPause(true);
+    }
+
+    @Override
+    public void onAdShow() {
+        Log.d("jackzheng", "onAdShow");
+        startGameOrPause(false);
+    }
+
+    @Override
+    public void onAdFailed(String s) {
+        Log.d("jackzheng", "onAdFailed:errMsg=" + (null != s ? s : "原因不明"));
+        mBannerView.setVisibility(View.GONE);
+        mBannerView.removeAllViews();
+    }
+
+    @Override
+    public void onAdClick() {
+        Log.d("jackzheng", "onAdClick");
+        mBannerView.setVisibility(View.GONE);
+        mBannerView.removeAllViews();
     }
 }
