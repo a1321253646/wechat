@@ -110,6 +110,7 @@ public class MainActivity extends MainActivityBase {
                         Log.e(TAG, "mAdWorker ad onStimulateSuccess");
                     }
                 }, AdType.AD_INTERSTITIAL);
+                isInserAdReady("");
                 return mAdWorker;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -209,12 +210,12 @@ public class MainActivity extends MainActivityBase {
     private long mInsertPreShow = -1;
     @Override
     public void playInerAdDeal(){
-        if(!AdControlServer.getmIntance().banner){
+        if(!AdControlServer.getmIntance().chaping){
             return;
         }
-        if(mInsertPreShow != -1 && AdControlServer.getmIntance().bntime != -1){
+        if(mInsertPreShow != -1 && AdControlServer.getmIntance().cntime != -1){
             long time = System.currentTimeMillis();
-            if(mInsertPreShow + AdControlServer.getmIntance().bntime*1000  > time ){
+            if(mInsertPreShow + AdControlServer.getmIntance().cntime*1000  > time ){
                 return;
             }
         }
