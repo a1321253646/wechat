@@ -20,6 +20,8 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     public abstract void startShowBannerDeal();
     public String mBannerPoint = "";
 
+    public static String CHANNEL_VERSION = "";
+
     public void startGameOrPause(boolean isStart){
         if(!isStart && isPause){
             return;
@@ -32,6 +34,8 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
         }
         UnityPlayer.UnitySendMessage("Main Camera", "startOrPause", action);
     }
+
+    private boolean isShowSplash = false;
     @Override
     protected void onResume() {
         super.onResume();
@@ -61,7 +65,11 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                 }
             }
         };
-        mHandler.sendEmptyMessageDelayed(3,500);
+        if(!isShowSplash){
+            mHandler.sendEmptyMessageDelayed(3,500);
+            isShowSplash = true;
+        }
+
     }
 
     private boolean isPause = false;
