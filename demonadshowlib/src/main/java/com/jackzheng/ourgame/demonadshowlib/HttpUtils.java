@@ -162,6 +162,7 @@ public class HttpUtils {
                 AdControlServer.getmIntance().adtime = jo.getInt("adtime");
                 AdControlServer.getmIntance().bntime = jo.getInt("bntime");
                 AdControlServer.getmIntance().cntime = jo.getInt("cntime");
+                AdControlServer.getmIntance().isGet =true;
                 Log.d("jackzheng","chaping=:"+AdControlServer.getmIntance().chaping+" shiping="+ AdControlServer.getmIntance().shiping+" banner="+AdControlServer.getmIntance().banner);
                 Log.d("jackzheng","adtime=:"+AdControlServer.getmIntance().adtime+" bntime="+ AdControlServer.getmIntance().bntime+" cntime="+AdControlServer.getmIntance().cntime);
                 return jo;

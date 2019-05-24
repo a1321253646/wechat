@@ -36,6 +36,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     }
 
     private boolean isShowSplash = false;
+    private boolean isFristAutoInsert = true;
     @Override
     protected void onResume() {
         super.onResume();
@@ -62,6 +63,18 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                     }else{
                         mHandler.sendEmptyMessageDelayed(3,500);
                     }
+                }else if(msg.what == 4){
+                    mHandler.removeMessages(4);
+                    if(!AdControlServer.getmIntance().isGet){
+                        mHandler.sendEmptyMessageDelayed(4,1000);
+                    }else if(AdControlServer.getmIntance().adtime   > 0){
+                        if(isFristAutoInsert){
+                            isFristAutoInsert = false;
+                        }else{
+                            playInerAdDeal();
+                        }
+                        mHandler.sendEmptyMessageDelayed(4,AdControlServer.getmIntance().adtime *1000);
+                    }
                 }
             }
         };
@@ -69,6 +82,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             mHandler.sendEmptyMessageDelayed(3,500);
             isShowSplash = true;
         }
+        mHandler.sendEmptyMessageDelayed(4,1000);
 
     }
 
