@@ -250,7 +250,7 @@ public class TelephoneUtils
         int checkSelfPermission = 0;
 
         if (Build.VERSION.SDK_INT >= 23) {
-            checkSelfPermission  = context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+            checkSelfPermission  = context.checkCallingPermission(Manifest.permission.ACCESS_FINE_LOCATION);
 
         }
           if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
