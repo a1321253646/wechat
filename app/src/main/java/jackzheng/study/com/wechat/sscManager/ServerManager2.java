@@ -292,7 +292,7 @@ public class ServerManager2 {
                         zhi+=numbers[iii];
                         date.han.add(numbers[iii]);
                         if(numberList.size() == 0){
-                            numberList.add(iii);
+                            numberList.add(numbers[iii]);
                         }else{
                             boolean isAdd = false;
                            for(int iiii = 0 ;iiii < numberList.size(); iiii++ ){
@@ -308,6 +308,11 @@ public class ServerManager2 {
                         }
                     }
                 }
+                String ntmp = "";
+                    for(Integer hantmp: numberList){
+                        ntmp = ntmp+hantmp;
+                    }
+                    XposedBridge.log("numberList = "+ntmp);
                 date.zhi = zhi;
                  if(RegularUtils2.getXiongDi(numberList, 3)){
                      date.xiongdi = 3;
@@ -321,15 +326,30 @@ public class ServerManager2 {
                     if(preNumber == numberList.get(sam)){
                         samTmp ++;
                     }else{
-                        preNumber = numberList.get(sam);
                         if(samTmp > maxSame){
                             maxSame = samTmp;
                         }
                         samTmp = 1;
                     }
+                     preNumber = numberList.get(sam);
                  }
+                if(samTmp > maxSame){
+                    maxSame = samTmp;
+                }
+
+                String tmp = "";
+                if(date.han.size() > 0){
+                    for(Integer hantmp: date.han){
+                        tmp = tmp+hantmp;
+                    }
+                }
                  date.chong = maxSame;
                  XposedBridge.log("openNumberDeal add local="+local);
+                XposedBridge.log("openNumberDeal date han="+tmp);
+                XposedBridge.log("openNumberDeal date zhi="+date.zhi);
+                XposedBridge.log("openNumberDeal date xiongdi="+date.xiongdi);
+                XposedBridge.log("openNumberDeal date chong="+date.chong);
+                XposedBridge.log("openNumberDeal date isChongChong="+date.isChongChong);
                 value.put(local , date);
             }
         }
@@ -348,7 +368,7 @@ public class ServerManager2 {
                 zhi += numbers[ii];
                 date.han.add(numbers[ii]);
                 if (numberList.size() == 0) {
-                    numberList.add(ii);
+                    numberList.add(numbers[ii]);
                 } else {
                     boolean isAdd = false;
                     for (int iiii = 0; iiii < numberList.size(); iiii++) {
@@ -377,21 +397,37 @@ public class ServerManager2 {
             for(int sam = 0 ; sam < numberList.size();sam++){
                 if(preNumber == numberList.get(sam)){
                     samTmp ++;
+
                 }else{
-                    preNumber = numberList.get(sam);
                     if(samTmp > maxSame){
                         maxSame = samTmp;
                     }
                     samTmp = 1;
                 }
+                preNumber = numberList.get(sam);
+            }
+            if(samTmp > maxSame){
+                maxSame = samTmp;
             }
             date.chong = maxSame;
             if(numberList.get(0)== numberList.get(1) && numberList.get(2)== numberList.get(3)){
                 date.isChongChong = true;
             }
             XposedBridge.log("openNumberDeal add local="+local);
+            String tmp = "";
+            if(date.han.size() > 0){
+                for(Integer hantmp: date.han){
+                    tmp = tmp+hantmp;
+                }
+            }
+            XposedBridge.log("openNumberDeal date han="+tmp);
+            XposedBridge.log("openNumberDeal date zhi="+date.zhi);
+            XposedBridge.log("openNumberDeal date xiongdi="+date.xiongdi);
+            XposedBridge.log("openNumberDeal date chong="+date.chong);
+            XposedBridge.log("openNumberDeal date isChongChong="+date.isChongChong);
             value.put(local , date);
         }
+
         return value;
     }
 
