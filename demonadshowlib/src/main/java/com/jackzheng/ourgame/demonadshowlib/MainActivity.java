@@ -15,6 +15,8 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.unity3d.player.UnityPlayer;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -315,28 +317,16 @@ public class MainActivity extends MainActivityBase {
 
         @Subscribe(event = SDKEventKey.ON_EXIT_SUCC)
         private void onExitSucc() {
-
+            Toast.makeText(MainActivity.this, ">> 确认退出游戏", Toast.LENGTH_LONG).show();
+            UnityPlayer.UnitySendMessage("Main Camera", "exitGame", "退出");
         }
         @Subscribe(event = SDKEventKey.ON_EXIT_CANCELED)
         private void onExitCanceled() {
-
+            Toast.makeText(MainActivity.this, ">> 取消退出游戏", Toast.LENGTH_LONG).show();
         }
 
     };
 
-    /**
-     * 退出游戏前，请调用本方法
-     * @param view
-     */
-    public void exit(View  view) {
-
-        try {
-            UCGameSdk.defaultSdk().exit(this, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            exitApp();
-        }
-    }
     private void exitApp() {
         finish();
         //退出程序
