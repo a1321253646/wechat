@@ -22,6 +22,7 @@ import cn.gundam.sdk.shell.even.SDKEventKey;
 import cn.gundam.sdk.shell.even.SDKEventReceiver;
 import cn.gundam.sdk.shell.even.Subscribe;
 import cn.gundam.sdk.shell.exception.AliLackActivityException;
+import cn.gundam.sdk.shell.exception.AliNotInitException;
 import cn.gundam.sdk.shell.open.ParamInfo;
 import cn.gundam.sdk.shell.open.UCOrientation;
 import cn.gundam.sdk.shell.param.SDKParamKey;
@@ -274,7 +275,7 @@ public class MainActivity extends MainActivityBase {
         @Subscribe(event = SDKEventKey.ON_EXIT_SUCC)
         private void onExit(String desc) {
             Log.d(TAG, "ON_EXIT_SUCC");
-            //Toast.makeText(MainActivity.this, ">> 游戏即将退出", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, ">> 游戏即将退出", Toast.LENGTH_LONG).show();
 
             exitApp();
         }
@@ -285,7 +286,7 @@ public class MainActivity extends MainActivityBase {
 
                 @Override
                 public void run() {
-                    //Toast.makeText(MainActivity.this, ">> 继续游戏", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, ">> 继续游戏", Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -312,6 +313,14 @@ public class MainActivity extends MainActivityBase {
             });
         }
 
+        @Subscribe(event = SDKEventKey.ON_EXIT_SUCC)
+        private void onExitSucc() {
+
+        }
+        @Subscribe(event = SDKEventKey.ON_EXIT_CANCELED)
+        private void onExitCanceled() {
+
+        }
 
     };
 
@@ -361,5 +370,20 @@ public class MainActivity extends MainActivityBase {
         //打Release包的时候，需要把DebugMode设置为false
         args.put(NGASDK.DEBUG_MODE, "false");
         ngasdk.init(activity, args, initCallback);
+    }
+    public String exitGame(String s){
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    UCGameSdk.defaultSdk().exit(MainActivity.this,null);
+                } catch (AliLackActivityException e) {
+                    e.printStackTrace();
+                } catch (AliNotInitException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        return "";
     }
 }
