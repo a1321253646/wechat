@@ -266,8 +266,8 @@ public class MainActivity extends MainActivityBase {
              //   throwable.printStackTrace();
             }
         });
-        UCGameSdk.defaultSdk().registerSDKEventReceiver(receiver);
-        ucSdkInit();
+     //   UCGameSdk.defaultSdk().registerSDKEventReceiver(receiver);
+     //   ucSdkInit();
     }
     /**
      *回调事件
