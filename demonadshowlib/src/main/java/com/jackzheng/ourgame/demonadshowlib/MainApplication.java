@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
 import com.nearme.game.sdk.GameCenterSDK;
+import com.qsnmz.qslib.QsAd;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.commonsdk.UMConfigure;
 
@@ -43,6 +44,8 @@ public class MainApplication extends Application {
 
         String appSecret = "30fe6b1d10cb4fd89234309e0be9b288";
         GameCenterSDK.init(appSecret, this);
+        QsAd.init(this,MainActivity.APP_ID);  //appId
+        QsAd.isShowLog = false;
     }
 
 }

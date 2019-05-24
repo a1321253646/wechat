@@ -78,6 +78,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     }
 
     public boolean startShowBanner(String point){
+        Log.d(TAG,"startShowBanner===========================");
         mBannerPoint = point;
         mHandler.sendEmptyMessage(2);
         return true;
