@@ -20,7 +20,7 @@ public class MainActivity extends MainActivityBase {
     }
 
     @Override
-    public void playInerAdDeal() {
+    public void playInerAdDeal(boolean isMust) {
 
     }
 
