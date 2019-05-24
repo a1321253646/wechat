@@ -1,9 +1,9 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
 import android.app.Activity;
+import android.util.Base64;
 import android.util.Log;
 
-import com.uniplay.adsdk.utils.Base64;
 
 import org.json.JSONObject;
 
@@ -26,8 +26,6 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import static com.uniplay.adsdk.utils.Utils.readStream;
-
 public class HttpUtils {
 
 
@@ -35,14 +33,14 @@ public class HttpUtils {
     private final static String KEY="BUi%gs@*jPoC*#sc";
     private final static String IV="T43k&(Jsd8&9UUI9";
 
-/**
+    /**
      * aes 加密
      * @param data
      * @return
      */
     public static String encryptData(String data){
         try {
-            data = new String(Base64.encode(data.getBytes()));
+            data = new String(Base64.encodeToString(data.getBytes("UTF-8"),Base64.DEFAULT));
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             int blockSize = cipher.getBlockSize();
             byte[] dataBytes = data.getBytes();
@@ -56,7 +54,7 @@ public class HttpUtils {
             IvParameterSpec ivspec = new IvParameterSpec(IV.getBytes());
             cipher.init(Cipher.ENCRYPT_MODE, keyspec, ivspec);
             byte[] encrypted = cipher.doFinal(plaintext);
-            return new String(Base64.encode(encrypted));
+            return new String(Base64.encodeToString(encrypted,Base64.DEFAULT));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -71,7 +69,7 @@ public class HttpUtils {
      */
     public static String decryptData(String data){
         try {
-            byte[] encrypted1 =Base64.decode(data);
+            byte[] encrypted1 =Base64.decode(data,Base64.DEFAULT);
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             SecretKeySpec keyspec = new SecretKeySpec(KEY.getBytes(), "AES");
             IvParameterSpec ivspec = new IvParameterSpec(IV.getBytes());
@@ -81,7 +79,7 @@ public class HttpUtils {
             if (original == null || original.length == 0){
                 return null;
             }
-            String originalString = new String(Base64.decode(new String(original)));
+            String originalString = new String(Base64.decode(new String(original),Base64.DEFAULT));
             return originalString;
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,6 +162,8 @@ public class HttpUtils {
                 AdControlServer.getmIntance().adtime = jo.getInt("adtime");
                 AdControlServer.getmIntance().bntime = jo.getInt("bntime");
                 AdControlServer.getmIntance().cntime = jo.getInt("cntime");
+                Log.d("jackzheng","chaping=:"+AdControlServer.getmIntance().chaping+" shiping="+ AdControlServer.getmIntance().shiping+" banner="+AdControlServer.getmIntance().banner);
+                Log.d("jackzheng","adtime=:"+AdControlServer.getmIntance().adtime+" bntime="+ AdControlServer.getmIntance().bntime+" cntime="+AdControlServer.getmIntance().cntime);
                 return jo;
             }
 
