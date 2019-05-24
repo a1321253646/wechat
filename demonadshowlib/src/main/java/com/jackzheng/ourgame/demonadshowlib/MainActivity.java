@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.ArrayMap;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -25,6 +26,8 @@ import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 import com.xiaomi.ad.common.pojo.AdType;
 
+import org.json.JSONException;
+
 import miui.os.zeus.Build;
 
 public class MainActivity extends MainActivityBase {
@@ -37,6 +40,17 @@ public class MainActivity extends MainActivityBase {
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         getmAdWorker();
+        ArrayMap<String,String> tmp = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            tmp = new ArrayMap<String,String>();
+            tmp.put("channel  ","xiaomi");
+            try {
+                AdControlServer.getmIntance().getInitDate("http://milihuyu.com/game/ads.php",tmp,this);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
 
@@ -48,7 +62,7 @@ public class MainActivity extends MainActivityBase {
                 mAdWorker = AdWorkerFactory.getAdWorker(this, (ViewGroup) getWindow().getDecorView(), new MimoAdListener() {
                     @Override
                     public void onAdPresent() {
-
+                        mInsertPreShow = System.currentTimeMillis();
                         Log.e(TAG, "mAdWorker onAdPresent");
                         startGameOrPause(false);
                     }
@@ -68,6 +82,7 @@ public class MainActivity extends MainActivityBase {
                     @Override
                     public void onAdDismissed() {
                         Log.e(TAG, "mAdWorker onAdDismissed");
+                        mInsertPreShow = System.currentTimeMillis();
                         try {
                             startGameOrPause(true);
                             getmAdWorker().recycle();
@@ -191,9 +206,18 @@ public class MainActivity extends MainActivityBase {
             mSplashView.setVisibility(View.GONE);
         }
     }
-
+    private long mInsertPreShow = -1;
     @Override
     public void playInerAdDeal(){
+        if(!AdControlServer.getmIntance().banner){
+            return;
+        }
+        if(mInsertPreShow != -1 && AdControlServer.getmIntance().bntime != -1){
+            long time = System.currentTimeMillis();
+            if(mInsertPreShow + AdControlServer.getmIntance().bntime*1000  > time ){
+                return;
+            }
+        }
         Log.d(TAG, "playInerAdDeal");
         try {
             getmAdWorker().show();
@@ -206,9 +230,22 @@ public class MainActivity extends MainActivityBase {
 
     private int mBannerViewHight = 0;
     private int mBannerViewWight = 0;
+    private long mBannerPreShow = -1;
+    private boolean isShowBannerIng = false;
     @Override
     public void startShowBannerDeal(){
-
+        if(isShowBannerIng){
+            return;
+        }
+        if(!AdControlServer.getmIntance().banner){
+            return;
+        }
+        if(mBannerPreShow != -1 && AdControlServer.getmIntance().bntime != -1){
+            long time = System.currentTimeMillis();
+            if(mBannerPreShow + AdControlServer.getmIntance().bntime*1000 > time ){
+                return;
+            }
+        }
         Log.e(TAG, "startShowBannerDeal");
         if(mBannerView == null){
             mBannerView = new FrameLayout(this) ;
@@ -244,6 +281,7 @@ public class MainActivity extends MainActivityBase {
                 mBannerAd = AdWorkerFactory.getAdWorker(this, mBannerView, new MimoAdListener() {
                     @Override
                     public void onAdPresent() {
+                        isShowBannerIng = true;
                         Log.e(TAG, "startShowBannerDeal onAdPresent");
                     }
 
@@ -251,6 +289,7 @@ public class MainActivity extends MainActivityBase {
                     public void onAdClick() {
                         Log.e(TAG, "startShowBannerDeal onAdClick");
                         mBannerView.setVisibility(View.GONE);
+                        mBannerPreShow = System.currentTimeMillis();
 /*                        ViewGroup.LayoutParams layoutParams = mBannerView.getLayoutParams();
                         layoutParams.width =1;
                         layoutParams.height =1;
@@ -265,6 +304,8 @@ public class MainActivity extends MainActivityBase {
                     @Override
                     public void onAdDismissed() {
                         Log.e(TAG, "startShowBannerDeal onAdDismissed");
+                        isShowBannerIng = false;
+                        mBannerPreShow = System.currentTimeMillis();
                         mBannerView.setVisibility(View.GONE);
 /*                        ViewGroup.LayoutParams layoutParams = mBannerView.getLayoutParams();
                         layoutParams.width =1;
@@ -302,6 +343,8 @@ public class MainActivity extends MainActivityBase {
                 e.printStackTrace();
             }
         }
+
+
         try{
             mBannerAd.loadAndShow(MainApplication.BANNER_ID);
         }catch (Exception e) {
