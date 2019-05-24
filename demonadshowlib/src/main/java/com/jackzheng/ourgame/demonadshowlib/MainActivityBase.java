@@ -16,7 +16,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     public abstract boolean isInserAdReady(String str);
 
     public abstract void playSplashAdDeal( );
-    public abstract void playInerAdDeal();
+    public abstract void playInerAdDeal(boolean isMust);
     public abstract void startShowBannerDeal();
     public String mBannerPoint = "";
 
@@ -32,6 +32,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
         }else{
             action = "pause";
         }
+        isPause = isStart;
         UnityPlayer.UnitySendMessage("Main Camera", "startOrPause", action);
     }
 
@@ -47,7 +48,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 if(msg.what == 1){
-                    playInerAdDeal();
+                    playInerAdDeal(false);
                 }else if(msg.what == 2){
                     mHandler.removeMessages(2);
                     if(isAdInit("")){
@@ -71,7 +72,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                         if(isFristAutoInsert){
                             isFristAutoInsert = false;
                         }else{
-                            playInerAdDeal();
+                            playInerAdDeal(true);
                         }
                         mHandler.sendEmptyMessageDelayed(4,AdControlServer.getmIntance().adtime *1000);
                     }

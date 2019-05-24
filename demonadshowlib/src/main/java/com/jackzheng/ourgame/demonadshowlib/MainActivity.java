@@ -63,6 +63,7 @@ public class MainActivity extends MainActivityBase {
                     @Override
                     public void onAdPresent() {
                         mInsertPreShow = System.currentTimeMillis();
+                        isShowInserAd = true;
                         Log.e(TAG, "mAdWorker onAdPresent");
                         startGameOrPause(false);
                     }
@@ -83,6 +84,7 @@ public class MainActivity extends MainActivityBase {
                     public void onAdDismissed() {
                         Log.e(TAG, "mAdWorker onAdDismissed");
                         mInsertPreShow = System.currentTimeMillis();
+                        isShowInserAd = false;
                         try {
                             startGameOrPause(true);
                             getmAdWorker().recycle();
@@ -208,17 +210,24 @@ public class MainActivity extends MainActivityBase {
         }
     }
     private long mInsertPreShow = -1;
+    private boolean isShowInserAd = false;
     @Override
-    public void playInerAdDeal(){
+    public void playInerAdDeal(boolean  isMust){
+        if(isShowInserAd){
+            return;
+        }
         if(!AdControlServer.getmIntance().chaping){
             return;
         }
-        if(mInsertPreShow != -1 && AdControlServer.getmIntance().cntime != -1){
-            long time = System.currentTimeMillis();
-            if(mInsertPreShow + AdControlServer.getmIntance().cntime*1000  > time ){
-                return;
+        if(!isMust){
+            if(mInsertPreShow != -1 && AdControlServer.getmIntance().cntime != -1){
+                long time = System.currentTimeMillis();
+                if(mInsertPreShow + AdControlServer.getmIntance().cntime*1000  > time ){
+                    return;
+                }
             }
         }
+
         Log.d(TAG, "playInerAdDeal");
         try {
             getmAdWorker().show();
