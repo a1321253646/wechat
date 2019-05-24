@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.zhy.http.okhttp.OkHttpUtils;
-import com.zhy.http.okhttp.callback.Callback;
-import com.zhy.http.okhttp.callback.StringCallback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,12 +12,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-
 import static com.jackzheng.ourgame.demonadshowlib.HttpUtils.sdkversion;
 
 public class AdControlServer {
@@ -33,17 +24,7 @@ public class AdControlServer {
 
     private static  AdControlServer mIntance= new AdControlServer();
 
-    OkHttpClient okHttpClient = null;
     private AdControlServer(){
-
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-//                .addInterceptor(new LoggerInterceptor("TAG"))
-                .connectTimeout(10000L, TimeUnit.MILLISECONDS)
-                .readTimeout(10000L, TimeUnit.MILLISECONDS)
-                //其他配置
-                .build();
-
-        OkHttpUtils.initClient(okHttpClient);
 
     }
     public static AdControlServer getmIntance(){
