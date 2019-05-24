@@ -104,7 +104,7 @@ public class TelephoneUtils
            int checkSelfPermission = 0;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                checkSelfPermission  = context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
+                checkSelfPermission  = context.checkCallingPermission(Manifest.permission.READ_PHONE_STATE);
 
             }
          if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
@@ -154,7 +154,7 @@ public class TelephoneUtils
                 int checkSelfPermission = 0;
 
                 if (Build.VERSION.SDK_INT >= 23) {
-                    checkSelfPermission  = context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
+                    checkSelfPermission  = context.checkCallingPermission(Manifest.permission.READ_PHONE_STATE);
 
                 }
                 if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
