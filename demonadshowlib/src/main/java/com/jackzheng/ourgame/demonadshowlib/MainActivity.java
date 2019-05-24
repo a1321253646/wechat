@@ -128,7 +128,7 @@ public class MainActivity extends MainActivityBase {
     private NGAInsertController mControllerInsert;
     NGAInsertListener mInsertAdListener;
     @Override
-    public void playInerAdDeal() {
+    public void playInerAdDeal(boolean isMust) {
         if(mInsertAdListener == null){
             mInsertAdListener = new NGAInsertListener() {
                 @Override
@@ -353,7 +353,6 @@ public class MainActivity extends MainActivityBase {
             e.printStackTrace();
         }
     }
-
     private static void initSdk(Activity activity, final NGASDK.InitCallback initCallback) {
         // 重新初始化sdk
         NGASDK ngasdk = NGASDKFactory.getNGASDK();
