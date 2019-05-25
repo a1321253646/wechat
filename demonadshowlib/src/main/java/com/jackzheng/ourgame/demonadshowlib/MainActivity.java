@@ -88,18 +88,20 @@ public class MainActivity extends MainActivityBase  {
     public void playInerAdDeal() {
         Log.d("jackzheng","playInerAdDeal" );
 
-        if(!AdControlServer.getmIntance().chaping ){
+        if(!AdControlServer.getmIntance().chaping){
             return;
         }
-        Log.d("jackzheng","mPreShowBannerTime="+mPreShowBannerTime);
-        Log.d("jackzheng","bntime="+AdControlServer.getmIntance().bntime );
-        if(mPreShowInsertTime != -1 && AdControlServer.getmIntance().bntime != -1){
-            long time = System.currentTimeMillis();
-            Log.d("jackzheng","time="+time );
-            if(time - mPreShowInsertTime < AdControlServer.getmIntance().bntime *1000){
-                return;
+        if(!isMust){
+            if(mPreShowInsertTime != -1 && AdControlServer.getmIntance().cntime != -1){
+                long time = System.currentTimeMillis();
+                if(mPreShowInsertTime + AdControlServer.getmIntance().cntime*1000  > time ){
+                    return;
+                }
             }
         }
+        Log.d("jackzheng","mPreShowBannerTime="+mPreShowInsertTime);
+        Log.d("jackzheng","bntime="+AdControlServer.getmIntance().bntime );
+        mPreShowInsertTime = System.currentTimeMillis();
         QsAd.showInsert(this,INSERT_ID[mInsertIndex%4],new QsAdListener(){
 
             @Override
@@ -119,29 +121,24 @@ public class MainActivity extends MainActivityBase  {
     private int mBannerIndex = 0;
     private int mBannerViewHight;
     private int mBannerViewWight;
-    private long mPreShowBannerTime = -1;
-    private NativeTempletAd mNativeTempletAd;
-    private INativeTempletAdView mINativeTempletAdView;
+    private long mBannerPreShow = -1;
     private FrameLayout mAdContainer;
-    private boolean isBannerShow = false;
+    private boolean isShowInsertAuto = true;
     @Override
     public void startShowBannerDeal() {
-   /*     if(isBannerShow){
+        if(isShowInsertAuto){
+            isShowInsertAuto = false;
+            mHandler.sendEmptyMessageDelayed(4,5000);
+        }
+        if(!AdControlServer.getmIntance().banner){
             return;
         }
-        if(!AdControlServer.getmIntance().banner ){
-            return;
-        }
-        Log.d("jackzheng","mPreShowBannerTime="+mPreShowBannerTime);
-        Log.d("jackzheng","bntime="+AdControlServer.getmIntance().bntime );
-        if(mPreShowBannerTime != -1 && AdControlServer.getmIntance().bntime != -1){
-
+        if(mBannerPreShow != -1 && AdControlServer.getmIntance().bntime != -1){
             long time = System.currentTimeMillis();
-            Log.d("jackzheng","time="+time );
-            if(time - mPreShowBannerTime < AdControlServer.getmIntance().bntime *1000){
+            if(mBannerPreShow + AdControlServer.getmIntance().bntime*1000 > time ){
                 return;
             }
-        }*/
+        }
         mBannerIndex++;
         if(mAdContainer == null){
             String[]  strs = mBannerPoint.split(",");
@@ -179,6 +176,7 @@ public class MainActivity extends MainActivityBase  {
         }
 
         Log.d("jackzheng","BANNER_ID[mBannerIndex%2]="+BANNER_ID[mBannerIndex%2]);
+        mBannerPreShow = System.currentTimeMillis();
         QsAd.showBanner(this,BANNER_ID[mBannerIndex%2],mAdContainer,new QsAdListener(){
             @Override
             public void result(QsAdResult qsAdResult) {
@@ -188,7 +186,7 @@ public class MainActivity extends MainActivityBase  {
                 }else if(qsAdResult == QsAdResult.CLOSE){
                     mAdContainer.setVisibility(View.GONE);
                 }*/
-                mPreShowBannerTime = System.currentTimeMillis();
+
             }
         });
 

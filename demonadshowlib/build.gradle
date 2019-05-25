@@ -59,7 +59,7 @@ dependencies {
     implementation files('libs/android-support-annotations-25.3.1.jar')
     implementation files('libs/android-query-full.0.26.7.jar')
     implementation files('libs/universal-image-loader-1.9.5.jar')
-    implementation files('libs/oppo_mobad_api_v311_2019_03_21_release_lite_splash_native_interstitial_nativeTemplet_video_banner.jar')
     implementation files('libs/wire-runtime-2.2.0.jar')
     implementation files('libs/okio-1.8.0.jar')
+    implementation files('libs/oppo_mobad_api_v311_2019_03_21_release.jar')
 }
