@@ -85,7 +85,7 @@ public class MainActivity extends MainActivityBase  {
     private int mInsertIndex = 0;
     private long mPreShowInsertTime = -1;
     @Override
-    public void playInerAdDeal() {
+    public void playInerAdDeal(boolean isMust) {
         Log.d("jackzheng","playInerAdDeal" );
 
         if(!AdControlServer.getmIntance().chaping){

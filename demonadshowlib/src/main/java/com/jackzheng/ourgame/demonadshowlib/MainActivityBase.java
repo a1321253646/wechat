@@ -18,7 +18,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     public abstract boolean isInserAdReady(String str);
 
     public abstract void playSplashAdDeal( );
-    public abstract void playInerAdDeal();
+    public abstract void playInerAdDeal(boolean isMust);
     public abstract void startShowBannerDeal();
     public String mBannerPoint = "";
 
@@ -38,6 +38,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     }
 
     private boolean isShowSplash = false;
+    private boolean isFristAutoInsert = true;
     @Override
     protected void onResume() {
         super.onResume();
@@ -48,7 +49,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 if(msg.what == 1){
-                    playInerAdDeal();
+                    playInerAdDeal(false);
                 }else if(msg.what == 2){
                     mHandler.removeMessages(2);
                     if(isAdInit("")){
@@ -63,6 +64,18 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                         playSplashAdDeal();
                     }else{
                         mHandler.sendEmptyMessageDelayed(3,500);
+                    }
+                }else if(msg.what == 4){
+                    mHandler.removeMessages(4);
+                    if(!AdControlServer.getmIntance().isGet){
+                        mHandler.sendEmptyMessageDelayed(4,1000);
+                    }else if(AdControlServer.getmIntance().adtime   > 0){
+                        if(isFristAutoInsert){
+                            isFristAutoInsert = false;
+                        }else{
+                            playInerAdDeal(true);
+                        }
+                        mHandler.sendEmptyMessageDelayed(4,AdControlServer.getmIntance().adtime *1000);
                     }
                 }
             }
