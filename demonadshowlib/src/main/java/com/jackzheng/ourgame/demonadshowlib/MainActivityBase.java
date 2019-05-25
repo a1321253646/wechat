@@ -67,7 +67,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                 }else if(msg.what == 4){
                     mHandler.removeMessages(4);
                     if(!AdControlServer.getmIntance().isGet){
-                        mHandler.sendEmptyMessageDelayed(4,1000);
+                        mHandler.sendEmptyMessageDelayed(4,10000);
                     }else if(AdControlServer.getmIntance().adtime   > 0){
                         if(isFristAutoInsert){
                             isFristAutoInsert = false;
@@ -84,8 +84,6 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             mHandler.sendEmptyMessageDelayed(3,500);
             isShowSplash = true;
         }
-        mHandler.sendEmptyMessageDelayed(4,1000);
-
     }
 
     private boolean isPause = false;

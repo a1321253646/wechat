@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.util.ArrayMap;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -16,6 +17,8 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.unity3d.player.UnityPlayer;
+
+import org.json.JSONException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,12 +84,14 @@ public class MainActivity extends MainActivityBase {
             public void onShowAd() {
               //  splashHolder.setVisibility(View.INVISIBLE); // 广告展示后一定要把预设的开屏图片隐藏起来
                 Log.e(TAG, "onShowAd");
+                startGameOrPause(false);
             }
             @Override
             public void onCloseAd() {
                 //无论成功展示成功或失败都回调用该接口，所以开屏结束后的操作在该回调中实现
                 Log.e(TAG, "onCloseAd");
                 mWindowManager.removeView(mSplashView);
+                startGameOrPause(true);
             }
             @Override
             public <T extends NGAdController> void onReadyAd(T controller) {
@@ -130,13 +135,33 @@ public class MainActivity extends MainActivityBase {
     private NGAInsertProperties mPropertiesInsert;
     private NGAInsertController mControllerInsert;
     NGAInsertListener mInsertAdListener;
+    private long mInsertPreShow = -1;
+    private boolean isShowInserAd = false;
     @Override
     public void playInerAdDeal(boolean isMust) {
+        if(isShowInserAd){
+            return;
+        }
+        if(!AdControlServer.getmIntance().chaping){
+            return;
+        }
+        if(!isMust){
+            if(mInsertPreShow != -1 && AdControlServer.getmIntance().cntime != -1){
+                long time = System.currentTimeMillis();
+                if(mInsertPreShow + AdControlServer.getmIntance().cntime*1000  > time ){
+                    return;
+                }
+            }
+        }
+
+
         if(mInsertAdListener == null){
             mInsertAdListener = new NGAInsertListener() {
                 @Override
                 public void onShowAd() {
                     Log.e(TAG,"onShowAd");
+                    isShowInserAd = true;
+                    mInsertPreShow = System.currentTimeMillis();
                 }
                 @Override
                 public void onRequestAd() {
@@ -153,6 +178,8 @@ public class MainActivity extends MainActivityBase {
                 public void onCloseAd() {
                     mController = null;
                     startGameOrPause(true);
+                    isShowInserAd = false;
+                    mInsertPreShow = System.currentTimeMillis();
                     Log.e(TAG, "onCloseAd");
                 }
                 @Override
@@ -177,10 +204,28 @@ public class MainActivity extends MainActivityBase {
     private NGABannerProperties mProperties;
     NGABannerListener mAdListener;
     ViewGroup mBannerView;
+    private long mBannerPreShow = -1;
+    private boolean isShowBannerIng = false;
     private int mBannerViewHight = 0;
     private int mBannerViewWight = 0;
+    private boolean isShowInsertAuto = true;
     public void startShowBannerDeal(){
-
+        if(isShowInsertAuto){
+            isShowInsertAuto = false;
+            mHandler.sendEmptyMessageDelayed(4,5000);
+        }
+        if(isShowBannerIng){
+            return;
+        }
+        if(!AdControlServer.getmIntance().banner){
+            return;
+        }
+        if(mBannerPreShow != -1 && AdControlServer.getmIntance().bntime != -1){
+            long time = System.currentTimeMillis();
+            if(mBannerPreShow + AdControlServer.getmIntance().bntime*1000 > time ){
+                return;
+            }
+        }
         Log.e(TAG, "startShowBannerDeal");
         if(mWindowManager == null){
             mWindowManager = (WindowManager) MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
@@ -217,6 +262,8 @@ public class MainActivity extends MainActivityBase {
                     mController = (NGABannerController) controller;
                     mController.showAd();
                     mBannerView.setVisibility(View.VISIBLE);
+                    isShowBannerIng = true;
+                    mBannerPreShow = System.currentTimeMillis();
                     Log.e(TAG, "onReadyAd");
                 }
                 @Override
@@ -229,6 +276,8 @@ public class MainActivity extends MainActivityBase {
                     mController = null;
                     Log.e(TAG, "onCloseAd");
                     mBannerView.setVisibility(View.GONE);
+                    isShowBannerIng = false;
+                    mBannerPreShow = System.currentTimeMillis();
                 }
                 @Override
                 public void onErrorAd(int code, String message) {
@@ -266,8 +315,18 @@ public class MainActivity extends MainActivityBase {
              //   throwable.printStackTrace();
             }
         });
-     //   UCGameSdk.defaultSdk().registerSDKEventReceiver(receiver);
-     //   ucSdkInit();
+        ArrayMap<String,String> tmp = null;
+        //if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            tmp = new ArrayMap<String,String>();
+            tmp.put("channel  ","jiuyou");
+            try {
+                AdControlServer.getmIntance().getInitDate("http://milihuyu.com/game/ads.php",tmp,this);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+     //   }
+        UCGameSdk.defaultSdk().registerSDKEventReceiver(receiver);
+        ucSdkInit();
     }
     /**
      *回调事件
@@ -275,54 +334,9 @@ public class MainActivity extends MainActivityBase {
     private SDKEventReceiver receiver = new SDKEventReceiver() {
 
         @Subscribe(event = SDKEventKey.ON_EXIT_SUCC)
-        private void onExit(String desc) {
-            Log.d(TAG, "ON_EXIT_SUCC");
-            Toast.makeText(MainActivity.this, ">> 游戏即将退出", Toast.LENGTH_LONG).show();
-
-            exitApp();
-        }
-
-        @Subscribe(event = SDKEventKey.ON_EXIT_CANCELED)
-        private void onExitCanceled(String desc) {
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, ">> 继续游戏", Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-
-        @Subscribe(event = SDKEventKey.ON_INIT_SUCC)
-        private void onInitSucc() {
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, ">> 初始化成功", Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-
-        @Subscribe(event = SDKEventKey.ON_INIT_FAILED)
-        private void onInitFailed(String msg) {
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, ">> 初始化失败", Toast.LENGTH_LONG).show();
-                }
-            });
-        }
-
-        @Subscribe(event = SDKEventKey.ON_EXIT_SUCC)
         private void onExitSucc() {
-            Toast.makeText(MainActivity.this, ">> 确认退出游戏", Toast.LENGTH_LONG).show();
+        //    Toast.makeText(MainActivity.this, ">> 确认退出游戏", Toast.LENGTH_LONG).show();
             UnityPlayer.UnitySendMessage("Main Camera", "exitGame", "退出");
-        }
-        @Subscribe(event = SDKEventKey.ON_EXIT_CANCELED)
-        private void onExitCanceled() {
-            Toast.makeText(MainActivity.this, ">> 取消退出游戏", Toast.LENGTH_LONG).show();
         }
 
     };
