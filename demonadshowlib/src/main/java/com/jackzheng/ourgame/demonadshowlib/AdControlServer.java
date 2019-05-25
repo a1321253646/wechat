@@ -17,7 +17,7 @@ import static com.jackzheng.ourgame.demonadshowlib.HttpUtils.sdkversion;
 public class AdControlServer {
     public boolean chaping = true;
     public boolean shiping  = true;
-    public boolean banner = false;
+    public boolean banner = true;
     public long adtime   = -1;
     public long bntime   = -1;
     public long cntime   = -1;

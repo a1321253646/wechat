@@ -15,6 +15,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -23,10 +24,16 @@ import com.oppo.mobad.api.InitParams;
 import com.oppo.mobad.api.MobAdManager;
 import com.oppo.mobad.api.ad.BannerAd;
 import com.oppo.mobad.api.ad.InterstitialAd;
+import com.oppo.mobad.api.ad.NativeTempletAd;
 import com.oppo.mobad.api.ad.SplashAd;
 import com.oppo.mobad.api.listener.IBannerAdListener;
+import com.oppo.mobad.api.listener.IInitListener;
 import com.oppo.mobad.api.listener.IInterstitialAdListener;
+import com.oppo.mobad.api.listener.INativeTempletAdListener;
 import com.oppo.mobad.api.listener.ISplashAdListener;
+import com.oppo.mobad.api.params.INativeTempletAdView;
+import com.oppo.mobad.api.params.NativeAdError;
+import com.oppo.mobad.api.params.NativeAdSize;
 import com.oppo.mobad.api.params.SplashAdParams;
 import com.qsnmz.qslib.QsAd;
 import com.qsnmz.qslib.QsAdListener;
@@ -37,9 +44,10 @@ import org.json.JSONException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends MainActivityBase implements IBannerAdListener  {
+public class MainActivity extends MainActivityBase  {
 
     public final static String  APP_ID = "30085137";
     public final static String  SPLASH_ID = "60939";
@@ -47,9 +55,11 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
     public final static String[]  INSERT_ID = {"60969","60973","60950","60945"};
     private BannerAd mBannerAd;
 
+
+    public  boolean isAdInit = false;
     @Override
     public boolean isAdInit(String str) {
-        return true;
+        return isAdInit;
     }
 
     @Override
@@ -98,61 +108,27 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
                 mPreShowInsertTime = System.currentTimeMillis();
                 if(qsAdResult == QsAdResult.OPEN){
                     startGameOrPause(false);
-                }else{
+                }else if(qsAdResult == QsAdResult.CLOSE){
                     startGameOrPause(true);
                 }
 
             }
         });
-  /*      mInterstitialAd = new InterstitialAd(this,INSERT_ID[mInsertIndex%4]);
-        mInsertIndex++;
-        mInterstitialAd.setAdListener( new IInterstitialAdListener(){
-
-            @Override
-            public void onAdShow() {
-                Log.d("jackzheng", "playInerAdDeal onAdShow ");
-                mPreShowInsertTime = System.currentTimeMillis();
-            }
-
-            @Override
-            public void onAdFailed(String s) {
-                Log.d("jackzheng", "playInerAdDeal onAdFailed s="+s);
-                mInterstitialAd.destroyAd();
-            }
-
-            @Override
-            public void onAdClick() {
-                Log.d("jackzheng", "playInerAdDeal onAdClick ");
-            }
-
-            @Override
-            public void onAdReady() {
-                Log.d("jackzheng", "playInerAdDeal onAdReady ");
-                mInterstitialAd.showAd();
-                startGameOrPause(false);
-            }
-
-            @Override
-            public void onAdClose() {
-                Log.d("jackzheng", "playInerAdDeal onAdClose ");
-                mPreShowInsertTime = System.currentTimeMillis();
-                startGameOrPause(true);
-                mInterstitialAd.destroyAd();
-            }
-        });
-        mInterstitialAd.loadAd();*/
-
         
     }
     private int mBannerIndex = 0;
-    FrameLayout mBannerView;
     private int mBannerViewHight;
     private int mBannerViewWight;
-
     private long mPreShowBannerTime = -1;
+    private NativeTempletAd mNativeTempletAd;
+    private INativeTempletAdView mINativeTempletAdView;
+    private FrameLayout mAdContainer;
+    private boolean isBannerShow = false;
     @Override
     public void startShowBannerDeal() {
-        Log.d("jackzheng","startShowBannerDeal" );
+   /*     if(isBannerShow){
+            return;
+        }
         if(!AdControlServer.getmIntance().banner ){
             return;
         }
@@ -165,10 +141,9 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
             if(time - mPreShowBannerTime < AdControlServer.getmIntance().bntime *1000){
                 return;
             }
-        }
-        if(mBannerView == null){
-            mBannerView = new FrameLayout(this) ;
-
+        }*/
+        mBannerIndex++;
+        if(mAdContainer == null){
             String[]  strs = mBannerPoint.split(",");
             float weight = Float.parseFloat(strs[0]);
             float y = Float.parseFloat(strs[1]);
@@ -176,60 +151,38 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
             DisplayMetrics dm = new DisplayMetrics();
             wm.getDefaultDisplay().getMetrics(dm);
             float density = dm.density;
-            float screenHeight = dm.heightPixels;
+            mBannerViewHight = (int)(57 *density) ;
+            mBannerViewWight = (int)(weight);
+            mAdContainer = new FrameLayout(this);
+
+
             WindowManager mWindowManager = (WindowManager) MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
             WindowManager.LayoutParams mWmParams = new WindowManager.LayoutParams();
             mWmParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-            mBannerViewHight = (int)( 57 *density);
-            mBannerViewWight = (int)weight;
             mWmParams.height =mBannerViewHight;
             mWmParams.width = mBannerViewWight;
             mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
             mWmParams.y = (int) y - mWmParams.height;
-            mWindowManager.addView(mBannerView, mWmParams);
+            mWindowManager.addView(mAdContainer, mWmParams);
         }
-        Log.d("jackzheng","BANNER_ID[mBannerIndex%2]="+BANNER_ID[mBannerIndex%2]);
-        QsAd.showBanner(this,BANNER_ID[mBannerIndex%2],mBannerView,new QsAdListener(){
 
+        Log.d("jackzheng","BANNER_ID[mBannerIndex%2]="+BANNER_ID[mBannerIndex%2]);
+        QsAd.showBanner(this,BANNER_ID[mBannerIndex%2],mAdContainer,new QsAdListener(){
             @Override
             public void result(QsAdResult qsAdResult) {
                 Log.d("jackzheng", "startShowBannerDeal QsAdListener qsAdResult="+qsAdResult);
+               /* if(qsAdResult == QsAdResult.OPEN){
+                    mAdContainer.setVisibility(View.VISIBLE);
+                }else if(qsAdResult == QsAdResult.CLOSE){
+                    mAdContainer.setVisibility(View.GONE);
+                }*/
+
                 mPreShowBannerTime = System.currentTimeMillis();
             }
         });
 
-     /*   mBannerAd = new BannerAd(this,BANNER_ID[mBannerIndex%2]);
-        mBannerIndex++;
-        if(mBannerView == null){
-            mBannerView = new FrameLayout(this) ;
-
-            String[]  strs = mBannerPoint.split(",");
-            float weight = Float.parseFloat(strs[0]);
-            float y = Float.parseFloat(strs[1]);
-            WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-            DisplayMetrics dm = new DisplayMetrics();
-            wm.getDefaultDisplay().getMetrics(dm);
-            float density = dm.density;
-            float screenHeight = dm.heightPixels;
-            WindowManager mWindowManager = (WindowManager) MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
-            WindowManager.LayoutParams mWmParams = new WindowManager.LayoutParams();
-            mWmParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-            mBannerViewHight = (int)( 57 *density);
-            mBannerViewWight = (int)weight;
-            mWmParams.height =mBannerViewHight;
-            mWmParams.width = mBannerViewWight;
-            mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
-            mWmParams.y = (int) y - mWmParams.height;
-            mWindowManager.addView(mBannerView, mWmParams);
-        }
-        mBannerView.setVisibility(View.VISIBLE);
-        mBannerAd.setAdListener(this);
-        View adView = mBannerAd.getAdView();
-        if (null != adView) {
-            mBannerView.addView(adView);
-        }
-        mBannerAd.loadAd();*/
     }
+
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -243,6 +196,23 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
             e.printStackTrace();
         }
         //初始化 appid
+        InitParams initParams = new InitParams.Builder()
+                .setDebug(true)
+//true打开SDK日志，当应用发布Release版本时，必须注释掉这行代码的调用，或者设为false
+                .build();
+        MobAdManager.getInstance().init(this,MainActivity.APP_ID, initParams, new IInitListener() {
+            @Override
+            public void onSuccess() {
+                android.util.Log.d("jackzhng","bAdManager.getInstance().init onSuccess = ");
+                isAdInit = true;
+            }
+
+            @Override
+            public void onFailed(String s) {
+                android.util.Log.d("jackzhng","bAdManager.getInstance().init onFailed = ");
+                isAdInit = false;
+            }
+        });
         checkAndRequestPermissions(false);
     }
     ArrayList<String> mNeedRequestPMSList = new ArrayList<>();
@@ -330,38 +300,4 @@ public class MainActivity extends MainActivityBase implements IBannerAdListener 
         return super.exitGame(str);
     }
 
-    @Override
-    public void onAdReady() {
-        Log.d("jackzheng", "mBannerView onAdReady");
-    }
-
-    @Override
-    public void onAdClose() {
-        Log.d("jackzheng", "mBannerView onAdClose");
-        mPreShowBannerTime = System.currentTimeMillis();
-        mBannerView.setVisibility(View.GONE);
-        mBannerView.removeAllViews();
-        mBannerAd.destroyAd();
-    }
-
-    @Override
-    public void onAdShow() {
-        Log.d("jackzheng", "mBannerView onAdShow");
-        mPreShowBannerTime = System.currentTimeMillis();
-    }
-
-    @Override
-    public void onAdFailed(String s) {
-        Log.d("jackzheng", "mBannerView onAdFailed:errMsg=" + (null != s ? s : "原因不明"));
-        mBannerView.setVisibility(View.GONE);
-        mBannerView.removeAllViews();
-        mBannerAd.destroyAd();
-    }
-
-    @Override
-    public void onAdClick() {
-        Log.d("jackzheng", "mBannerView onAdClick");
-        mBannerView.setVisibility(View.GONE);
-        mBannerView.removeAllViews();
-    }
 }
