@@ -103,14 +103,18 @@ public class SplashActivity extends Activity implements ISplashAdListener {
              * 注意：构造函数传入的几个形参都不能为空，否则将抛出NullPointerException异常。
              */
             mSplashAd = new SplashAd(this, MainActivity.SPLASH_ID, this, splashAdParams);
+
         } catch (Exception e) {
+            Log.d(TAG, "fetchSplashAd Exception" );
             Log.w(TAG, "", e);
             /**
              *  出错，直接finish(),跳转应用主页面。
              */
          //   Intent intent = new Intent(this, MainActivity.class);
          //   startActivity(intent);
+            Log.d(TAG, "fetchSplashAd Exception start finish" );
             finish();
+            Log.d(TAG, "fetchSplashAd Exception start finish end" );
         }
     }
 
@@ -161,6 +165,7 @@ public class SplashActivity extends Activity implements ISplashAdListener {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "fetchSplashAd Exception onResume " );
         /**
          * 这里包含对于点击闪屏广告以后、然后返回闪屏广告页面立刻跳转应用主页面的处理。
          */

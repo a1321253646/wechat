@@ -27,10 +27,10 @@ import com.oppo.mobad.api.ad.InterstitialAd;
 import com.oppo.mobad.api.ad.NativeTempletAd;
 import com.oppo.mobad.api.ad.SplashAd;
 import com.oppo.mobad.api.listener.IBannerAdListener;
-import com.oppo.mobad.api.listener.IInitListener;
 import com.oppo.mobad.api.listener.IInterstitialAdListener;
 import com.oppo.mobad.api.listener.INativeTempletAdListener;
 import com.oppo.mobad.api.listener.ISplashAdListener;
+import com.oppo.mobad.api.listener.b;
 import com.oppo.mobad.api.params.INativeTempletAdView;
 import com.oppo.mobad.api.params.NativeAdError;
 import com.oppo.mobad.api.params.NativeAdSize;
@@ -77,7 +77,7 @@ public class MainActivity extends MainActivityBase  {
     }
 
     private void fetchSplashAd() {
-           Intent intent = new Intent(this, SplashActivity.class);
+           Intent intent = new Intent(this, LandSplashActivity.class);
            startActivity(intent);
     }
 
@@ -105,12 +105,12 @@ public class MainActivity extends MainActivityBase  {
             @Override
             public void result(QsAdResult qsAdResult) {
                 Log.d("jackzheng", "playInerAdDeal QsAdListener qsAdResult="+qsAdResult);
-                mPreShowInsertTime = System.currentTimeMillis();
+            /*    mPreShowInsertTime = System.currentTimeMillis();
                 if(qsAdResult == QsAdResult.OPEN){
                     startGameOrPause(false);
                 }else if(qsAdResult == QsAdResult.CLOSE){
                     startGameOrPause(true);
-                }
+                }*/
 
             }
         });
@@ -153,6 +153,18 @@ public class MainActivity extends MainActivityBase  {
             float density = dm.density;
             mBannerViewHight = (int)(57 *density) ;
             mBannerViewWight = (int)(weight);
+
+            mAdContainer = new FrameLayout(this);//创建帧布局对象layout
+            FrameLayout.LayoutParams frameLayout = new FrameLayout.LayoutParams(
+                    mBannerViewWight,
+                    mBannerViewHight
+            );//设置帧布局的高宽属性
+            frameLayout.bottomMargin = 0;
+            frameLayout.gravity = Gravity.BOTTOM | Gravity.CENTER;
+            frameLayout.bottomMargin= (int) y - mBannerViewHight;
+            addContentView(mAdContainer, frameLayout);
+
+/*
             mAdContainer = new FrameLayout(this);
 
 
@@ -163,7 +175,7 @@ public class MainActivity extends MainActivityBase  {
             mWmParams.width = mBannerViewWight;
             mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
             mWmParams.y = (int) y - mWmParams.height;
-            mWindowManager.addView(mAdContainer, mWmParams);
+            mWindowManager.addView(mAdContainer, mWmParams);*/
         }
 
         Log.d("jackzheng","BANNER_ID[mBannerIndex%2]="+BANNER_ID[mBannerIndex%2]);
@@ -176,7 +188,6 @@ public class MainActivity extends MainActivityBase  {
                 }else if(qsAdResult == QsAdResult.CLOSE){
                     mAdContainer.setVisibility(View.GONE);
                 }*/
-
                 mPreShowBannerTime = System.currentTimeMillis();
             }
         });
@@ -200,7 +211,7 @@ public class MainActivity extends MainActivityBase  {
                 .setDebug(true)
 //true打开SDK日志，当应用发布Release版本时，必须注释掉这行代码的调用，或者设为false
                 .build();
-        MobAdManager.getInstance().init(this,MainActivity.APP_ID, initParams, new IInitListener() {
+        MobAdManager.getInstance().init(this,MainActivity.APP_ID, initParams, new b() {
             @Override
             public void onSuccess() {
                 android.util.Log.d("jackzhng","bAdManager.getInstance().init onSuccess = ");

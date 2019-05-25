@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import com.nearme.game.sdk.GameCenterSDK;
 import com.oppo.mobad.api.InitParams;
 import com.oppo.mobad.api.MobAdManager;
-import com.oppo.mobad.api.listener.IInitListener;
 import com.qsnmz.qslib.QsAd;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.commonsdk.UMConfigure;
