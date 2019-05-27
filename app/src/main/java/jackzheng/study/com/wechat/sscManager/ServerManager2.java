@@ -481,6 +481,7 @@ public class ServerManager2 {
                         }
                         if(eachCount >0){
                             str.append(bean1.msg);
+
                             str.append(" 中   "+(eachCount/yin)+"\n-------------------\n");
                             count+=eachCount;
                         }
@@ -598,10 +599,16 @@ public class ServerManager2 {
                 for(Integer tmp2 : date.han){
                     if(tmp == tmp2){
                         value += yin*bean.mEachMoney;
+                        break;
                     }
                 }
             }
             return value;
+        }
+        if(bean.isPaiChongChong){
+            if(date.isChongChong){
+                return 0;
+            }
         }
         for(int i = 0 ; i< bean.local.get(0).length;i++){
             ArrayList<Integer> integers1 = bean.mDataList.get(i);

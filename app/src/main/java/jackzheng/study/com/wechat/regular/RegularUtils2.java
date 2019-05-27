@@ -499,6 +499,8 @@ public class RegularUtils2 {
             if(TextUtils.isEmpty(data.str) || StringDealFactory.haveNumCount(data.str) == 0){
                 continue;
             }
+
+
             if((iii ==0 || isThirdModel) &&DateSaveManager.getIntance().isThird){
                 DateBean2 dateBean2= getThirdOne(data.str);
                 dateBean2.message = data.str;
@@ -507,9 +509,11 @@ public class RegularUtils2 {
                     value.add(dateBean2);
                     isThirdModel = true;
                 }else{
-                    return null;
+                    isThirdModel = false;
                 }
-                continue;
+                if(isThirdModel){
+                    continue;
+                }
             }
             int numberCount = StringDealFactory.haveNumCount(data.str);
             DateBean2 date = new DateBean2();
