@@ -59,5 +59,5 @@ dependencies {
     implementation files('libs/UCGameSaSdk-ninegame-8.1.0.jar')
     implementation files('libs/ugpsdk-7.0.3.1-product-release.jar')
     implementation files('libs/android-support-annotations-25.3.1.jar')
-    implementation files('libs/android-support-v4-25.3.1.jar')
+    implementation files('libs/android-support-v4.jar')
 }
