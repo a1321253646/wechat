@@ -162,6 +162,7 @@ public class MainActivity extends MainActivityBase {
                     Log.e(TAG,"onShowAd");
                     isShowInserAd = true;
                     mInsertPreShow = System.currentTimeMillis();
+                    startGameOrPause(false);
                 }
                 @Override
                 public void onRequestAd() {
@@ -169,7 +170,7 @@ public class MainActivity extends MainActivityBase {
                 }
                 @Override
                 public <T extends NGAdController> void onReadyAd(T controller) {
-                    startGameOrPause(false);
+
                     mControllerInsert = (NGAInsertController) controller;
                     mControllerInsert.showAd();
                     Log.e(TAG, "onReadyAd");
