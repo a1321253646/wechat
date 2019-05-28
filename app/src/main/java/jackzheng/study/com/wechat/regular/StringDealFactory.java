@@ -45,6 +45,7 @@ public class StringDealFactory {
             String[] split = str.split("\n");
             if(split != null && split.length > 0){
                 DateBean2 thirdOne = RegularUtils2.getThirdOne(split[0]);
+                Log.d("zsbin","stringDeal thirdOne ="+thirdOne+"***************************************************************************************************\n");
                 if(thirdOne != null){
                     XposedBridge.log("zsbin\n"+thirdOne.toString());
                     ArrayList<StringDealBean.StringSimpleDealBean> list =  new ArrayList<>();

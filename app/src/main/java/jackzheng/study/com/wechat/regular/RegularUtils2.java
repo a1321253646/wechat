@@ -503,13 +503,19 @@ public class RegularUtils2 {
 
             if((iii ==0 || isThirdModel) &&DateSaveManager.getIntance().isThird){
                 DateBean2 dateBean2= getThirdOne(data.str);
-                dateBean2.message = data.str;
-                XposedBridge.log("zsbin\n"+dateBean2.toString());
+
                 if(dateBean2 != null){
+                    dateBean2.message = data.str;
+                    XposedBridge.log("zsbin\n"+dateBean2.toString());
                     value.add(dateBean2);
                     isThirdModel = true;
                 }else{
-                    isThirdModel = false;
+                    if(isThirdModel){
+                        return  null;
+                    }else{
+                        isThirdModel = false;
+                    }
+
                 }
                 if(isThirdModel){
                     continue;
