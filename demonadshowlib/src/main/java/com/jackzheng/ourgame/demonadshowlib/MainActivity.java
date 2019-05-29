@@ -3,15 +3,20 @@ package com.jackzheng.ourgame.demonadshowlib;
 
 public class MainActivity extends MainActivityBase {
 
+    public static final String APP_ID = "5018777";
+    public static final String BANNER_ID = "918777504";
+    public static final String INSERT_ID = "918777140";
+    public static final String SPLASH_ID = "818777900";
+
 
     @Override
     public boolean isAdInit(String str) {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isInserAdReady(String str) {
-        return false;
+        return true;
     }
 
     @Override
