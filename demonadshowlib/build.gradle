@@ -56,4 +56,5 @@ dependencies {
     implementation files('libs/unityutil.jar')
     implementation files('libs/android-query-full.0.26.7.jar')
     implementation files('libs/android-support-v4.jar')
+    implementation files('libs/android-support-annotations-25.3.1.jar')
 }

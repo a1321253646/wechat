@@ -82,8 +82,6 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             mHandler.sendEmptyMessageDelayed(3,500);
             isShowSplash = true;
         }
-        mHandler.sendEmptyMessageDelayed(4,1000);
-
     }
 
     private boolean isPause = false;
