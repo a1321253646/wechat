@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="zzz_tab_names">
+        <item>@string/zzz_ask</item>
+        <item>@string/zzz_my_question</item>
+    </string-array>
+
+    <string-array name="zzz_main_tab_icons">
+        <item>@drawable/zzz_user_center</item>
+        <item>@drawable/zzz_gift</item>
+        <item>@drawable/zzz_event</item>
+        <item>@drawable/zzz_strategy</item>
+        <item>@drawable/zzz_help</item>
+    </string-array>
+</resources>

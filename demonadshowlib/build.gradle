@@ -49,10 +49,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation files('libs/classes.jar')
+    compileOnly files('libs/classes.jar')
     implementation files('libs/umeng-analytics-7.4.4.jar')
     implementation files('libs/umeng-common-1.4.4.jar')
     implementation files('libs/utdid4all-1.1.5.3_proguard.jar')
     implementation files('libs/unityutil.jar')
-    implementation 'com.zhy:okhttputils:2.6.2'
+    implementation files('libs/gson-2.8.1.jar')
+    implementation files('libs/com.gionee.offline.gamesdk.jar')
 }
