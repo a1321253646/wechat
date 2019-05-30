@@ -101,15 +101,15 @@ public class TelephoneUtils
         try {
             TelephonyManager telphonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
 
-           int checkSelfPermission = 0;
+            int checkSelfPermission = 0;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                checkSelfPermission  = context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
+                checkSelfPermission  = context.checkCallingOrSelfPermission(Manifest.permission.READ_PHONE_STATE);
 
             }
-         if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
-            result = telphonyManager.getSubscriberId();
-         }else{
+            if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
+                result = telphonyManager.getSubscriberId();
+            }else{
                 result = "";
             }
 
@@ -151,24 +151,24 @@ public class TelephoneUtils
         String result = "";
         try {
 
-                int checkSelfPermission = 0;
+            int checkSelfPermission = 0;
 
-                if (Build.VERSION.SDK_INT >= 23) {
-                    checkSelfPermission  = context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE);
+            if (Build.VERSION.SDK_INT >= 23) {
+                checkSelfPermission  = context.checkCallingOrSelfPermission(Manifest.permission.READ_PHONE_STATE);
 
+            }
+            if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
+                TelephonyManager telphonyManager = (TelephonyManager)context
+                        .getSystemService(Context.TELEPHONY_SERVICE);
+                result = telphonyManager.getDeviceId();
+            }else {
+
+                if (result == null){
+                    result = getUniqueUuid(context);
                 }
-                if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
-                    TelephonyManager telphonyManager = (TelephonyManager)context
-                            .getSystemService(Context.TELEPHONY_SERVICE);
-                    result = telphonyManager.getDeviceId();
-                }else {
-
-                    if (result == null){
-                        result = getUniqueUuid(context);
-                    }
 
 
-                }
+            }
 
         } catch (Exception e) {
             result = getUUID32();
@@ -250,10 +250,10 @@ public class TelephoneUtils
         int checkSelfPermission = 0;
 
         if (Build.VERSION.SDK_INT >= 23) {
-            checkSelfPermission  = context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+            checkSelfPermission  = context.checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
 
         }
-          if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
+        if (checkSelfPermission  == PackageManager.PERMISSION_GRANTED){
             CellLocation cellLocation = manager.getCellLocation();
 
             if (cellLocation == null){

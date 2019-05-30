@@ -75,7 +75,7 @@ public class MainActivity extends MainActivityBase {
         AdSlot adSlot = new Builder()
                 .setCodeId(INSERT_ID)
                 .setSupportDeepLink(true)
-                .setImageAcceptedSize(600, 600) //根据广告平台选择的尺寸，传入同比例尺寸
+                .setImageAcceptedSize(900, 900) //根据广告平台选择的尺寸，传入同比例尺寸
                 .build();
         //step5:请求广告，调用插屏广告异步请求接口
         mInsertTTAdNative.loadInteractionAd(adSlot, new TTAdNative.InteractionAdListener() {
@@ -163,6 +163,8 @@ public class MainActivity extends MainActivityBase {
             mWmParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
             mBannerViewHight = (int)( 54 *density);
             mBannerViewWight = (int)weight;
+            // mBannerViewHight = 260;
+            // mBannerViewWight = 600;
             mWmParams.height =mBannerViewHight;
             mWmParams.width = mBannerViewWight;
             mWmParams.gravity = Gravity.BOTTOM|Gravity.CENTER;
@@ -176,30 +178,39 @@ public class MainActivity extends MainActivityBase {
 
     private void loadBannerAd() {
         //step4:创建广告请求参数AdSlot,具体参数含义参考文档
+
         AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(BANNER_ID) //广告位id
                 .setSupportDeepLink(true)
-                .setImageAcceptedSize(mBannerViewHight, mBannerViewWight)
+                .setImageAcceptedSize(mBannerViewWight, mBannerViewHight)
                 .build();
         //step5:请求广告，对请求回调的广告作渲染处理
         mBannerTTAdNative.loadBannerAd(adSlot, new TTAdNative.BannerAdListener() {
 
             @Override
             public void onError(int code, String message) {
-                Log.e("jackzheng","banner广告出错code="+BANNER_ID+" message="+message);
+                Log.e("jackzheng","banner广告出错code="+code+" message="+message);
                 mBannerContainer.removeAllViews();
                 mBannerContainer.setVisibility(View.GONE);
+                isShowBannerIng = false;
             }
 
             @Override
             public void onBannerAdLoad(final TTBannerAd ad) {
+                Log.e("jackzheng","banner onBannerAdLoad start");
                 if (ad == null) {
+                    Log.e("jackzheng","banner onBannerAdLoad ad == null");
                     return;
                 }
                 View bannerView = ad.getBannerView();
                 if (bannerView == null) {
+                    Log.e("jackzheng","banner onBannerAdLoad bannerView == null");
                     return;
                 }
+                Log.e("jackzheng","banner onBannerAdLoad");
+                mBannerContainer.setVisibility(View.VISIBLE);
+                isShowBannerIng = true;
+                mBannerPreShow = System.currentTimeMillis();
                 //设置轮播的时间间隔  间隔在30s到120秒之间的值，不设置默认不轮播
                 ad.setSlideIntervalTime(30 * 1000);
                 mBannerContainer.removeAllViews();
@@ -213,8 +224,8 @@ public class MainActivity extends MainActivityBase {
 
                     @Override
                     public void onAdShow(View view, int type) {
-                        mBannerContainer.setVisibility(View.VISIBLE);
-                        mBannerPreShow = System.currentTimeMillis();
+                       // mBannerContainer.setVisibility(View.VISIBLE);
+
                         Log.e("jackzheng","banner广告展示");
                     }
                 });
@@ -226,6 +237,9 @@ public class MainActivity extends MainActivityBase {
                         Log.e("jackzheng","banner广告被关闭");
                         //用户选择不喜欢原因后，移除广告展示
                         mBannerContainer.removeAllViews();
+                        mBannerContainer.setVisibility(View.GONE);
+                        mBannerPreShow = System.currentTimeMillis();
+                        isShowBannerIng = false;
                     }
 
                     @Override

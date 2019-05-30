@@ -1,12 +1,15 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.annotation.MainThread;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.bytedance.sdk.openadsdk.AdSlot;
@@ -68,11 +71,16 @@ public class SplashActivity extends Activity implements WeakHandler.IHandler {
      * 加载开屏广告
      */
     private void loadSplashAd() {
+        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics dm = new DisplayMetrics();
+        wm.getDefaultDisplay().getMetrics(dm);
+        int screenHeight = dm.heightPixels;
+        int screenWidth = dm.widthPixels;
         //step3:创建开屏广告请求参数AdSlot,具体参数含义参考文档
         AdSlot adSlot = new AdSlot.Builder()
-                .setCodeId("801121648")
+                .setCodeId(MainActivity.SPLASH_ID)
                 .setSupportDeepLink(true)
-                .setImageAcceptedSize(1080, 1920)
+                .setImageAcceptedSize(1280,1920 )
                 .build();
         //step4:请求广告，调用开屏广告异步请求接口，对请求回调的广告作渲染处理
         mTTAdNative.loadSplashAd(adSlot, new TTAdNative.SplashAdListener() {

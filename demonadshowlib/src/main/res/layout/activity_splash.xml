@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#000000"
-    tools:context="com.union_test.toutiao.activity.SplashActivity">
+    tools:context="com.jackzheng.ourgame.demonadshowlib.SplashActivity">
 
     <FrameLayout
         android:id="@+id/splash_container"
