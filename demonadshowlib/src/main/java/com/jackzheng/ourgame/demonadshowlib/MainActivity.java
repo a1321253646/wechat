@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.util.ArrayMap;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,6 +23,8 @@ import com.mob4399.adunion.listener.OnAuBannerAdListener;
 import com.mob4399.adunion.listener.OnAuInitListener;
 import com.mob4399.adunion.listener.OnAuInterstitialAdListener;
 
+import org.json.JSONException;
+
 public class MainActivity extends MainActivityBase {
 
     public static String APP_ID = "1246";
@@ -35,6 +38,16 @@ public class MainActivity extends MainActivityBase {
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        ArrayMap<String,String> tmp = null;
+        //if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            tmp = new ArrayMap<String,String>();
+            tmp.put("channel  ","4399");
+            try {
+                AdControlServer.getmIntance().getInitDate("http://milihuyu.com/game/ads.php",tmp,this);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        //}
     }
     @Override
     protected void onResume() {

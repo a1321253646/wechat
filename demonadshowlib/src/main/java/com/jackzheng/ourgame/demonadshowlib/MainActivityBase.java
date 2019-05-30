@@ -26,14 +26,17 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
     public static String CHANNEL_VERSION = "";
 
     public void startGameOrPause(boolean isStart){
+        Log.d("jackzheng","startGameOrPause isStart="+isStart+" isPause="+isPause);
         if(!isStart && isPause){
             return;
         }
         String action = "";
         if(isStart){
             action = "start";
+            isPause = false;
         }else{
             action = "pause";
+            isPause = true;
         }
         UnityPlayer.UnitySendMessage("Main Camera", "startOrPause", action);
     }
@@ -85,7 +88,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             mHandler.sendEmptyMessageDelayed(3,500);
             isShowSplash = true;
         }
-        mHandler.sendEmptyMessageDelayed(4,1000);
+
 
     }
 
