@@ -11,7 +11,7 @@ public class MainActivity extends MainActivityBase {
 
     @Override
     public boolean isAdInit(String str) {
-        return false;
+        return MainApplication.isAdinit;
     }
 
     @Override
