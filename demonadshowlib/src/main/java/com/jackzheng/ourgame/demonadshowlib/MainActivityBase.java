@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.gionee.game.offlinesdk.floatwindow.GamePlatform;
+import com.gionee.gameservice.ui.QuitGameCallback;
 import com.umeng.analytics.MobclickAgent;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
@@ -123,6 +125,12 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
             intent.setData(Uri.parse("http://d.taptap.com/latest?app_id=150760"));
             startActivity(intent);
         }*/
+        return "";
+    }
+    public String exitGame(String str){
+        //Log.d("jackzhng","exitGame===========================");
+        android.util.Log.d("jackzhng","exitGame===========================");
+        GamePlatform.quitGame(this, null);
         return "";
     }
 }
