@@ -14,7 +14,7 @@ import org.apache.commons.logging.Log;
 
 public class MainApplication extends Application {
 
-    public static boolean isAdinit = false;
+
 
     public static String[] mAppKeyUmeng = {"5cd62f530cafb2cc4c0007df","5cd62f633fc1957973000f46","5cd62f783fc195f2680002ef","5cd62f884ca3570403000919","5cd62f9b570df34c47000fde",
             "5cd62fbc0cafb254a00004ab","5cd62fce570df31d670001d5","5cd62fdd3fc19537dd000660","5cd62fe73fc195f268000303"};
@@ -43,19 +43,7 @@ public class MainApplication extends Application {
         android.util.Log.d("jackzhng","mAppKeyUmeng id = "+mAppKeyUmeng[Integer.parseInt(name)]);
         UMConfigure.setLogEnabled(true);
         UMConfigure.init(this, mAppKeyUmeng[Integer.parseInt(name)], "Umeng", UMConfigure.DEVICE_TYPE_PHONE,null);
-        AdUnionSDK.init(this, MainActivity.APP_ID, new OnAuInitListener() {
-            @Override
-            public void onSucceed() {
-                isAdinit = true;
-                android.util.Log.d("jackzhng","AdUnionSDK init onSucceed  ");
-            }
 
-            @Override
-            public void onFailed(String s) {
-                android.util.Log.d("jackzhng","AdUnionSDK init onFailed s=   "+s);
-                isAdinit = false;
-            }
-        });
     }
 
 }

@@ -1,8 +1,11 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.umeng.analytics.MobclickAgent;
@@ -85,6 +88,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
         mHandler.sendEmptyMessageDelayed(4,1000);
 
     }
+
 
     private boolean isPause = false;
     @Override

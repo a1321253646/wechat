@@ -84,4 +84,6 @@ dependencies {
     compileOnly files('libs/ngad-sdk-release-2.4.31.aar')
     compileOnly files('libs/tt-android-gif-drawable-1.2.6.aar')
     compileOnly files('libs/tt-open_ad_sdk-1.9.8.6.aar')
+    compileOnly files('libs/android-support-v4-25.3.1.jar')
+    compileOnly files('libs/android-support-annotations-25.3.1.jar')
 }
