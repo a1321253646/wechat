@@ -55,4 +55,6 @@ dependencies {
     implementation files('libs/unityutil.jar')
     implementation files('libs/gson-2.8.1.jar')
     implementation files('libs/com.gionee.offline.gamesdk.jar')
+    implementation files('libs/android-support-v4-25.3.1.jar')
+    implementation files('libs/android-support-annotations-25.3.1.jar')
 }
