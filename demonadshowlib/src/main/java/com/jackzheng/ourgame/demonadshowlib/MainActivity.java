@@ -19,9 +19,11 @@ import android.widget.FrameLayout;
 import com.mob4399.adunion.AdUnionBanner;
 import com.mob4399.adunion.AdUnionInterstitial;
 import com.mob4399.adunion.AdUnionSDK;
+import com.mob4399.adunion.AdUnionVideo;
 import com.mob4399.adunion.listener.OnAuBannerAdListener;
 import com.mob4399.adunion.listener.OnAuInitListener;
 import com.mob4399.adunion.listener.OnAuInterstitialAdListener;
+import com.mob4399.adunion.listener.OnAuVideoAdListener;
 
 import org.json.JSONException;
 
@@ -31,6 +33,7 @@ public class MainActivity extends MainActivityBase {
     public static String BANNER_ID = "4684";
     public static String INSERT_ID = "4683";
     public static String SPLASH_ID = "4682";
+    public static String VEDIO_ID = "4685";
     private  boolean isAdinit = false;
     private static int REQ_PERMISSION_CODE = 1001;
     private static final String[] PERMISSIONS = {Manifest.permission.READ_PHONE_STATE,
@@ -48,6 +51,8 @@ public class MainActivity extends MainActivityBase {
                 e.printStackTrace();
             }
         //}
+
+
     }
     @Override
     protected void onResume() {
@@ -86,6 +91,41 @@ public class MainActivity extends MainActivityBase {
             public void onSucceed() {
                 isAdinit = true;
                 android.util.Log.d("jackzhng","AdUnionSDK init onSucceed  ");
+                videoAd = new AdUnionVideo(MainActivity.this, VEDIO_ID, new OnAuVideoAdListener() {
+                    @Override
+                    public void onVideoAdLoaded() {
+                        Log.e(TAG, "VideoAd loaded");
+                        mIsShowInsert = true;
+                    }
+
+                    @Override
+                    public void onVideoAdShow() {
+                        Log.e(TAG, "VideoAd show");
+                        startGameOrPause(false);
+                    }
+
+                    @Override
+                    public void onVideoAdFailed(String message) {
+                        Log.e(TAG,"VideoAd onVideoAdFailed\n"+ message);
+                    }
+
+                    @Override
+                    public void onVideoAdClicked() {
+                        Log.e(TAG, "VideoAd clicked");
+                    }
+
+                    @Override
+                    public void onVideoAdClosed() {
+                        Log.e(TAG, "VideoAd closed");
+                        startGameOrPause(true);
+
+                    }
+
+                    @Override
+                    public void onVideoAdComplete() {
+                        Log.e(TAG, "VideoAd complete");
+                    }
+                });
             }
 
             @Override
@@ -104,22 +144,32 @@ public class MainActivity extends MainActivityBase {
 
     @Override
     public boolean isInserAdReady(String str) {
-        return true;
+        return mIsShowInsert;
     }
 
     @Override
     public void playSplashAdDeal() {
-        this.startActivity(new Intent(this, SplashActivity.class));
+        //this.startActivity(new Intent(this, SplashActivity.class));
     }
 
     private boolean mIsShowInsert = false;
     private long mPreShowInsertTime = -1;
-    AdUnionInterstitial adUnionInterstitial = null;
+    AdUnionVideo videoAd;
+  //  AdUnionInterstitial adUnionInterstitial = null;
     @Override
     public void playInerAdDeal(boolean isMust) {
         Log.d("jackzheng","playInerAdDeal" );
 
-        if(!AdControlServer.getmIntance().chaping){
+        if (videoAd != null) {
+            mIsShowInsert = false;
+            videoAd.show();
+        }
+
+
+
+
+
+       /* if(!AdControlServer.getmIntance().chaping){
             return;
         }
         if(mIsShowInsert){
@@ -167,7 +217,7 @@ public class MainActivity extends MainActivityBase {
                     }
                 });
         //在需要展示插屏广告的位置调用show方法
-        adUnionInterstitial.show();
+        adUnionInterstitial.show();*/
     }
 
     private int mBannerViewHight;
@@ -179,7 +229,7 @@ public class MainActivity extends MainActivityBase {
     @Override
     public void startShowBannerDeal() {
         Log.d("jackzheng","startShowBannerDeal" );
-        if(isShowInsertAuto){
+       /* if(isShowInsertAuto){
             isShowInsertAuto = false;
             mHandler.sendEmptyMessageDelayed(4,5000);
         }
@@ -250,6 +300,6 @@ public class MainActivity extends MainActivityBase {
                 mBannerPreShow = System.currentTimeMillis();
                 mIsBannerShow = false;
             }
-        });
+        });*/
     }
 }

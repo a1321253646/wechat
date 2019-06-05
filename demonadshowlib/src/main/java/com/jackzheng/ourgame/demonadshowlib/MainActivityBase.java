@@ -84,10 +84,10 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                 }
             }
         };
-        if(!isShowSplash){
+     /*   if(!isShowSplash){
             mHandler.sendEmptyMessageDelayed(3,500);
             isShowSplash = true;
-        }
+        }*/
 
 
     }
