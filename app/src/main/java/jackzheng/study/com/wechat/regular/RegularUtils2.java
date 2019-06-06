@@ -13,6 +13,29 @@ public class RegularUtils2 {
         int otherCount = 0;
         DateBean2 date = new DateBean2();
         boolean isThird = false;
+        if(TextUtils.isEmpty(str)){
+            return null;
+        }else{
+            if(str.contains("单")){
+                str = str.replaceAll("单","-13579-");
+            }
+            if(str.contains("双")){
+                str = str.replaceAll("双","-02468-");
+            }
+            if(str.contains("大")){
+                str = str.replaceAll("大","-56789-");
+            }
+            if(str.contains("小")){
+                str = str.replaceAll("小","-01234-");
+            }
+            if(str.contains("全")){
+                str = str.replaceAll("全","-01234567890-");
+            }
+
+        }
+
+
+
         char[] cs = str.toCharArray();
 
         ArrayList<Integer>local = new ArrayList<>();
@@ -210,7 +233,7 @@ public class RegularUtils2 {
         XposedBridge.log("date = "+date.toString());
         if( date.local.size() == 0 ||date.local.get(0).length  == 0){
             if((date.mDataList.size() == 5 && date.mEachMoney == 0 )|| (date.mDataList.size() == 4 && date.mEachMoney != 0 ) ){
-                Integer[] tmp = new Integer[]{0,1,2,3};
+                Integer[] tmp = new Integer[]{1,2,3,4};
                 date.local.add(tmp);
             }else{
                 return null;

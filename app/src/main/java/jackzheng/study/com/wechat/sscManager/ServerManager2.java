@@ -449,8 +449,8 @@ public class ServerManager2 {
 
         StringBuilder str;
 
-        int count;
-        int eachCount ;
+        float count;
+        float eachCount ;
 
         ArrayMap<String, DateSaveManager.GroupDate> allGroup = DateSaveManager.getIntance().getAllGroup();
 //        if(!DateSaveManager.getIntance().isJustShou ){
@@ -544,8 +544,8 @@ public class ServerManager2 {
         int local = 0;
         float value = 0;
         for(int i = 0 ;i< integers.length ;i++){
-            integers[i] = integers[i]-1;
-            int tmp = 1 << integers[i];
+            XposedBridge.log("getCountMoneyThird   integers[i]="+ integers[i]);
+            int tmp = 1 << (integers[i]-1) ;
             local |= tmp;
         }
         XposedBridge.log("getCountMoneyThird  local="+local);
