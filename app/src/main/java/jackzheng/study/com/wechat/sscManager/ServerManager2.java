@@ -431,6 +431,35 @@ public class ServerManager2 {
         return value;
     }
 
+    public class ZhongDate{
+        public float  zhong2Count = 0;
+        public float  zhong3Count = 0;
+        public float  zhong4Count = 0;
+
+        public float  zhong2Money = 0;
+        public float  zhong3Money = 0;
+        public float  zhong4Money = 0;
+
+        public  void toPoint2(){
+            if(zhong2Count != 0){
+                zhong2Count = dealPoint(zhong2Count);
+                zhong2Money = dealPoint(zhong2Money);
+            }
+            if(zhong3Count != 0){
+                zhong3Count = dealPoint(zhong3Count);
+                zhong3Money = dealPoint(zhong3Money);
+            }
+            if(zhong4Count != 0){
+                zhong4Count = dealPoint(zhong4Count);
+                zhong4Money = dealPoint(zhong4Money);
+            }
+        }
+        private float dealPoint(float a){
+            return (float)(Math.round(a*100)/100);
+        }
+
+    }
+
     public void kaijiangDeal(HtmlParse.MaxIndexResult parse){
         ServerManager2.getmIntance().mOpenIndex = parse.index;
         if(parse.index  > 38 && parse.index < OPEN_INDEX){
@@ -449,8 +478,8 @@ public class ServerManager2 {
 
         StringBuilder str;
 
-        float count;
-        float eachCount ;
+        ZhongDate count;
+        ZhongDate eachCount ;
 
         ArrayMap<String, DateSaveManager.GroupDate> allGroup = DateSaveManager.getIntance().getAllGroup();
 //        if(!DateSaveManager.getIntance().isJustShou ){
@@ -458,9 +487,9 @@ public class ServerManager2 {
                 if(!TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(goupID).toGroup)){
                     continue;
                 }
-                count = 0;
+                count = new ZhongDate();
                 str = new StringBuilder();
-                int yin = DateSaveManager.getIntance().getGroup(goupID).yin;
+//                int yin = DateSaveManager.getIntance().getGroup(goupID).yin;
                 if(mXiazuMap.containsKey(goupID)){
                     ArrayList<SscBean> xiazu = mXiazuMap.get(goupID);
 
@@ -469,31 +498,68 @@ public class ServerManager2 {
                             continue;
                         }
                         boolean isThird = bean1.list.get(0).isThirdDate;
-                        eachCount= 0;
+                        eachCount= new ZhongDate();
 
                         for(DateBean2 bean :bean1.list){
                             if(!isThird){
-                                eachCount +=getZhongjianCount(bean,parse.getNumber(),yin);
+                                ZhongDate tmp = getZhongjianCount(bean,parse.getNumber(),DateSaveManager.getIntance().getGroup(goupID).yin);
+                                eachCount.zhong2Money += tmp.zhong2Money;
+                                eachCount.zhong2Count += tmp.zhong2Count;
                             }else{
-                                eachCount += getCountMoneyThird(bean,parse.getNumber(),yin,mOpenValueList);
+                                ZhongDate tmp = getCountMoneyThird(bean,parse.getNumber(),DateSaveManager.getIntance().getGroup(goupID),mOpenValueList);
+                                eachCount.zhong3Money += tmp.zhong3Money;
+                                eachCount.zhong3Count += tmp.zhong3Count;
+                                eachCount.zhong4Money += tmp.zhong4Money;
+                                eachCount.zhong4Count += tmp.zhong4Count;
                             }
 
                         }
-                        if(eachCount >0){
-                            str.append(bean1.msg);
+                        eachCount.toPoint2();
 
-                            str.append(" 中   "+(eachCount/yin)+"\n-------------------\n");
-                            count+=eachCount;
+
+                        String zhongTmpStr = "";
+                        if(eachCount.zhong2Count != 0){
+                            zhongTmpStr+=(" ②中"+eachCount.zhong2Count+" 共"+eachCount.zhong2Money);
                         }
+                        if(eachCount.zhong3Count != 0){
+                            zhongTmpStr+=(" ③中"+eachCount.zhong3Count+" 共"+eachCount.zhong3Money);
+                        }
+                        if(eachCount.zhong4Count != 0){
+                            zhongTmpStr+=(" ④中"+eachCount.zhong4Count+" 共"+eachCount.zhong4Money);
+                        }
+                        if(!TextUtils.isEmpty(zhongTmpStr)){
+
+                            str.append(zhongTmpStr+"\n-------------------\n");
+                        }
+                        count.zhong2Money += eachCount.zhong2Money;
+                        count.zhong2Count += eachCount.zhong2Count;
+                        count.zhong3Money += eachCount.zhong3Money;
+                        count.zhong3Count += eachCount.zhong3Count;
+                        count.zhong4Money += eachCount.zhong4Money;
+                        count.zhong4Count += eachCount.zhong4Count;
+
                     }
                     str.append("\n");
-                    if(count > 0){
-                        DateSaveManager.getIntance().changeGroupFenOrLiang(goupID,true,1,count);
+                    float a = count.zhong2Money+count.zhong3Money+count.zhong4Money;
+                    if(a > 0){
+                        DateSaveManager.getIntance().changeGroupFenOrLiang(goupID,true,1,a);
                     }
                 }/*else if(DateSaveManager.getIntance().isBeiyong){
                     continue;
                 }*/
-                str.append("共中"+(count/yin)+"组     共计 "+count+"\n");
+                String zhongTmpStr= "";
+                if(count.zhong2Count != 0){
+                    zhongTmpStr+=(" ②中"+count.zhong2Count+" 共"+count.zhong2Money);
+                }
+                if(count.zhong3Count != 0){
+                    zhongTmpStr+=(" ③中"+count.zhong3Count+" 共"+count.zhong3Money);
+                }
+                if(count.zhong4Count != 0){
+                    zhongTmpStr+=(" ④中"+count.zhong4Count+" 共"+count.zhong4Money);
+                }
+                str.append(zhongTmpStr);
+
+                str.append("共:"+(count.zhong2Count+count.zhong3Count+count.zhong4Count)+"组     共计 "+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+"\n");
                 str.append(" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen+" 量"+DateSaveManager.getIntance().getGroup(goupID).liang);
 
                 if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
@@ -503,7 +569,7 @@ public class ServerManager2 {
 
                      }else{
                          SscControl.getIntance().sendMessage(  msgRoot+"-------------------\n"+str.toString(), goupID,false);
-                         SscControl.getIntance().sendMessage(  "共中"+(count/yin)+",剩余 "+DateSaveManager.getIntance().getGroup(goupID).fen,
+                         SscControl.getIntance().sendMessage(  "共中上"+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+",剩余 "+DateSaveManager.getIntance().getGroup(goupID).fen,
                                  goupID,false);
                      }
                 }
@@ -539,7 +605,8 @@ public class ServerManager2 {
         }
     }
 
-    private float getCountMoneyThird(DateBean2 bean ,int[] numbers,int yin,ArrayMap<Integer,OpenNumberDeal> openDeal2){
+    private ZhongDate getCountMoneyThird(DateBean2 bean , int[] numbers, DateSaveManager.GroupDate group, ArrayMap<Integer,OpenNumberDeal> openDeal2){
+        ZhongDate zhong = new ZhongDate();
         Integer[] integers = bean.local.get(0);
         int local = 0;
         float value = 0;
@@ -553,12 +620,12 @@ public class ServerManager2 {
 
         if(bean.mXiongdi != -1){
             if(bean.mXiongdi <= date.xiongdi){
-                return 0;
+                return zhong;
             }
         }
         if(bean.mThirdPai != -1){
             if(bean.mThirdPai <= date.chong){
-                return 0;
+                return zhong;
             }
         }
         if(bean.mZhi.size() > 0){
@@ -570,7 +637,7 @@ public class ServerManager2 {
                 }
             }
             if(!isHave){
-                return  0 ;
+                return  zhong ;
             }
         }
         int he = date.zhi % 10;
@@ -584,12 +651,12 @@ public class ServerManager2 {
                     }
                 }
                 if(!isHave){
-                    return 0;
+                    return zhong;
                 }
             }else{
                 for(Integer tmp : bean.heNumber){
                     if(tmp == he){
-                        return 0;
+                        return zhong;
                     }
                 }
             }
@@ -598,16 +665,22 @@ public class ServerManager2 {
             for(Integer tmp : bean.mHan){
                 for(Integer tmp2 : date.han){
                     if(tmp == tmp2){
-                        value += yin*bean.mEachMoney;
+                        if(bean.mIsFour){
+                            zhong.zhong4Money += group.yin4*bean.mEachMoney;
+                            zhong.zhong4Count += bean.mEachMoney;
+                        }else{
+                            zhong.zhong3Money += group.yin3*bean.mEachMoney;
+                            zhong.zhong3Count += bean.mEachMoney;
+                        }
                         break;
                     }
                 }
             }
-            return value;
+            return zhong;
         }
         if(bean.isPaiChongChong){
             if(date.isChongChong){
-                return 0;
+                return zhong;
             }
         }
         for(int i = 0 ; i< bean.local.get(0).length;i++){
@@ -621,10 +694,18 @@ public class ServerManager2 {
                 }
             }
             if(!isHave){
-                return 0;
+                return zhong;
             }
         }
-        return bean.mEachMoney * yin;
+        if(bean.mIsFour){
+            zhong.zhong4Money += group.yin4*bean.mEachMoney;
+            zhong.zhong4Count += bean.mEachMoney;
+        }else{
+            zhong.zhong3Money += group.yin3*bean.mEachMoney;
+            zhong.zhong3Count += bean.mEachMoney;
+        }
+
+        return zhong;
     }
 
     public void tuiDeal(String msg){
@@ -830,18 +911,19 @@ public class ServerManager2 {
         }
     }
 
-    private int getZhongjianCount(DateBean2 bean ,int[] numbers,int yin){
-        int count= 0;
+    private ZhongDate getZhongjianCount(DateBean2 bean ,int[] numbers,int yin){
+        ZhongDate zhong = new ZhongDate();
         for(int i = 0; i< bean.local.size();i++){
             Integer[] local = bean.local.get(i);
             for(int ii= 0;ii<  bean.mLastData.size();ii++){
                 Integer[] data = bean.mLastData.get(ii);
                 if(numbers[ local[0]-1 ] == data[0] && numbers[ local[1]-1 ] == data[1]){
-                    count = count + bean.mCountList.get(i)*yin;
+                    zhong.zhong2Money = zhong.zhong2Money + bean.mCountList.get(i)*yin;
+                    zhong.zhong2Count = zhong.zhong2Count + bean.mCountList.get(i)*yin;
                 }
             }
         }
-        return count;
+        return zhong;
     }
 
     private void xiazhu(String message,String groupID,long msgId,long id,String sendGroup){

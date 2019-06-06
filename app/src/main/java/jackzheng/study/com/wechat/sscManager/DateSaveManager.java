@@ -129,6 +129,16 @@ public class DateSaveManager {
         mGroupDate.get(group).yin = yin;
         saveStringDate(+mGroupDate.get(group).index+"yin",mGroupDate.get(group).yin);
     }
+    public void saveYin3(String group,int yin){
+        mGroupDate.get(group).yin3 = yin;
+        saveStringDate(+mGroupDate.get(group).index+"yin3",mGroupDate.get(group).yin3);
+    }
+    public void saveYin4(String group,int yin){
+        mGroupDate.get(group).yin4 = yin;
+        saveStringDate(+mGroupDate.get(group).index+"yin4",mGroupDate.get(group).yin4);
+    }
+
+
     public void saveXiane(String group,boolean  xiane){
         mGroupDate.get(group).xianer = xiane;
         saveStringDate(mGroupDate.get(group).groupID+"xiane",mGroupDate.get(group).xianer);
@@ -230,6 +240,8 @@ public class DateSaveManager {
             editor.remove(group.groupID+"fen").commit();
             editor.remove(group.groupID+"liang").commit();
             editor.remove(group.groupID+"yin").commit();
+            editor.remove(group.groupID+"yin3").commit();
+            editor.remove(group.groupID+"yin4").commit();
             editor.remove(group.groupID+"enable").commit();
             editor.remove(group.groupID+"xiane").commit();
         }
@@ -308,6 +320,8 @@ public class DateSaveManager {
                 date.fen = getFloatDate(date.groupID+"fen",0);
                 date.liang = getFloatDate(date.groupID+"liang",0);
                 date.yin = getIntDate(date.groupID+"yin",97);
+                date.yin3 = getIntDate(date.groupID+"yin",970);
+                date.yin4 = getIntDate(date.groupID+"yin",9700);
                 date.isEnable = getBooleanDate(date.groupID+"enable");
                 date.xianer = getBooleanDate(date.groupID+"xiane");
                 mGroupDate.put(group,date);
@@ -337,6 +351,8 @@ public class DateSaveManager {
         public float fen = 0;
         public float liang = 0;
         public int yin = 97;
+        public int yin3 = 970;
+        public int yin4 = 9700;
         public int index;
         public String toGroup;
         public int getGroup = 1;

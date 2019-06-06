@@ -74,6 +74,42 @@ public class CommonDeal {
 
             }
             return true;
+        } else if(data.type  == MessageDeal.YING_3_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&
+                DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)
+                ){//设置管理员
+            if(!TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(data.groupID).toGroup)){
+                return true;
+            }
+            try {
+
+                int fen = Integer.parseInt(data.message.replace(MessageDeal.YING_STR,""));
+                DateSaveManager.getIntance().saveYin3(data.groupID,fen);
+                SscControl.getIntance().sendMessage("该群三一吟"+fen,data.groupID,false);
+            }catch (Exception e){
+
+            }
+            return true;
+        } else if(data.type  == MessageDeal.YING_4_INT &&
+                !TextUtils.isEmpty(data.groupID) &&
+                !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&
+                DateSaveManager.getIntance().isHaveGroup(data.groupID)&&
+                DateSaveManager.getIntance().isGuanli(data.TakerId)
+                ){//设置管理员
+            if(!TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(data.groupID).toGroup)){
+                return true;
+            }
+            try {
+
+                int fen = Integer.parseInt(data.message.replace(MessageDeal.YING_STR,""));
+                DateSaveManager.getIntance().saveYin4(data.groupID,fen);
+                SscControl.getIntance().sendMessage("该群四一吟"+fen,data.groupID,false);
+            }catch (Exception e){
+
+            }
+            return true;
         } else if(data.type  == MessageDeal.SET_XIANER_INT &&
                 !TextUtils.isEmpty(data.groupID) &&
                 !DateSaveManager.getIntance().isGuanliQun(data.groupID)&&
