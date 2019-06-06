@@ -88,7 +88,7 @@ public class DateBean2 {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         if(isThirdDate){
-            builder.append(message+"\n");
+          //  builder.append(message+"\n");
             for(int i = 0 ; i< mDataList.size();i++){
                 for(Integer inte : mDataList.get(i)){
                     builder.append(""+inte);

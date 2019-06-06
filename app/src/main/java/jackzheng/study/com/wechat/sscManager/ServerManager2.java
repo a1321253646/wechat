@@ -4,6 +4,7 @@ import android.os.Debug;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -455,7 +456,12 @@ public class ServerManager2 {
             }
         }
         private float dealPoint(float a){
-            return (float)(Math.round(a*100)/100);
+            
+            BigDecimal bd = new BigDecimal((float) a);
+            bd = bd.setScale(2, 4);
+            a = bd.floatValue();
+
+            return a;
         }
 
     }
@@ -528,7 +534,7 @@ public class ServerManager2 {
                             zhongTmpStr+=(" ④中"+eachCount.zhong4Count+" 共"+eachCount.zhong4Money);
                         }
                         if(!TextUtils.isEmpty(zhongTmpStr)){
-
+                            str.append(bean1.msg);
                             str.append(zhongTmpStr+"\n-------------------\n");
                         }
                         count.zhong2Money += eachCount.zhong2Money;
