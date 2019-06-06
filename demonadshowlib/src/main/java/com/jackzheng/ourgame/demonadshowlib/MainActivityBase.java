@@ -70,7 +70,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                         mHandler.sendEmptyMessageDelayed(3,500);
                     }
                 }else if(msg.what == 4){
-                    mHandler.removeMessages(4);
+     /*               mHandler.removeMessages(4);
                     if(!AdControlServer.getmIntance().isGet){
                         mHandler.sendEmptyMessageDelayed(4,1000);
                     }else if(AdControlServer.getmIntance().adtime   > 0){
@@ -80,7 +80,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                             playInerAdDeal(true);
                         }
                         mHandler.sendEmptyMessageDelayed(4,AdControlServer.getmIntance().adtime *1000);
-                    }
+                    }*/
                 }
             }
         };

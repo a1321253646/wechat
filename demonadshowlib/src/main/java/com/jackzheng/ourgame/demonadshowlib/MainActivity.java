@@ -24,6 +24,7 @@ import com.mob4399.adunion.listener.OnAuBannerAdListener;
 import com.mob4399.adunion.listener.OnAuInitListener;
 import com.mob4399.adunion.listener.OnAuInterstitialAdListener;
 import com.mob4399.adunion.listener.OnAuVideoAdListener;
+import com.unity3d.player.UnityPlayer;
 
 import org.json.JSONException;
 
@@ -107,6 +108,7 @@ public class MainActivity extends MainActivityBase {
                     @Override
                     public void onVideoAdFailed(String message) {
                         Log.e(TAG,"VideoAd onVideoAdFailed\n"+ message);
+                        UnityPlayer.UnitySendMessage("Main Camera", "removeAdShow", "");
                     }
 
                     @Override
@@ -118,7 +120,7 @@ public class MainActivity extends MainActivityBase {
                     public void onVideoAdClosed() {
                         Log.e(TAG, "VideoAd closed");
                         startGameOrPause(true);
-
+                        UnityPlayer.UnitySendMessage("Main Camera", "removeAdShow", "");
                     }
 
                     @Override
