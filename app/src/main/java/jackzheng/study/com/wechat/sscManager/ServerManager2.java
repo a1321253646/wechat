@@ -525,16 +525,15 @@ public class ServerManager2 {
 
                         String zhongTmpStr = "";
                         if(eachCount.zhong2Count != 0){
-                            zhongTmpStr+=(" ②中"+eachCount.zhong2Count+" 共"+eachCount.zhong2Money);
+                            zhongTmpStr+=("②星 "+bean1.msg+" 中"+eachCount.zhong2Count+" 共"+eachCount.zhong2Money);
                         }
                         if(eachCount.zhong3Count != 0){
-                            zhongTmpStr+=(" ③中"+eachCount.zhong3Count+" 共"+eachCount.zhong3Money);
+                            zhongTmpStr+=("③星 "+bean1.msg+" 中"+eachCount.zhong3Count+" 共"+eachCount.zhong3Money);
                         }
                         if(eachCount.zhong4Count != 0){
-                            zhongTmpStr+=(" ④中"+eachCount.zhong4Count+" 共"+eachCount.zhong4Money);
+                            zhongTmpStr+=("④星 "+bean1.msg+" 中"+eachCount.zhong4Count+" 共"+eachCount.zhong4Money);
                         }
                         if(!TextUtils.isEmpty(zhongTmpStr)){
-                            str.append(bean1.msg);
                             str.append(zhongTmpStr+"\n-------------------\n");
                         }
                         count.zhong2Money += eachCount.zhong2Money;
@@ -555,17 +554,17 @@ public class ServerManager2 {
                 }*/
                 String zhongTmpStr= "";
                 if(count.zhong2Count != 0){
-                    zhongTmpStr+=(" ②中"+count.zhong2Count+" 共"+count.zhong2Money);
+                    zhongTmpStr+=("②星 "+count.zhong2Count+" 共"+count.zhong2Money+"\n");
                 }
                 if(count.zhong3Count != 0){
-                    zhongTmpStr+=(" ③中"+count.zhong3Count+" 共"+count.zhong3Money);
+                    zhongTmpStr+=("③星 "+count.zhong3Count+" 共"+count.zhong3Money+"\n");
                 }
                 if(count.zhong4Count != 0){
-                    zhongTmpStr+=(" ④中"+count.zhong4Count+" 共"+count.zhong4Money);
+                    zhongTmpStr+=("④星 "+count.zhong4Count+" 共"+count.zhong4Money+"\n");
                 }
                 str.append(zhongTmpStr);
 
-                str.append("共:"+(count.zhong2Count+count.zhong3Count+count.zhong4Count)+"组     共计 "+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+"\n");
+                str.append("共计 "+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+"\n");
                 str.append(" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen+" 量"+DateSaveManager.getIntance().getGroup(goupID).liang);
 
                 if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
@@ -648,20 +647,25 @@ public class ServerManager2 {
         }
         int he = date.zhi % 10;
         if(bean.heNumber.size() > 0){
+            XposedBridge.log("当前合"+he);
             if(bean.isThirdHe){
                 boolean  isHave = false;
                 for(Integer tmp : bean.heNumber){
+                    XposedBridge.log("合 列表中tmp="+tmp);
                     if(tmp == he){
                         isHave = true;
                         break;
                     }
                 }
                 if(!isHave){
+                    XposedBridge.log(" 合 不中");
                     return zhong;
                 }
             }else{
                 for(Integer tmp : bean.heNumber){
+                    XposedBridge.log("不合 列表中tmp="+tmp);
                     if(tmp == he){
+                        XposedBridge.log(" 不合 不中 ");
                         return zhong;
                     }
                 }
@@ -694,7 +698,7 @@ public class ServerManager2 {
             int localIndex = bean.local.get(0)[i];
             boolean isHave = false;
             for(Integer tmp : integers1){
-                if(tmp == numbers[localIndex]){
+                if(tmp == numbers[localIndex-1]){
                     isHave = true;
                     break;
                 }
@@ -925,7 +929,7 @@ public class ServerManager2 {
                 Integer[] data = bean.mLastData.get(ii);
                 if(numbers[ local[0]-1 ] == data[0] && numbers[ local[1]-1 ] == data[1]){
                     zhong.zhong2Money = zhong.zhong2Money + bean.mCountList.get(i)*yin;
-                    zhong.zhong2Count = zhong.zhong2Count + bean.mCountList.get(i)*yin;
+                    zhong.zhong2Count = bean.mCountList.get(i);
                 }
             }
         }

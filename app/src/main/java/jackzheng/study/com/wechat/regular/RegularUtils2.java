@@ -16,6 +16,21 @@ public class RegularUtils2 {
         if(TextUtils.isEmpty(str)){
             return null;
         }else{
+            if(str.contains("合单")){
+                str = str.replaceAll("合单","合13579各");
+            }
+            if(str.contains("合双")){
+                str = str.replaceAll("合双","合02468各");
+            }
+            if(str.contains("合大")){
+                str = str.replaceAll("合大","合56789各");
+            }
+            if(str.contains("合小")){
+                str = str.replaceAll("合小","合01234各");
+            }
+            if(str.contains("=")){
+                str = str.replaceAll("=","各");
+            }
             if(str.contains("单")){
                 str = str.replaceAll("单","-13579-");
             }
@@ -323,20 +338,27 @@ public class RegularUtils2 {
                         String db = ""+numLevel1+numLevel2+numLevel3+numLevel4+":";
                         if(date.heNumber.size() >0){
                             boolean isDelete = false;
+                            if(date.isThirdHe){
+                                isDelete = true;
+                            }else{
+                                isDelete = false;
+                            }
+                            int deleteHe = -1;
                             for(Integer tmp : date.heNumber){
+                                deleteHe = tmp;
                                 if(!date.isThirdHe && zhi2%10 ==tmp){
-                                    deleteCount++;
                                     isDelete = true;
-                                    XposedBridge.log(db+"删除：不合 "+tmp);
+                                 //   XposedBridge.log(db+"删除：不合 "+tmp);
                                     break;
-                                }else if(date.isThirdHe && zhi2%10 !=tmp){
-                                    deleteCount++;
-                                    isDelete = true;
-                                    XposedBridge.log(db+"删除：合 "+tmp);
+                                }else if(date.isThirdHe && zhi2%10 ==tmp){
+                                    isDelete = false;
                                     break;
                                 }
+
                             }
                             if(isDelete){
+                                deleteCount++;
+  //                              XposedBridge.log(db+"删除："+(date.isThirdHe?"合":"不合"+deleteHe));
                                 continue;
                             }
                         }
