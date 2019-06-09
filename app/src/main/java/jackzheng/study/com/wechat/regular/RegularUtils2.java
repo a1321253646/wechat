@@ -34,7 +34,13 @@ public class RegularUtils2 {
             if(str.contains("单")){
                 str = str.replaceAll("单","-13579-");
             }
-            if(str.contains("双") && !str.contains("双双") &&   !str.contains("排双")){
+            if(str.contains("双双")){
+                str = str.replaceAll("双双","穿穿");
+            }
+            if(str.contains("排双")){
+                str = str.replaceAll("排双","排穿");
+            }
+            if(str.contains("双")){
                 str = str.replaceAll("双","-02468-");
             }
             if(str.contains("大")){
@@ -46,7 +52,12 @@ public class RegularUtils2 {
             if(str.contains("全")){
                 str = str.replaceAll("全","-01234567890-");
             }
-
+            if(str.contains("穿穿")){
+                str = str.replaceAll("穿穿","双双");
+            }
+            if(str.contains("排穿")){
+                str = str.replaceAll("排穿","排双");
+            }
         }
 
 
