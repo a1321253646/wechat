@@ -34,7 +34,7 @@ public class RegularUtils2 {
             if(str.contains("单")){
                 str = str.replaceAll("单","-13579-");
             }
-            if(str.contains("双")){
+            if(str.contains("双") && !str.contains("双双") &&   !str.contains("排双")){
                 str = str.replaceAll("双","-02468-");
             }
             if(str.contains("大")){
