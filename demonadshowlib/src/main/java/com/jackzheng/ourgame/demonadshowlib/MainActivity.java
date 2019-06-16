@@ -29,9 +29,11 @@ public class MainActivity extends UnityPlayerActivity {
     }
 
     public void createTable(String sqlName,String tableName){
-        Log.d("mysql","createTable sqlName="+sqlName+" tableName="+tableName);
-        mSqliteControl  = new SqliteControl(MainActivity.this,sqlName,null,1,tableName);
-        Log.d("mysql","createTable end");
+        if(mSqliteControl == null){
+            Log.d("mysql","createTable sqlName="+sqlName+" tableName="+tableName);
+            mSqliteControl  = new SqliteControl(MainActivity.this,sqlName,null,1,tableName);
+            Log.d("mysql","createTable end");
+        }
     }
 
 
@@ -44,8 +46,8 @@ public class MainActivity extends UnityPlayerActivity {
     }
     public long getPlayVocation(){
         Log.d("mysql","getPlayVocation");
-        long vocation =   mSqliteControl.getLevel();
-        Log.d("mysql","getLevel end="+vocation+" end");
+        long vocation =   mSqliteControl.getPlayVocation();
+        Log.d("mysql","getPlayVocation end="+vocation+" end");
         return vocation;
     }
 
@@ -170,7 +172,7 @@ public class MainActivity extends UnityPlayerActivity {
         Log.d("mysql","getNetDate ");
         List<SQLDate> list =  mSqliteControl.getNetDate();
         String value =  sqlDateListToString(list);
-        Log.d("mysql","removeDeleteDate end ="+value);
+        Log.d("mysql","getNetDate end ="+value);
         return value;
     }
 
@@ -248,9 +250,9 @@ public class MainActivity extends UnityPlayerActivity {
                 jb.put("type", date.type);
                 jb.put("id", date.id);
                 jb.put("goodId", date.goodId);
-                jb.put("goodtype", date.goodType);
-                jb.put("isclean", date.isClean);
-                jb.put("extra", date.extan);
+                jb.put("goodType", date.goodType);
+                jb.put("isClean", date.isClean);
+                jb.put("extan", date.extan);
                 jb.put("isDelete", date.isDelete);
                 jb.put("isNet", date.isNet);
                 array.put(jb);

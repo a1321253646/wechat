@@ -47,7 +47,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public long getLevel(){
         SQLiteDatabase db =getReadableDatabase();
-        Cursor cursor = db.query(tableName, new String[]{"EXTAN"}, "ID=? and AND TYPE=? AND ISDELETE=1",  new String[]{"1","1"}, null, null, null);
+        Cursor cursor = db.query(tableName, new String[]{"EXTAN"}, "ID=?  AND TYPE=? AND ISDELETE=1",  new String[]{"1","1"}, null, null, null);
         long level = -100;
         while(cursor.moveToNext()){
             level= Long.parseLong( cursor.getString(cursor.getColumnIndex("EXTAN")) );
@@ -58,8 +58,8 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public long getPlayVocation(){
         SQLiteDatabase db =getReadableDatabase();
-        Cursor cursor = db.query(tableName, new String[]{"EXTAN"}, "ID=? and AND TYPE=?  AND ISDELETE=1",  new String[]{"22","1"}, null, null, null);
-        long level = -100;
+        Cursor cursor = db.query(tableName, new String[]{"EXTAN"}, "ID=?  AND TYPE=?  AND ISDELETE=1",  new String[]{"22","1"}, null, null, null);
+        long level = -1;
         while(cursor.moveToNext()){
             level= Long.parseLong( cursor.getString(cursor.getColumnIndex("EXTAN")) );
         }
@@ -69,7 +69,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public void deleteGuide(long id)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("ISDELETE", 2);
@@ -110,7 +110,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public boolean isUpdate(){
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(tableName, new String[]{"EXTAN"}, "ID=? and AND TYPE=?",  new String[]{"18","1"}, null, null, null);
+        Cursor cursor = db.query(tableName, new String[]{"EXTAN"}, "ID=? AND TYPE=?",  new String[]{"18","1"}, null, null, null);
         long count =0;
         while(cursor.moveToNext()){
             count++;
@@ -123,7 +123,7 @@ public class SqliteControl extends SQLiteOpenHelper{
     }
 
     public void clearAllDelete() {
-        SQLiteDatabase db= getReadableDatabase();
+        SQLiteDatabase db= getWritableDatabase();
 
         String whereClauses = "ISDELETE=?";
         String [] whereArgs = {String.valueOf(2)};
@@ -136,7 +136,7 @@ public class SqliteControl extends SQLiteOpenHelper{
         boolean isClocse = false;
         if(db == null){
             isClocse = true;
-            db = getReadableDatabase();
+            db = getWritableDatabase();
         }
         ContentValues cv = new ContentValues();
         cv.put("TYPE", date.type);
@@ -155,7 +155,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public void changeGoodType(SQLDate date)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("GOODTYPE", date.type);
@@ -167,7 +167,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public void changeGoodSql(SQLDate date,long old)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("GOODID", date.goodId);
@@ -179,7 +179,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public void updateIdAndType(SQLDate date)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("EXTAN", date.extan);
@@ -190,7 +190,7 @@ public class SqliteControl extends SQLiteOpenHelper{
     }
     public void deleteIdAndType(SQLDate date)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("ISDELETE", 2);
@@ -202,7 +202,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public void deleteGood(SQLDate date)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("ISDELETE", 2);
@@ -214,18 +214,20 @@ public class SqliteControl extends SQLiteOpenHelper{
     }
     public void deleteLuiHui()
     {
-        SQLiteDatabase db = getReadableDatabase();
+        Log.i(TAG, "deleteLuiHui------------->");
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("ISDELETE", 2);
         String whereClause="ISCLENAN=1 and ISDELETE=1";
         db.update(tableName, cv, whereClause, null);
         db.close();
+        Log.i(TAG, "deleteLuiHui end------------->");
     }
 
     public void UpdateZhuangbeiInto(SQLDate date)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("EXTAN",date.extan);
         cv.put("ISNET", 1);
@@ -250,7 +252,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public void deleteCleanNet()
     {
-        SQLiteDatabase db= getReadableDatabase();
+        SQLiteDatabase db= getWritableDatabase();
 
         String whereClauses = "TYPE=11";
         db.delete(tableName, whereClauses, null);
@@ -258,7 +260,7 @@ public class SqliteControl extends SQLiteOpenHelper{
     }
 
     public void removeDeleteDate(){
-        SQLiteDatabase db= getReadableDatabase();
+        SQLiteDatabase db= getWritableDatabase();
 
         String whereClauses = "ISNET=2 AND ISDELETE=2";
         db.delete(tableName, whereClauses, null);
@@ -267,8 +269,8 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public List<SQLDate> getNetDate(){
         ArrayList<com.jackzheng.ourgame.demonadshowlib.sqlite.SQLDate> list = new ArrayList<>();
-        SQLiteDatabase db =getWritableDatabase();
-        Cursor cursor = db.query(tableName, new String[]{"TYPE","ID","EXTAN","GOODID","GOODTYPE","ISCLENAN","ISNET","ISDELETE",}, "ISNET=2 AND ISDELETE=2", null, null, null, null);
+        SQLiteDatabase db =getReadableDatabase();
+        Cursor cursor = db.query(tableName, new String[]{"TYPE","ID","EXTAN","GOODID","GOODTYPE","ISCLENAN","ISNET","ISDELETE",}, "ISNET=1 AND ISDELETE=1", null, null, null, null);
 
         while(cursor.moveToNext()){
             list.add(cursorToSqlDate(cursor));
@@ -294,7 +296,7 @@ public class SqliteControl extends SQLiteOpenHelper{
 
     public List<SQLDate> getAll(){
         ArrayList<SQLDate> list = new ArrayList<>();
-        SQLiteDatabase db =getWritableDatabase();
+        SQLiteDatabase db =getReadableDatabase();
         Cursor cursor = db.query(tableName, new String[]{"TYPE","ID","EXTAN","GOODID","GOODTYPE","ISCLENAN","ISNET","ISDELETE",}, null, null, null, null, null);
 
         while(cursor.moveToNext()){
@@ -305,7 +307,7 @@ public class SqliteControl extends SQLiteOpenHelper{
     }
 
     public void delectAll(String tableName){
-        SQLiteDatabase db =getReadableDatabase();
+        SQLiteDatabase db =getWritableDatabase();
         db.delete(tableName, null, null);
         db.close();
     }
