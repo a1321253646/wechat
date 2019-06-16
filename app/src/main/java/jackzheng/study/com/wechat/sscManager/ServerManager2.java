@@ -7,12 +7,14 @@ import android.util.ArrayMap;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Set;
 
 import de.robv.android.xposed.XposedBridge;
 import jackzheng.study.com.wechat.CommonDeal;
 import jackzheng.study.com.wechat.HtmlParse;
 import jackzheng.study.com.wechat.MessageDeal;
 import jackzheng.study.com.wechat.SscControl;
+import jackzheng.study.com.wechat.net.NetServerControl;
 import jackzheng.study.com.wechat.regular.AllXiazuBean;
 import jackzheng.study.com.wechat.regular.DateBean2;
 import jackzheng.study.com.wechat.regular.RegularStrBean;
@@ -936,6 +938,68 @@ public class ServerManager2 {
         return zhong;
     }
 
+    public void xiazhuFault(long netId){
+        AllXiazuBean xiazuBeanByNetBean = getXiazuBeanByNetBean(netId);
+
+        if(TextUtils.isEmpty(xiazuBeanByNetBean.sendGroup)){
+            SscControl.getIntance().sendMessage(  xiazuBeanByNetBean.date.mId+"改"+xiazuBeanByNetBean.date.msg+"\n\uE333解析失败\uE333", xiazuBeanByNetBean.group,false);
+        }else if(!xiazuBeanByNetBean.sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
+            SscControl.getIntance().sendMessage(  xiazuBeanByNetBean.date.mId+"改"+xiazuBeanByNetBean.date.msg+"\n\uE333解析失败\uE333", xiazuBeanByNetBean.sendGroup,false);
+        }
+
+        if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
+            SscControl.getIntance().sendMessage(  xiazuBeanByNetBean.date.mId+"改"+xiazuBeanByNetBean.date.msg+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
+        }
+
+
+    }
+    public void xiazhuSuccess(long netId,SscBean bean){
+        AllXiazuBean xiazuBeanByNetBean = getXiazuBeanByNetBean(netId);
+        xiazuBeanByNetBean.date.list = bean.list;
+        if( DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).xianer  && xiazuBeanByNetBean.date.count> DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).fen ){
+            xiazuBeanByNetBean.date.list= null;
+            if(TextUtils.isEmpty(xiazuBeanByNetBean.sendGroup)){
+                SscControl.getIntance().sendMessage( xiazuBeanByNetBean.date.msg+"\n\uE333操作失败-积分不足\uE333",xiazuBeanByNetBean.group,false);
+            }else if(!xiazuBeanByNetBean.sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
+                SscControl.getIntance().sendMessage( xiazuBeanByNetBean.date.msg+"\n\uE333操作失败-积分不足\uE333",xiazuBeanByNetBean.sendGroup,false);
+            }
+
+            return;
+        }
+        String str ="";
+        for(DateBean2 tmp : xiazuBeanByNetBean.date.list){
+            str = str+ tmp.toString()+"\n";
+        }
+
+        DateSaveManager.getIntance().changeGroupFenOrLiang(xiazuBeanByNetBean.group,true,2,xiazuBeanByNetBean.date.count);
+        DateSaveManager.getIntance().changeGroupFenOrLiang(xiazuBeanByNetBean.group,false,1,xiazuBeanByNetBean.date.count);
+        String end = "-------------------\n扣"+bean.count+"   剩余"+DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).fen+"\n退单撤回下注信息或者发送：退"+bean.mId;
+
+       /* if(!result.isTrue && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
+            //          if(xiazuBean != null){
+            SscControl.getIntance().sendMessage(DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).groupName+"\n"+ xiazuBeanByNetBean.date.msg+"\n\n--------------\n"+str+end,DateSaveManager.getIntance().mTixing,false);
+            //          }
+        }*/
+        if(!TextUtils.isEmpty(DateSaveManager.getIntance().mZhengque)){
+            SscControl.getIntance().sendMessage(xiazuBeanByNetBean.date.msg+"\n\n--------------\n"+str+end,DateSaveManager.getIntance().mZhengque,false);
+        }
+        if(TextUtils.isEmpty(xiazuBeanByNetBean.sendGroup)){
+            SscControl.getIntance().sendMessage(xiazuBeanByNetBean.date.msg+"\n\n--------------\n"+str+end,xiazuBeanByNetBean.group,false);
+        }else{
+            SscControl.getIntance().sendMessage(xiazuBeanByNetBean.date.msg+"\n\n--------------\n"+str+end,xiazuBeanByNetBean.sendGroup,false);
+        }
+
+    }
+
+    private AllXiazuBean getXiazuBeanByNetBean(long netId){
+        Set<Long> longs = mAllXiazu.keySet();
+        for(long key : longs){
+            if(mAllXiazu.get(key).netId == netId){
+                return mAllXiazu.get(key);
+            }
+        }
+        return null;
+    }
     private void xiazhu(String message,String groupID,long msgId,long id,String sendGroup){
         boolean isEdit = false;
         AllXiazuBean xiazuBean = null;
@@ -947,6 +1011,7 @@ public class ServerManager2 {
                 bean.msg =message;
                 bean.mId = mId+DateSaveManager.getIntance().mRobatIndex*150;
                 bean.msgId =msgId;
+
                 mId++;
                 if(mXiazuMap.containsKey(groupID)){
                     ArrayList<SscBean> mgroupList = mXiazuMap.get(groupID);
@@ -956,14 +1021,20 @@ public class ServerManager2 {
                     l.add(bean);
                     mXiazuMap.put(groupID,l);
                 }
-                AllXiazuBean allXiazuBean = new AllXiazuBean();
-                allXiazuBean.date = bean;
-                allXiazuBean.group = groupID;
-                mAllXiazu.put(bean.mId,allXiazuBean);
+                xiazuBean = new AllXiazuBean();
+                xiazuBean.date = bean;
+                xiazuBean.group = groupID;
+                xiazuBean.netId = NetServerControl.getIntance().getNetId();
+                xiazuBean.sendGroup =sendGroup;
+                xiazuBean.isEdit = false;
+                mAllXiazu.put(bean.mId,xiazuBean);
             }else{
                 if(mAllXiazu.containsKey(id)){
                     isEdit = true;
                     xiazuBean = mAllXiazu.get(id);
+                    xiazuBean.netId = NetServerControl.getIntance().getNetId();
+                    xiazuBean.isEdit = true;
+                    xiazuBean.sendGroup =sendGroup;
                     bean =xiazuBean.date;
                 }else{
                     if(TextUtils.isEmpty(sendGroup)){
@@ -976,151 +1047,7 @@ public class ServerManager2 {
                 }
 
             }
-            ArrayList<DateBean2> dateBean2s = null;
-            RegularStrBean result = null;
-            try {
-                result = RegularUtils2.regularStr(message);
-                if(result != null){
-                    dateBean2s = result.list;
-                }
-
-            }catch (Exception e){
-
-            }
-            if(dateBean2s == null){
-                XposedBridge.log("RegularUtils2.regularStr end null");
-            }else{
-                XposedBridge.log("RegularUtils2.regularStr end dateBean2s.size()="+dateBean2s.size());
-            }
-
-            if(dateBean2s == null || dateBean2s.size() < 1){
-                    if(TextUtils.isEmpty(sendGroup)){
-                        SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
-                    }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                        SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
-                    }
-
-                if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                    SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-                }
-
-                return;
-            }
-
-            XposedBridge.log("RegularUtils2.regularStr dateBean2s.get(0).mIsFour= "+dateBean2s.get(0).mIsFour);
-
-            if(!dateBean2s.get(0).isThirdDate){
-                for(DateBean2 dateBeanEach : dateBean2s){
-                    if(dateBeanEach.mCountList== null ||
-                            dateBeanEach.mCountList.size() == 0 ||
-                            dateBeanEach.local == null ||
-                            dateBeanEach.local.size() == 0||
-                            dateBeanEach.local.size() != dateBeanEach.mCountList.size() ){
-
-                        if(TextUtils.isEmpty(sendGroup)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
-                        }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
-                        }
-
-
-                        if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                            SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-
-                        }
-
-                        return;
-                    }
-                    for(Integer[] tmp : dateBeanEach.local){
-                        if(tmp  == null ||
-                                tmp.length != 2||
-                                tmp[0] <=0 ||  tmp[1] <=0 ||tmp[0] >5 || tmp[1] >5){
-                            if(tmp.length == 2 && tmp[1]== 0 &&  tmp[0] > 0 && tmp[0] <= 5 && dateBeanEach.local.size() == 1 &&
-                                    dateBeanEach.mDataList != null && dateBeanEach.mDataList.size() == 2 && dateBeanEach.mDataList.get(1).size() == 10){
-                                if(tmp[0]== 5){
-                                    tmp[1] = 4;
-                                }else{
-                                    tmp[1] = 5;
-                                }
-                                break;
-                            }
-
-                            if(TextUtils.isEmpty(sendGroup)){
-                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
-                            }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
-
-                            }
-
-                            if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-                            }
-
-                            return;
-                        }
-                    }
-                    for(Integer tmp : dateBeanEach.mCountList){
-
-                        if(tmp  == null ||tmp <= 0){
-                            if(TextUtils.isEmpty(sendGroup)){
-                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", groupID,false);
-                            }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", sendGroup,false);
-                            }
-
-                            if(!TextUtils.isEmpty( DateSaveManager.getIntance().mZongQun)){
-                                SscControl.getIntance().sendMessage(  bean.mId+"改"+message+"\n\uE333解析失败\uE333", DateSaveManager.getIntance().mZongQun,false);
-
-                            }
-
-                            return;
-                        }
-                    }
-                }
-            }
-
-
-            bean.list = dateBean2s;
-            String str = "";
-            float count  = 0;
-            for(DateBean2 tmp : dateBean2s){
-                if(tmp.isThirdDate){
-                    count+= tmp.mAllMoney;
-                }else{
-                    count += tmp.allCount;
-                }
-                str = str+ tmp.toString()+"\n";
-            }
-            if( DateSaveManager.getIntance().getGroup(groupID).xianer  && count> DateSaveManager.getIntance().getGroup(groupID).fen ){
-                bean.list= null;
-                if(TextUtils.isEmpty(sendGroup)){
-                    SscControl.getIntance().sendMessage( message+"\n\uE333操作失败-积分不足\uE333",groupID,false);
-                }else if(!sendGroup.equals(DateSaveManager.getIntance().mZongQun)){
-                    SscControl.getIntance().sendMessage( message+"\n\uE333操作失败-积分不足\uE333",sendGroup,false);
-                }
-
-                return;
-            }
-
-            bean.count = count;
-
-            DateSaveManager.getIntance().changeGroupFenOrLiang(groupID,true,2,count);
-            DateSaveManager.getIntance().changeGroupFenOrLiang(groupID,false,1,count);
-            String end = "-------------------\n扣"+bean.count+"   剩余"+DateSaveManager.getIntance().getGroup(groupID).fen+"\n退单撤回下注信息或者发送：退"+bean.mId;
-
-            if(!result.isTrue && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
-      //          if(xiazuBean != null){
-                    SscControl.getIntance().sendMessage(DateSaveManager.getIntance().getGroup(groupID).groupName+"\n"+ message+"\n\n--------------\n"+str+end,DateSaveManager.getIntance().mTixing,false);
-      //          }
-            }
-            if(!TextUtils.isEmpty(DateSaveManager.getIntance().mZhengque)){
-                SscControl.getIntance().sendMessage(message+"\n\n--------------\n"+str+end,DateSaveManager.getIntance().mZhengque,false);
-            }
-            if(TextUtils.isEmpty(sendGroup)){
-                SscControl.getIntance().sendMessage(message+"\n\n--------------\n"+str+end,groupID,false);
-            }else{
-                SscControl.getIntance().sendMessage(message+"\n\n--------------\n"+str+end,sendGroup,false);
-            }
+            NetServerControl.getIntance().getRegular(xiazuBean.netId,"test",message,DateSaveManager.getIntance().isThird);
 
         }else{
             if(TextUtils.isEmpty(sendGroup)){
