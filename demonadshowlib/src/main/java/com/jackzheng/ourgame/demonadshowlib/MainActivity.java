@@ -1,7 +1,11 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
+import android.os.Bundle;
 import android.util.Log;
 
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.SkuDetails;
+import com.jackzheng.ourgame.demonadshowlib.googlePay.BillingControl;
 import com.jackzheng.ourgame.demonadshowlib.sqlite.SQLDate;
 import com.jackzheng.ourgame.demonadshowlib.sqlite.SqliteControl;
 import com.unity3d.player.UnityPlayerActivity;
@@ -17,6 +21,34 @@ public class MainActivity extends UnityPlayerActivity {
 
 
     SqliteControl mSqliteControl ;
+    BillingControl mBillingControl;
+
+    @Override
+    protected void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        mBillingControl = new BillingControl(this, new BillingControl.BillingUpdatesListener() {
+            @Override
+            public void onBillingClientSetupFinished() {
+
+            }
+
+            @Override
+            public void onConsumeFinished(String token, int result) {
+
+            }
+
+            @Override
+            public void onPurchasesUpdated(List<Purchase> purchases) {
+
+            }
+
+            @Override
+            public void onQueryPurchases(List<SkuDetails> skus) {
+                
+            }
+        });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
