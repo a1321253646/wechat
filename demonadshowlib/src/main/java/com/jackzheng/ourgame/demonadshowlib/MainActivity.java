@@ -3,11 +3,13 @@ package com.jackzheng.ourgame.demonadshowlib;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.SkuDetails;
 import com.jackzheng.ourgame.demonadshowlib.googlePay.BillingControl;
 import com.jackzheng.ourgame.demonadshowlib.sqlite.SQLDate;
 import com.jackzheng.ourgame.demonadshowlib.sqlite.SqliteControl;
+import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
 
 import org.json.JSONArray;
@@ -23,6 +25,16 @@ public class MainActivity extends UnityPlayerActivity {
     SqliteControl mSqliteControl ;
     BillingControl mBillingControl;
 
+
+    public void onQueryPurchasesToUnity(String skus){
+
+        UnityPlayer.UnitySendMessage("Main Camera", "onQueryPurchasesToUnity", skus);
+    }
+    public void onBuySuccess(String skus){
+
+        UnityPlayer.UnitySendMessage("Main Camera", "onBuySuccess", skus);
+    }
+
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
@@ -34,7 +46,15 @@ public class MainActivity extends UnityPlayerActivity {
 
             @Override
             public void onConsumeFinished(String token, int result) {
-
+                if(result == BillingClient.BillingResponseCode.OK){
+                    for(Purchase purchase:mBillingControl.mPurchases){
+                        if(token.equals(purchase.getPurchaseToken())){
+                            mBillingControl.mPurchases.remove(purchase);
+                            onBuySuccess(purchase.getSku());
+                            break;
+                        }
+                    }
+                }
             }
 
             @Override
@@ -44,10 +64,44 @@ public class MainActivity extends UnityPlayerActivity {
 
             @Override
             public void onQueryPurchases(List<SkuDetails> skus) {
-                
+                if(skus != null && skus.size() > 0){
+                    ArrayList<SkuToUnity> list = new ArrayList<>();
+                    for(SkuDetails ski : skus){
+                        SkuToUnity sku =new SkuToUnity();
+                        sku.sku = ski.getSku();
+                        sku.price = ski.getPrice();
+                        list.add(sku);
+                    }
+                    String json = SkuToUnity.listtoJsonString(list);
+                    onQueryPurchasesToUnity(json);
+                }
             }
         });
     }
+
+    public static class SkuToUnity{
+        public String sku;
+        public String price;
+
+
+        public static String listtoJsonString(List<SkuToUnity> skus) {
+            JSONArray array = new JSONArray();
+            try {
+                for(SkuToUnity date : skus){
+                    JSONObject jb =new JSONObject();
+                    jb.put("sku", date.sku);
+                    jb.put("price", date.price);
+                    array.put(jb);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return array.toString();
+        }
+    }
+
+
+
 
     @Override
     protected void onResume() {

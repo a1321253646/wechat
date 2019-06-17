@@ -34,7 +34,7 @@ public class BillingControl  implements PurchasesUpdatedListener{
     boolean mIsServiceConnected = false;
     int mBillingClientResponseCode = -1;
     List<SkuDetails> mSkuDetails = null;
-    private final List<Purchase> mPurchases = new ArrayList<>();
+    public final List<Purchase> mPurchases = new ArrayList<>();
 
     public interface BillingUpdatesListener {
         void onBillingClientSetupFinished();
@@ -93,6 +93,7 @@ public class BillingControl  implements PurchasesUpdatedListener{
                             for (SkuDetails skuDetails : skuDetailsList) {
                                 Log.d(TAG , "skuDetails sku="+skuDetails.getSku()+" skuDetails="+skuDetails.getPrice());
                             }
+                            mBillingUpdatesListener.onQueryPurchases(mSkuDetails);
                         }
                     }
 
@@ -113,7 +114,7 @@ public class BillingControl  implements PurchasesUpdatedListener{
     public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> purchases) {
         if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
                 && purchases != null) {
-            mPurchases.clear();
+         //   mPurchases.clear();
             for (Purchase purchase : purchases) {
                 handlePurchase(purchase);
             }
