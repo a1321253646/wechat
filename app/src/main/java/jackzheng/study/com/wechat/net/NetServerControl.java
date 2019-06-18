@@ -99,18 +99,21 @@ public class NetServerControl {
         requite.date = new ArrayList<>();
 
         Set<String> strings = all.keySet();
+        XposedBridge.log("strings size  "+strings.size());
 
         if(strings.size() > 0) {
 
             for(String goup : strings){
                 KaijianRequite.KaijiangGroupData groupData = new KaijianRequite.KaijiangGroupData();
                 groupData.group = goup;
-                groupData.date = all.get(strings);
+                groupData.date = all.get(goup);
+                requite.date.add(groupData);
             }
         }
 
         try {
             Gson gson = new Gson();
+            XposedBridge.log("gson.toJson(requite)=   "+gson.toJson(requite));
             OkHttpUtils
                     .postString()
                     .url(URL_ROOT+"/kj")

@@ -252,7 +252,13 @@ public class ServerManager2 {
             }/*else if(DateSaveManager.getIntance().isBeiyong){
                 continue;
             }*/
-            str.append("共"+count+" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen+" 流"+DateSaveManager.getIntance().getGroup(goupID).liang);
+            if(DateSaveManager.getIntance().isThird){
+                str.append("共"+count+" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen+" 流"+DateSaveManager.getIntance().getGroup(goupID).liang);
+            }else{
+                str.append("共"+count+" 剩余"+((long)DateSaveManager.getIntance().getGroup(goupID).fen)+" 流"+((long)DateSaveManager.getIntance().getGroup(goupID).liang));
+            }
+
+
             if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
                 if(!TextUtils.isEmpty( DateSaveManager.getIntance().mBaobiao)){
                     SscControl.getIntance().sendMessage( DateSaveManager.getIntance().getGroup(goupID).groupName+"\n"+ str.toString(),
@@ -261,8 +267,16 @@ public class ServerManager2 {
                 }else{
                     SscControl.getIntance().sendMessage(  str.toString(),
                             goupID,false);
-                    SscControl.getIntance().sendMessage(  "下"+count+" 量"+DateSaveManager.getIntance().getGroup(goupID).liang,
-                            goupID,false);
+
+                    if(DateSaveManager.getIntance().isThird){
+                        SscControl.getIntance().sendMessage(  "下"+count+" 量"+DateSaveManager.getIntance().getGroup(goupID).liang,
+                                goupID,false);
+                    }else{
+                        SscControl.getIntance().sendMessage(  "下"+((long)count)+" 量"+((long)DateSaveManager.getIntance().getGroup(goupID).liang),
+                                goupID,false);
+                    }
+
+
                 }
             }
             if(!isAll &&goupID.equals(group)){
@@ -323,21 +337,32 @@ public class ServerManager2 {
                 for(Kaijiangback.KaijiangGroupBackDataItem bean :group.date){
                     SscBean sscHave = null;
                     for(SscBean ssc : xiazu){
-                        ssc.mId = bean.id;
-                        sscHave = ssc;
-                        break;
+                        XposedBridge.log("ssc.mId="+ssc.mId+"  bean.id="+ bean.id);
+                        if(ssc.mId == bean.id){
+                            sscHave = ssc;
+                            break;
+                        }
+
+
                     }
+
+
+
                     bean.date.toPoint2();
 
 
                     String zhongTmpStr = "";
                     if(bean.date.zhong2Count != 0){
-                        zhongTmpStr+=("②星 "+sscHave.msg+" 中"+bean.date.zhong2Count+" 共"+bean.date.zhong2Money);
+                        bean.date.zhong2Money = bean.date.zhong2Count* DateSaveManager.getIntance().getGroup(group.group).yin;
+                        zhongTmpStr+=("②星 "+sscHave.msg+" 中"+((long)bean.date.zhong2Count)+" 共"+((long)bean.date.zhong2Money));
+
                     }
                     if(bean.date.zhong3Count != 0){
+                        bean.date.zhong3Money = bean.date.zhong3Count* DateSaveManager.getIntance().getGroup(group.group).yin3;
                         zhongTmpStr+=("③星 "+sscHave.msg+" 中"+bean.date.zhong3Count+" 共"+bean.date.zhong3Money);
                     }
                     if(bean.date.zhong4Count != 0){
+                        bean.date.zhong4Money = bean.date.zhong4Count* DateSaveManager.getIntance().getGroup(group.group).yin;
                         zhongTmpStr+=("④星 "+sscHave.msg+" 中"+bean.date.zhong4Count+" 共"+bean.date.zhong4Money);
                     }
 
@@ -347,8 +372,9 @@ public class ServerManager2 {
                     count.zhong3Count += bean.date.zhong3Count;
                     count.zhong4Money += bean.date.zhong4Money;
                     count.zhong4Count += bean.date.zhong4Count;
+                    str.append(zhongTmpStr+"\n");
                 }
-                str.append("\n");
+
                 float a = count.zhong2Money+count.zhong3Money+count.zhong4Money;
                 if(a > 0){
                     DateSaveManager.getIntance().changeGroupFenOrLiang(group.group,true,1,a);
@@ -356,7 +382,7 @@ public class ServerManager2 {
 
                 String zhongTmpStr= "";
                 if(count.zhong2Count != 0){
-                    zhongTmpStr+=("②星 "+count.zhong2Count+" 共"+count.zhong2Money+"\n");
+                    zhongTmpStr+=("②星 "+((long)count.zhong2Count)+" 共"+((long)count.zhong2Money)+"\n");
                 }
                 if(count.zhong3Count != 0){
                     zhongTmpStr+=("③星 "+count.zhong3Count+" 共"+count.zhong3Money+"\n");
@@ -365,9 +391,14 @@ public class ServerManager2 {
                     zhongTmpStr+=("④星 "+count.zhong4Count+" 共"+count.zhong4Money+"\n");
                 }
                 str.append(zhongTmpStr);
+                if(DateSaveManager.getIntance().isThird){
+                    str.append("共计 "+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+"\n");
+                    str.append(" 剩余"+DateSaveManager.getIntance().getGroup(group.group).fen+" 量"+DateSaveManager.getIntance().getGroup(group.group).liang);
+                }else{
+                    str.append("共计 "+((long)(count.zhong2Money+count.zhong3Money+count.zhong4Money))+"\n");
+                    str.append(" 剩余"+((long)DateSaveManager.getIntance().getGroup(group.group).fen)+" 量"+((long)DateSaveManager.getIntance().getGroup(group.group).liang));
+                }
 
-                str.append("共计 "+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+"\n");
-                str.append(" 剩余"+DateSaveManager.getIntance().getGroup(group.group).fen+" 量"+DateSaveManager.getIntance().getGroup(group.group).liang);
                 if(DateSaveManager.getIntance().getGroup(group.group).isEnable){
                     if(!TextUtils.isEmpty( DateSaveManager.getIntance().mBaobiao)){
                         SscControl.getIntance().sendMessage(  DateSaveManager.getIntance().getGroup(group.group).groupName+"\n"+
@@ -375,15 +406,25 @@ public class ServerManager2 {
 
                     }else{
                         SscControl.getIntance().sendMessage(  msgRoot+"-------------------\n"+str.toString(), group.group,false);
-                        SscControl.getIntance().sendMessage(  "共中上"+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+",剩余 "+DateSaveManager.getIntance().getGroup(group.group).fen,
-                                group.group,false);
+                        if(DateSaveManager.getIntance().isThird){
+                            SscControl.getIntance().sendMessage(  "共中上"+(count.zhong2Money+count.zhong3Money+count.zhong4Money)+",剩余 "+DateSaveManager.getIntance().getGroup(group.group).fen,group.group,false);
+                        }else{
+                            SscControl.getIntance().sendMessage(  "共中上"+((long)(count.zhong2Money+count.zhong3Money+count.zhong4Money))+",剩余 "+((long)DateSaveManager.getIntance().getGroup(group.group).fen),group.group,false);
+                        }
+
+
                     }
                 }
                 if(data.index == 38  ){
                     DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(group.group);
                     g.isIntime = false;
                     if(DateSaveManager.getIntance().getGroup(group.group).isEnable){
-                        SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n今日停潘", group.group,false);
+                        if(DateSaveManager.getIntance().isThird){
+                            SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n今日停潘", group.group,false);
+                        }else{
+                            SscControl.getIntance().sendMessage(  "当前分"+((long)g.fen)+"亮"+((long)g.liang)+"\n今日停潘", group.group,false);
+                        }
+
                     }
 
                     DateSaveManager.getIntance().clearAllGroupFenAndLiang();
@@ -392,13 +433,18 @@ public class ServerManager2 {
                     DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(group.group);
                     g.isIntime = true;
                     if(DateSaveManager.getIntance().getGroup(group.group).isEnable){
-                        SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n开始下驻", group.group,false);
+                        if(DateSaveManager.getIntance().isThird){
+                            SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n开始下驻", group.group,false);
+                        }else{
+                            SscControl.getIntance().sendMessage(  "当前分"+((long)g.fen)+"亮"+((long)g.liang)+"\n开始下驻", group.group,false);
+                        }
+
                     }
                 }
 
             }
         }
-        for(String goupID : allGroup.keySet()){
+        for(String goupID : mXiazuMap.keySet()){
             if(!TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(goupID).toGroup)){
                 continue;
             }
@@ -489,8 +535,8 @@ public class ServerManager2 {
                 if(bean2.msgId ==msgId){
                     DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,true,1,bean2.count);
                     DateSaveManager.getIntance().changeGroupFenOrLiang(bean.group,false,2,bean2.count);
-                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+bean2.count+"\n剩余"+
-                                    DateSaveManager.getIntance().getGroup( bean.group).fen,
+                    SscControl.getIntance().sendMessage("["+bean2.mId+" ]"+bean2.msg+"\n--------------\n[捂脸][捂脸]退成功    补"+((long)bean2.count)+"\n剩余"+
+                                    ((long)DateSaveManager.getIntance().getGroup( bean.group).fen),
                             bean.group,false);
                     sscBeans.remove(bean2);
                     mAllXiazu.remove(bean2.mId);
@@ -683,6 +729,8 @@ public class ServerManager2 {
     }
     public void xiazhuSuccess(long netId,SscBean bean){
         AllXiazuBean xiazuBeanByNetBean = getXiazuBeanByNetBean(netId);
+
+
         xiazuBeanByNetBean.date.list = bean.list;
         if( DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).xianer  && xiazuBeanByNetBean.date.count> DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).fen ){
             xiazuBeanByNetBean.date.list= null;
@@ -702,7 +750,13 @@ public class ServerManager2 {
 
         DateSaveManager.getIntance().changeGroupFenOrLiang(xiazuBeanByNetBean.group,true,2,xiazuBeanByNetBean.date.count);
         DateSaveManager.getIntance().changeGroupFenOrLiang(xiazuBeanByNetBean.group,false,1,xiazuBeanByNetBean.date.count);
-        String end = "-------------------\n扣"+bean.count+"   剩余"+DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).fen+"\n退单撤回下注信息或者发送：退"+bean.mId;
+        String end;
+        if(DateSaveManager.getIntance().isThird){
+             end = "-------------------\n扣"+bean.count+"   剩余"+DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).fen+"\n退单撤回下注信息或者发送：退"+xiazuBeanByNetBean.date.mId;
+        }else{
+             end = "-------------------\n扣"+((long)bean.count)+"   剩余"+((long)DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).fen)+"\n退单撤回下注信息或者发送：退"+xiazuBeanByNetBean.date.mId;
+        }
+
 
        /* if(!result.isTrue && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
             //          if(xiazuBean != null){

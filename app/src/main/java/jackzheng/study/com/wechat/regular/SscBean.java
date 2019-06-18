@@ -2,6 +2,8 @@ package jackzheng.study.com.wechat.regular;
 
 import java.util.ArrayList;
 
+import jackzheng.study.com.wechat.sscManager.DateSaveManager;
+
 public class SscBean {
     public String msg;
     public ArrayList<DateBean2> list;
@@ -11,6 +13,13 @@ public class SscBean {
     public boolean isThirdModel = false;
     @Override
     public String toString() {
-        return "["+mId +"] "+msg+" 共"+count;
+        if(DateSaveManager.getIntance().isThird){
+            return "["+mId +"] "+msg+" 共"+count;
+
+        }else{
+
+            return "["+mId +"] "+msg+" 共"+((long)count);
+        }
+
     }
 }
