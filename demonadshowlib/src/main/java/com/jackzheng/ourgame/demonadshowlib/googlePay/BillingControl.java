@@ -47,7 +47,7 @@ public class BillingControl  implements PurchasesUpdatedListener{
         Log.d(TAG, "Creating Billing client.");
         mActivity = activity;
         mBillingUpdatesListener = updatesListener;
-        mBillingClient = BillingClient.newBuilder(mActivity).setListener( this).build();
+        mBillingClient = BillingClient.newBuilder(mActivity).enablePendingPurchases().setListener( this).build();
 
         Log.d(TAG, "Starting setup.");
 
@@ -80,7 +80,11 @@ public class BillingControl  implements PurchasesUpdatedListener{
     }
     private void queryPurchases(){
         List<String> skuList = new ArrayList<>();
-        skuList.add("premium_upgrade");
+        skuList.add("hero_support");
+        skuList.add("diamond_bag_small");
+        skuList.add("diamond_bag_middle");
+        skuList.add("diamond_bag_big");
+        skuList.add("diamond_bag_super");
         skuList.add("gas");
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
         params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
@@ -94,6 +98,9 @@ public class BillingControl  implements PurchasesUpdatedListener{
                                 Log.d(TAG , "skuDetails sku="+skuDetails.getSku()+" skuDetails="+skuDetails.getPrice());
                             }
                             mBillingUpdatesListener.onQueryPurchases(mSkuDetails);
+                        }else{
+                            Log.d(TAG , "skuDetails billingResult.getResponseCode()="+billingResult.getResponseCode()+" skuDetailsList="+skuDetailsList);
+
                         }
                     }
 
