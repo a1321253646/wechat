@@ -38,8 +38,10 @@ public class Av_P extends XC_MethodHook {
         final long isSend = XposedHelpers.getLongField(param.thisObject, "field_isSend");
         final long msgId = XposedHelpers.getLongField(param.thisObject, "field_msgId");
 
+
         XposedBridge.log("roomID= "+roomId);
         XposedBridge.log("field_content= "+field_content);
+
 
         if(isSend == 1 || field_type != 1){
             if(isSend == 1 && TextUtils.isEmpty(ServerManager2.getmIntance().mMysId)){
