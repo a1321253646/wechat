@@ -100,7 +100,13 @@ public class MainActivity extends UnityPlayerActivity {
         }
     }
 
+    public boolean buySku(String sku){
+        Log.d("mysql","getLevel");
+        boolean isSuccess = mBillingControl.buySku(sku);
+        Log.d("mysql","getLevel end="+isSuccess);
+        return isSuccess;
 
+    }
 
 
     @Override

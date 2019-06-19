@@ -3,6 +3,7 @@ package com.jackzheng.ourgame.demonadshowlib.googlePay;
 import android.app.Activity;
 import android.os.Debug;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
@@ -107,10 +108,24 @@ public class BillingControl  implements PurchasesUpdatedListener{
                 });
     }
 
-    private boolean buySku(SkuDetails sku){
+    public boolean buySku(String sku){
+        SkuDetails detail = null;
+        if(mSkuDetails == null || mSkuDetails.size() == 0){
+            return false;
+        }
+        for(SkuDetails d : mSkuDetails){
+            String sku2 = d.getSku();
+            if(!TextUtils.isEmpty(sku2) && sku2.equals(sku)){
+                detail = d;
+                break;
+            }
+        }
+        if(detail == null){
+            return false;
+        }
 
         BillingFlowParams flowParams = BillingFlowParams.newBuilder()
-                .setSkuDetails(sku)
+                .setSkuDetails(detail)
                 .build();
         BillingResult responseCode = mBillingClient.launchBillingFlow(mActivity,flowParams);
         return responseCode.getResponseCode() == BillingClient.BillingResponseCode.OK;
