@@ -332,7 +332,7 @@ public class ServerManager2 {
             for(Kaijiangback.KaijiangGroupBackData group :data.date){
                 str = new StringBuilder();
                 ArrayList<SscBean> xiazu = mXiazuMap.get(group.group);
-                mXiazuMap.remove(group.group);
+
                 count = new ZhongDate();
                 for(Kaijiangback.KaijiangGroupBackDataItem bean :group.date){
                     SscBean sscHave = null;
@@ -342,15 +342,8 @@ public class ServerManager2 {
                             sscHave = ssc;
                             break;
                         }
-
-
                     }
-
-
-
                     bean.date.toPoint2();
-
-
                     String zhongTmpStr = "";
                     if(bean.date.zhong2Count != 0){
                         bean.date.zhong2Money = bean.date.zhong2Count* DateSaveManager.getIntance().getGroup(group.group).yin;
@@ -444,9 +437,20 @@ public class ServerManager2 {
 
             }
         }
-        for(String goupID : mXiazuMap.keySet()){
+        for(String goupID : allGroup.keySet()){
             if(!TextUtils.isEmpty(DateSaveManager.getIntance().getGroup(goupID).toGroup)){
                 continue;
+            }
+            boolean isHave = false;
+            for(Kaijiangback.KaijiangGroupBackData group :data.date){
+                if(group.group.equals(goupID)){
+                    isHave = true;
+                    break;
+                }
+            }
+            if(isHave ){
+                continue;
+
             }
             str = new StringBuilder();
             str.append(" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen+" 量"+DateSaveManager.getIntance().getGroup(goupID).liang);
@@ -758,11 +762,11 @@ public class ServerManager2 {
         }
 
 
-       /* if(!result.isTrue && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
+        if(!bean.isTure && !TextUtils.isEmpty(DateSaveManager.getIntance().mTixing)){
             //          if(xiazuBean != null){
             SscControl.getIntance().sendMessage(DateSaveManager.getIntance().getGroup(xiazuBeanByNetBean.group).groupName+"\n"+ xiazuBeanByNetBean.date.msg+"\n\n--------------\n"+str+end,DateSaveManager.getIntance().mTixing,false);
             //          }
-        }*/
+        }
         if(!TextUtils.isEmpty(DateSaveManager.getIntance().mZhengque)){
             SscControl.getIntance().sendMessage(xiazuBeanByNetBean.date.msg+"\n\n--------------\n"+str+end,DateSaveManager.getIntance().mZhengque,false);
         }

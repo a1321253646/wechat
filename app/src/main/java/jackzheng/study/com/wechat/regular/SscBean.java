@@ -10,6 +10,7 @@ public class SscBean {
     public float count = 0;
     public long mId = -1;
     public long msgId = -1;
+    public boolean isTure = false;
     public boolean isThirdModel = false;
     @Override
     public String toString() {
