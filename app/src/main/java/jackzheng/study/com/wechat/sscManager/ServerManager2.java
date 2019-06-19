@@ -442,18 +442,21 @@ public class ServerManager2 {
                 continue;
             }
             boolean isHave = false;
-            for(Kaijiangback.KaijiangGroupBackData group :data.date){
-                if(group.group.equals(goupID)){
-                    isHave = true;
-                    break;
+            if(data.date != null && data.date.size() > 0){
+                for(Kaijiangback.KaijiangGroupBackData group :data.date){
+                    if(group.group.equals(goupID)){
+                        isHave = true;
+                        break;
+                    }
+                }
+                if(isHave ){
+                    continue;
+
                 }
             }
-            if(isHave ){
-                continue;
 
-            }
             str = new StringBuilder();
-            str.append(" 剩余"+DateSaveManager.getIntance().getGroup(goupID).fen+" 量"+DateSaveManager.getIntance().getGroup(goupID).liang);
+            str.append(" 剩余"+((long)DateSaveManager.getIntance().getGroup(goupID).fen)+" 量"+((long)DateSaveManager.getIntance().getGroup(goupID).liang));
 
             if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
                 if(!TextUtils.isEmpty( DateSaveManager.getIntance().mBaobiao)){
@@ -462,7 +465,7 @@ public class ServerManager2 {
 
                 }else{
                     SscControl.getIntance().sendMessage(  msgRoot+"-------------------\n"+str.toString(), goupID,false);
-                    SscControl.getIntance().sendMessage(  "共中上 0,剩余 "+DateSaveManager.getIntance().getGroup(goupID).fen,
+                    SscControl.getIntance().sendMessage(  "共中上 0,剩余 "+((long)DateSaveManager.getIntance().getGroup(goupID).fen),
                             goupID,false);
                 }
             }
@@ -470,7 +473,7 @@ public class ServerManager2 {
                 DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
                 g.isIntime = false;
                 if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
-                    SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n今日停潘", goupID,false);
+                    SscControl.getIntance().sendMessage(  "当前分"+((long)g.fen)+"亮"+((long)g.liang)+"\n今日停潘", goupID,false);
                 }
 
                 DateSaveManager.getIntance().clearAllGroupFenAndLiang();
@@ -479,7 +482,7 @@ public class ServerManager2 {
                 DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
                 g.isIntime = true;
                 if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
-                    SscControl.getIntance().sendMessage(  "当前分"+g.fen+"亮"+g.liang+"\n开始下驻", goupID,false);
+                    SscControl.getIntance().sendMessage(  "当前分"+((long)g.fen)+"亮"+((long)g.liang)+"\n开始下驻", goupID,false);
                 }
             }
         }
