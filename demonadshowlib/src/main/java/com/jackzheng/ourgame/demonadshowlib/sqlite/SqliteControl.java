@@ -158,7 +158,7 @@ public class SqliteControl extends SQLiteOpenHelper{
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
-        cv.put("GOODTYPE", date.type);
+        cv.put("GOODTYPE", date.goodType);
         String whereClause="GOODID=? and ISDELETE=1";
         String [] whereArgs = {String.valueOf(date.goodId)};
         db.update(tableName, cv, whereClause, whereArgs);
@@ -171,7 +171,7 @@ public class SqliteControl extends SQLiteOpenHelper{
         ContentValues cv = new ContentValues();
         cv.put("ISNET", 1);
         cv.put("GOODID", date.goodId);
-        String whereClause="GOODID=? and TYPE=? and id=? and TYPE=1";
+        String whereClause="GOODID=? and TYPE=? and id=? and ISDELETE=1";
         String [] whereArgs = {String.valueOf(old),String.valueOf(date.type),String.valueOf(date.id)};
         db.update(tableName, cv, whereClause, whereArgs);
         db.close();

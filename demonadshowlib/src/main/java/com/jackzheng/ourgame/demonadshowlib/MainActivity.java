@@ -1,6 +1,8 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import com.android.billingclient.api.BillingClient;
@@ -24,8 +26,8 @@ public class MainActivity extends UnityPlayerActivity {
 
     SqliteControl mSqliteControl ;
     BillingControl mBillingControl;
-
-
+    HandlerThread mWorkThread = null;
+    Handler workHandler = null;
     public void onQueryPurchasesToUnity(String skus){
 
         UnityPlayer.UnitySendMessage("Main Camera", "onQueryPurchasesToUnity", skus);
@@ -38,6 +40,9 @@ public class MainActivity extends UnityPlayerActivity {
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        mWorkThread = new HandlerThread("sqlThread");
+        mWorkThread.start();
+        workHandler = new Handler(mWorkThread.getLooper());
         mBillingControl = new BillingControl(this, new BillingControl.BillingUpdatesListener() {
             @Override
             public void onBillingClientSetupFinished() {
@@ -70,6 +75,7 @@ public class MainActivity extends UnityPlayerActivity {
                         SkuToUnity sku =new SkuToUnity();
                         sku.sku = ski.getSku();
                         sku.price = ski.getPrice();
+                        sku.price = sku.price.replaceAll("[a-zA-Z]","" );
                         list.add(sku);
                     }
                     String json = SkuToUnity.listtoJsonString(list);
@@ -143,18 +149,29 @@ public class MainActivity extends UnityPlayerActivity {
         return vocation;
     }
 
-    public void deleteGuide(String str){
-        Log.d("mysql","deleteGuide str = "+str);
-        long id = Long.parseLong(str);
-         mSqliteControl.deleteGuide(id);
-        Log.d("mysql","deleteGuide end");
+    public void deleteGuide(final String str){
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","deleteGuide str = "+str);
+                long id = Long.parseLong(str);
+                mSqliteControl.deleteGuide(id);
+                Log.d("mysql","deleteGuide end");
+            }
+        });
     }
 
-    public void onUodateInfoByTypeAndId(String str) {
-        Log.d("mysql","onUodateInfoByTypeAndId str = "+str);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.onUodateInfoByTypeAndId(date);
-        Log.d("mysql","onUodateInfoByTypeAndId end");
+    public void onUodateInfoByTypeAndId(final String str) {
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","onUodateInfoByTypeAndId str = "+str);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.onUodateInfoByTypeAndId(date);
+                Log.d("mysql","onUodateInfoByTypeAndId end");
+            }
+        });
+
     }
 
     public void alterTableForIsNetAndIsDelete(){
@@ -171,93 +188,165 @@ public class MainActivity extends UnityPlayerActivity {
     }
 
     public void clearAllDelete() {
-        Log.d("mysql","clearAllDelete ");
-        mSqliteControl.clearAllDelete();
-        Log.d("mysql","clearAllDelete end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","clearAllDelete ");
+                mSqliteControl.clearAllDelete();
+                Log.d("mysql","clearAllDelete end");
+            }
+        });
+
     }
 
-    public void inSertDate( String str){
-        Log.d("mysql","inSertDate str="+str);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.inSertDate(null,date);
-        Log.d("mysql","inSertDate end");
+    public void inSertDate(final  String str){
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","inSertDate str="+str);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.inSertDate(null,date);
+                Log.d("mysql","inSertDate end");
+            }
+        });
+
     }
 
-    public void changeGoodType(String str)
+    public void changeGoodType(final String str)
     {
-        Log.d("mysql","changeGoodType str="+str);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.changeGoodType(date);
-        Log.d("mysql","changeGoodType end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","changeGoodType str="+str);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.changeGoodType(date);
+                Log.d("mysql","changeGoodType end");
+            }
+        });
+
     }
 
-    public void changeGoodSql(String str,String oldstr)
+    public void changeGoodSql(final String str,final String oldstr)
     {
-        Log.d("mysql","changeGoodSql str="+str);
-        long old = Long.parseLong(oldstr);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.changeGoodSql(date,old);
-        Log.d("mysql","changeGoodSql end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","changeGoodSql str="+str);
+                long old = Long.parseLong(oldstr);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.changeGoodSql(date,old);
+                Log.d("mysql","changeGoodSql end");
+            }
+        });
+
     }
 
-    public void updateIdAndType(String str)
+    public void updateIdAndType(final String str)
     {
-        Log.d("mysql","updateIdAndType str="+str);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.updateIdAndType(date);
-        Log.d("mysql","updateIdAndType end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","updateIdAndType str="+str);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.updateIdAndType(date);
+                Log.d("mysql","updateIdAndType end");
+            }
+        });
+
     }
 
-    public void deleteIdAndType(String str)
+    public void deleteIdAndType(final String str)
     {
-        Log.d("mysql","deleteIdAndType str="+str);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.deleteIdAndType(date);
-        Log.d("mysql","deleteIdAndType end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","deleteIdAndType str="+str);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.deleteIdAndType(date);
+                Log.d("mysql","deleteIdAndType end");
+            }
+        });
+
     }
 
-    public void deleteGood(String str)
+    public void deleteGood(final String str)
     {
-        Log.d("mysql","deleteGood str="+str);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.deleteGood(date);
-        Log.d("mysql","deleteGood end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","deleteGood str="+str);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.deleteGood(date);
+                Log.d("mysql","deleteGood end");
+            }
+        });
+
 
     }
 
     public void deleteLuiHui()
     {
-        Log.d("mysql","deleteLuiHui ");
-        mSqliteControl.deleteLuiHui();
-        Log.d("mysql","deleteLuiHui end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","deleteLuiHui ");
+                mSqliteControl.deleteLuiHui();
+                Log.d("mysql","deleteLuiHui end");
+            }
+        });
+
     }
 
-    public void UpdateZhuangbeiInto(String str)
+    public void UpdateZhuangbeiInto(final String str)
     {
-        Log.d("mysql","UpdateZhuangbeiInto str="+str);
-        SQLDate date = stringToSqlDate(str);
-        mSqliteControl.UpdateZhuangbeiInto(date);
-        Log.d("mysql","UpdateZhuangbeiInto end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","UpdateZhuangbeiInto str="+str);
+                SQLDate date = stringToSqlDate(str);
+                mSqliteControl.UpdateZhuangbeiInto(date);
+                Log.d("mysql","UpdateZhuangbeiInto end");
+            }
+        });
+
     }
 
-    public void updateEndNet(String str){
-        Log.d("mysql","updateEndNet str="+str);
-        List<SQLDate> list = stringToSqlDateList(str);
-        mSqliteControl.updateEndNet(list);
-        Log.d("mysql","updateEndNet end");
+    public void updateEndNet(final String str){
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","updateEndNet str="+str);
+                List<SQLDate> list = stringToSqlDateList(str);
+                mSqliteControl.updateEndNet(list);
+                Log.d("mysql","updateEndNet end");
+            }
+        });
+
     }
 
     public void deleteCleanNet()
     {
-        Log.d("mysql","deleteCleanNet ");
-        mSqliteControl.deleteCleanNet();
-        Log.d("mysql","deleteCleanNet end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","deleteCleanNet ");
+                mSqliteControl.deleteCleanNet();
+                Log.d("mysql","deleteCleanNet end");
+            }
+        });
+
     }
 
     public void removeDeleteDate(){
-        Log.d("mysql","removeDeleteDate ");
-        mSqliteControl.removeDeleteDate();
-        Log.d("mysql","removeDeleteDate end");
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","removeDeleteDate ");
+                mSqliteControl.removeDeleteDate();
+                Log.d("mysql","removeDeleteDate end");
+            }
+        });
+
     }
 
     public String getNetDate(){
@@ -276,17 +365,29 @@ public class MainActivity extends UnityPlayerActivity {
         return value;
     }
 
-    public void delectAll(String tableName){
-        Log.d("mysql","delectAll  tableName="+tableName);
-        mSqliteControl.delectAll(tableName);
-        Log.d("mysql","delectAll end");
+    public void delectAll(final String tableName){
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","delectAll  tableName="+tableName);
+                mSqliteControl.delectAll(tableName);
+                Log.d("mysql","delectAll end");
+            }
+        });
+
     }
 
-    public void saveLocal(String str){
-        Log.d("mysql","saveLocal  str="+str);
-        List<SQLDate> list = stringToSqlDateList(str);
-        mSqliteControl.saveLocal(list);
-        Log.d("mysql","saveLocal end");
+    public void saveLocal(final String str){
+        workHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("mysql","saveLocal  str="+str);
+                List<SQLDate> list = stringToSqlDateList(str);
+                mSqliteControl.saveLocal(list);
+                Log.d("mysql","saveLocal end");
+            }
+        });
+
     }
 
     private SQLDate stringToSqlDate(String str){
