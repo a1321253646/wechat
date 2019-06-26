@@ -34,7 +34,8 @@ public class ServerManager2 {
 
     public int mJieId = 1;
 
-    public final static int OPEN_INDEX = 38;
+    public final static int OPEN_INDEX = 107;
+    public final static int STOP_INDEX = 38;
     public int mOpenIndex = -1;
 
     public String mMysId = "";
@@ -169,7 +170,7 @@ public class ServerManager2 {
     //        return;
     //    }
         ArrayMap<String , DateSaveManager.GroupDate> all = DateSaveManager.getIntance().getAllGroup();
-        if(index  > 38 && index <= OPEN_INDEX){
+        if(index  > STOP_INDEX && index <= OPEN_INDEX){
             if(TextUtils.isEmpty(group)){
                 for(String g : all.keySet()){
                     all.get(g).isIntime = false;
@@ -324,6 +325,10 @@ public class ServerManager2 {
         String indexNumber = data.index<10?("00"+ data.index):data.index<100?("0"+data.index):""+data.index;
         String msgRoot="\uE12D\uE12D 第["+indexNumber+"]届      开："+data.openNumber+"\n";
 
+        if(data.index< OPEN_INDEX &&data.index >STOP_INDEX  ){
+            return;
+        }
+
 
         ArrayMap<String, DateSaveManager.GroupDate> allGroup = DateSaveManager.getIntance().getAllGroup();
         ZhongDate count;
@@ -408,7 +413,7 @@ public class ServerManager2 {
 
                     }
                 }
-                if(data.index == 38  ){
+                if(data.index == STOP_INDEX  ){
                     DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(group.group);
                     g.isIntime = false;
                     if(DateSaveManager.getIntance().getGroup(group.group).isEnable){
@@ -469,7 +474,7 @@ public class ServerManager2 {
                             goupID,false);
                 }
             }
-            if(data.index == 38  ){
+            if(data.index == STOP_INDEX  ){
                 DateSaveManager.GroupDate g = DateSaveManager.getIntance().getGroup(goupID);
                 g.isIntime = false;
                 if(DateSaveManager.getIntance().getGroup(goupID).isEnable){
@@ -490,7 +495,7 @@ public class ServerManager2 {
         mAllMessage.clear();
         mAllXiazu.clear();
         mId = 1;
-        if(data.index != 38){
+        if(data.index != STOP_INDEX){
             for(String g : allGroup.keySet()){
                 allGroup.get(g).isIntime = true;
             }
