@@ -36,6 +36,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     compileOnly files('libs/classes.jar')
-    implementation files('libs/sqliteX.jar')
-    implementation 'com.android.billingclient:billing:2.0.0'
+    compileOnly files('libs/btgame_hwzw_v8.1.aar')
 }

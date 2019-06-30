@@ -1,459 +1,198 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.widget.Toast;
 
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.SkuDetails;
-import com.jackzheng.ourgame.demonadshowlib.googlePay.BillingControl;
-import com.jackzheng.ourgame.demonadshowlib.sqlite.SQLDate;
-import com.jackzheng.ourgame.demonadshowlib.sqlite.SqliteControl;
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.zqhy.sdk.callback.ExitCallBack;
+import com.zqhy.sdk.callback.GameDataReFreshCallBack;
+import com.zqhy.sdk.callback.InitCallBack;
+import com.zqhy.sdk.callback.LocalExitCallBack;
+import com.zqhy.sdk.callback.LoginCallBack;
+import com.zqhy.sdk.callback.PayCallBack;
+import com.zqhy.sdk.callback.ReLoginCallBack;
+import com.zqhy.sdk.model.GameDataParams;
+import com.zqhy.sdk.model.PayParams;
+import com.zqhy.sdk.platform.BTGameTWSDKApi;
+import com.zqhy.sdk.ui.FloatWindowManager;
 
 public class MainActivity extends UnityPlayerActivity {
 
-
-    SqliteControl mSqliteControl ;
-    BillingControl mBillingControl;
-    HandlerThread mWorkThread = null;
-    Handler workHandler = null;
-    public void onQueryPurchasesToUnity(String skus){
-
-        UnityPlayer.UnitySendMessage("Main Camera", "onQueryPurchasesToUnity", skus);
-    }
+    private static String TAG = "MainActivity";
     public void onBuySuccess(String skus){
 
         UnityPlayer.UnitySendMessage("Main Camera", "onBuySuccess", skus);
     }
 
+    public void onBuyFault(String skus){
+
+        UnityPlayer.UnitySendMessage("Main Camera", "onBuyFault", skus);
+    }
+
+    public void onLoginSuccess(){
+
+        UnityPlayer.UnitySendMessage("Main Camera", "onBuyFault", "");
+    }
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        mWorkThread = new HandlerThread("sqlThread");
-        mWorkThread.start();
-        workHandler = new Handler(mWorkThread.getLooper());
-        mBillingControl = new BillingControl(this, new BillingControl.BillingUpdatesListener() {
-            @Override
-            public void onBillingClientSetupFinished() {
+        BTGameTWSDKApi.getInstance().init(this,3154,"4db29607556f3637ae8c00e6623ffe1a",new InitCallBack(){
 
-            }
 
             @Override
-            public void onConsumeFinished(String token, int result) {
-                if(result == BillingClient.BillingResponseCode.OK){
-                    for(Purchase purchase:mBillingControl.mPurchases){
-                        if(token.equals(purchase.getPurchaseToken())){
-                            mBillingControl.mPurchases.remove(purchase);
-                            onBuySuccess(purchase.getSku());
-                            break;
-                        }
+            public void onInitSuccess() {
+                Log.d(TAG,"onInitSuccess");
+                Toast.makeText(MainActivity.this, "初始化成功", Toast.LENGTH_SHORT).show();
+                BTGameTWSDKApi.getInstance().registerReLoginCallBack(new ReLoginCallBack(){
+
+                    @Override
+                    public void onReLogin() {
+                        Log.e(TAG, "RELOGIN");
+                        login();
                     }
-                }
-            }
-
-            @Override
-            public void onPurchasesUpdated(List<Purchase> purchases) {
+                });
 
             }
 
             @Override
-            public void onQueryPurchases(List<SkuDetails> skus) {
-                if(skus != null && skus.size() > 0){
-                    ArrayList<SkuToUnity> list = new ArrayList<>();
-                    for(SkuDetails ski : skus){
-                        SkuToUnity sku =new SkuToUnity();
-                        sku.sku = ski.getSku();
-                        sku.price = ski.getPrice();
-                        sku.price = sku.price.replaceAll("[a-zA-Z]","" );
-                        list.add(sku);
-                    }
-                    String json = SkuToUnity.listtoJsonString(list);
-                    onQueryPurchasesToUnity(json);
-                }
+            public void onInitFailure(String s) {
+                Log.d(TAG,"onInitFailure s ="+s);
+                Toast.makeText(MainActivity.this, "初始化失败\n 失败原因：" + s, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    private String strUsername ;
+    private String strToken ;
+    public void login() {
+        BTGameTWSDKApi.getInstance().login(this, new LoginCallBack() {
+            @Override
+            public void onLoginSuccess(String username, String token) {
+                Log.d(TAG," onLoginSuccess");
+                strUsername = username;
+                strToken = token;
+            }
+            @Override
+            public void onLoginFailure(String message) {
+                Log.d(TAG," onLoginFailure message ="+message);
+            }
+            @Override
+            public void onLoginCancel() {
+                Log.d(TAG," onLoginFailure message onLoginCancel");
             }
         });
     }
 
-    public static class SkuToUnity{
-        public String sku;
-        public String price;
+    public void pay(String userID,String userName,final String productSku,String productName,String money) {
+        PayParams payParams = new PayParams();
+        payParams.extendsinfo = productSku+"_"+ System.currentTimeMillis();
+        final String  info = payParams.extendsinfo;
+        payParams.username = strUsername;
+        payParams.token = strToken;
+        payParams.serverid = "1";
+        payParams.amount = Float.parseFloat(money);
+        payParams.role_id = userID;
+        payParams.role_name = userName;
+        payParams.product_name = productName;
+        payParams.servername = "逃出深渊BtGame服";
 
-
-        public static String listtoJsonString(List<SkuToUnity> skus) {
-            JSONArray array = new JSONArray();
-            try {
-                for(SkuToUnity date : skus){
-                    JSONObject jb =new JSONObject();
-                    jb.put("sku", date.sku);
-                    jb.put("price", date.price);
-                    array.put(jb);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+        BTGameTWSDKApi.getInstance().pay(this, payParams, new PayCallBack() {
+            @Override
+            public void onPaySuccess(String message) {
+                Log.d(TAG," onPaySuccess message="+message);
+                onBuySuccess(info);
             }
-            return array.toString();
-        }
+            @Override
+            public void onPayFailure(String message) {
+                Log.d(TAG," onPayFailure message ="+message);
+                onBuyFault(info);
+            }
+            @Override
+            public void onPayCancel() {
+                Log.d(TAG," onPayCancel message onLoginCancel");
+                onBuyFault(info);
+            }
+        });
+    }
+    public void reFreshGameData(String userID,String userName,String eventType,String level) {
+        GameDataParams gdp = new GameDataParams();
+        gdp.setUsername(strUsername);
+        gdp.setToken(strToken);
+        gdp.setServerid(1);
+        gdp.setServername("逃出深渊BtGame服");
+        gdp.setRole_id(userID);
+        gdp.setRole_name(userName);
+        gdp.setOp(Integer.parseInt(eventType));
+        gdp.setGame_level(Integer.parseInt(level));
+        BTGameTWSDKApi.getInstance().reFreshGameData(this, gdp, new GameDataReFreshCallBack() {
+            @Override
+            public void reFreshOk() {
+                Log.d(TAG," reFreshGameData reFreshOk");
+            }
+            @Override
+            public void reFreshFailure(String message) {
+                Log.d(TAG," reFreshGameData reFreshFailure message="+message);
+            }
+        });
     }
 
-    public boolean buySku(String sku){
-        Log.d("mysql","getLevel");
-        boolean isSuccess = mBillingControl.buySku(sku);
-        Log.d("mysql","getLevel end="+isSuccess);
-        return isSuccess;
-
+    public void exit() {
+        int orientation = 0; // 横屏 = 0 竖屏 = 1
+        BTGameTWSDKApi.getInstance().exit(this, orientation, new ExitCallBack() {
+            @Override
+            public void onExit() {
+                Log.d(TAG," exit onExit");
+                finish();
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+            @Override
+            public void onContinueGame() {
+                Log.d(TAG," exit onContinueGame");
+            }
+            @Override
+            public void onCancel() {
+                Log.d(TAG," exit onCancel");
+            }
+        }, new LocalExitCallBack() {
+            @Override
+            public void onLocalExit() {
+                Log.d(TAG," exit onLocalExit");
+                finish();
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+        });
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
+        FloatWindowManager.getInstance(this.getApplicationContext()).showFloat();
     }
-
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+        FloatWindowManager.getInstance(this.getApplicationContext()).hideFloat();
+    }
     @Override
     protected void onPause() {
         super.onPause();
+        overridePendingTransition(0, 0);
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        FloatWindowManager.getInstance(this.getApplicationContext()).destroyFloat();
     }
 
-    public void createTable(String sqlName,String tableName){
-        if(mSqliteControl == null){
-            Log.d("mysql","createTable sqlName="+sqlName+" tableName="+tableName);
-            mSqliteControl  = new SqliteControl(MainActivity.this,sqlName,null,1,tableName);
-            Log.d("mysql","createTable end");
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            exit();
+            return true;
         }
-    }
-
-
-    public long getLevel(){
-        Log.d("mysql","getLevel");
-        long level =  mSqliteControl.getLevel();
-        Log.d("mysql","getLevel end="+level+" end");
-        return level;
-
-    }
-    public long getPlayVocation(){
-        Log.d("mysql","getPlayVocation");
-        long vocation =   mSqliteControl.getPlayVocation();
-        Log.d("mysql","getPlayVocation end="+vocation+" end");
-        return vocation;
-    }
-
-    public void deleteGuide(final String str){
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","deleteGuide str = "+str);
-                long id = Long.parseLong(str);
-                mSqliteControl.deleteGuide(id);
-                Log.d("mysql","deleteGuide end");
-            }
-        });
-    }
-
-    public void onUodateInfoByTypeAndId(final String str) {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","onUodateInfoByTypeAndId str = "+str);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.onUodateInfoByTypeAndId(date);
-                Log.d("mysql","onUodateInfoByTypeAndId end");
-            }
-        });
-
-    }
-
-    public void alterTableForIsNetAndIsDelete(){
-        Log.d("mysql","alterTableForIsNetAndIsDelete ");
-        mSqliteControl.alterTableForIsNetAndIsDelete();
-        Log.d("mysql","alterTableForIsNetAndIsDelete end");
-    }
-
-    public boolean isUpdate(){
-        Log.d("mysql","isUpdate ");
-        boolean value= mSqliteControl.isUpdate();
-        Log.d("mysql","isUpdate end ="+value);
-        return value;
-    }
-
-    public void clearAllDelete() {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","clearAllDelete ");
-                mSqliteControl.clearAllDelete();
-                Log.d("mysql","clearAllDelete end");
-            }
-        });
-
-    }
-
-    public void inSertDate(final  String str){
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","inSertDate str="+str);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.inSertDate(null,date);
-                Log.d("mysql","inSertDate end");
-            }
-        });
-
-    }
-
-    public void changeGoodType(final String str)
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","changeGoodType str="+str);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.changeGoodType(date);
-                Log.d("mysql","changeGoodType end");
-            }
-        });
-
-    }
-
-    public void changeGoodSql(final String str,final String oldstr)
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","changeGoodSql str="+str);
-                long old = Long.parseLong(oldstr);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.changeGoodSql(date,old);
-                Log.d("mysql","changeGoodSql end");
-            }
-        });
-
-    }
-
-    public void updateIdAndType(final String str)
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","updateIdAndType str="+str);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.updateIdAndType(date);
-                Log.d("mysql","updateIdAndType end");
-            }
-        });
-
-    }
-
-    public void deleteIdAndType(final String str)
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","deleteIdAndType str="+str);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.deleteIdAndType(date);
-                Log.d("mysql","deleteIdAndType end");
-            }
-        });
-
-    }
-
-    public void deleteGood(final String str)
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","deleteGood str="+str);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.deleteGood(date);
-                Log.d("mysql","deleteGood end");
-            }
-        });
-
-
-    }
-
-    public void deleteLuiHui()
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","deleteLuiHui ");
-                mSqliteControl.deleteLuiHui();
-                Log.d("mysql","deleteLuiHui end");
-            }
-        });
-
-    }
-
-    public void UpdateZhuangbeiInto(final String str)
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","UpdateZhuangbeiInto str="+str);
-                SQLDate date = stringToSqlDate(str);
-                mSqliteControl.UpdateZhuangbeiInto(date);
-                Log.d("mysql","UpdateZhuangbeiInto end");
-            }
-        });
-
-    }
-
-    public void updateEndNet(final String str){
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","updateEndNet str="+str);
-                List<SQLDate> list = stringToSqlDateList(str);
-                mSqliteControl.updateEndNet(list);
-                Log.d("mysql","updateEndNet end");
-            }
-        });
-
-    }
-
-    public void deleteCleanNet()
-    {
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","deleteCleanNet ");
-                mSqliteControl.deleteCleanNet();
-                Log.d("mysql","deleteCleanNet end");
-            }
-        });
-
-    }
-
-    public void removeDeleteDate(){
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","removeDeleteDate ");
-                mSqliteControl.removeDeleteDate();
-                Log.d("mysql","removeDeleteDate end");
-            }
-        });
-
-    }
-
-    public String getNetDate(){
-        Log.d("mysql","getNetDate ");
-        List<SQLDate> list =  mSqliteControl.getNetDate();
-        String value =  sqlDateListToString(list);
-        Log.d("mysql","getNetDate end ="+value);
-        return value;
-    }
-
-    public String getAll(){
-        Log.d("mysql","getAll ");
-        List<SQLDate> list =  mSqliteControl.getAll();
-        String value = sqlDateListToString(list);
-        Log.d("mysql","getAll end ="+value);
-        return value;
-    }
-
-    public void delectAll(final String tableName){
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","delectAll  tableName="+tableName);
-                mSqliteControl.delectAll(tableName);
-                Log.d("mysql","delectAll end");
-            }
-        });
-
-    }
-
-    public void saveLocal(final String str){
-        workHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("mysql","saveLocal  str="+str);
-                List<SQLDate> list = stringToSqlDateList(str);
-                mSqliteControl.saveLocal(list);
-                Log.d("mysql","saveLocal end");
-            }
-        });
-
-    }
-
-    private SQLDate stringToSqlDate(String str){
-        try {
-            JSONObject jb =new JSONObject(str);
-            SQLDate date = new SQLDate();
-            date.type = jb.getLong("type");
-            date.id = jb.getLong("id");
-            date.goodId = jb.getLong("goodId");
-            date.goodType = jb.getLong("goodType");
-            date.isClean = jb.getLong("isClean");
-            date.extan = jb.getString("extan");
-            date.isDelete = jb.getLong("isDelete");
-            date.isNet = jb.getLong("isNet");
-            return  date;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-    private List<SQLDate> stringToSqlDateList(String str){
-        try {
-            ArrayList<SQLDate> list = new ArrayList<>();
-            JSONArray array = new JSONArray(str);
-            for(int i = 0 ; i< array.length() ; i++){
-                JSONObject jb = array.getJSONObject(i);
-                SQLDate date = new SQLDate();
-                date.type = jb.getLong("type");
-                date.id = jb.getLong("id");
-                date.goodId = jb.getLong("goodId");
-                date.goodType = jb.getLong("goodType");
-                date.isClean = jb.getLong("isClean");
-                date.extan = jb.getString("extan");
-                date.isDelete = jb.getLong("isDelete");
-                date.isNet = jb.getLong("isNet");
-                list.add(date);
-            }
-            return list;
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-        return null;
-    }
-    private String sqlDateListToString(List<SQLDate> list){
-        JSONArray array = new JSONArray();
-        try {
-            for(SQLDate date : list){
-                JSONObject jb =new JSONObject();
-                jb.put("type", date.type);
-                jb.put("id", date.id);
-                jb.put("goodId", date.goodId);
-                jb.put("goodType", date.goodType);
-                jb.put("isClean", date.isClean);
-                jb.put("extan", date.extan);
-                jb.put("isDelete", date.isDelete);
-                jb.put("isNet", date.isNet);
-                array.put(jb);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return array.toString();
+        return super.onKeyDown(keyCode, event);
     }
 
     public String showTaptap(String str){
