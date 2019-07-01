@@ -32,9 +32,9 @@ public class MainActivity extends UnityPlayerActivity {
         UnityPlayer.UnitySendMessage("Main Camera", "onBuyFault", skus);
     }
 
-    public void onLoginSuccess(){
+    public void onLoginSuccessBack(){
 
-        UnityPlayer.UnitySendMessage("Main Camera", "onBuyFault", "");
+        UnityPlayer.UnitySendMessage("Main Camera", "onLoginSuccess", "");
     }
     @Override
     protected void onCreate(Bundle bundle) {
@@ -73,6 +73,7 @@ public class MainActivity extends UnityPlayerActivity {
                 Log.d(TAG," onLoginSuccess");
                 strUsername = username;
                 strToken = token;
+                onLoginSuccessBack();
             }
             @Override
             public void onLoginFailure(String message) {
