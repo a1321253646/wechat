@@ -6,6 +6,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
 import java.util.Set;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -74,7 +75,17 @@ public class Av_P extends XC_MethodHook {
         if(TextUtils.isEmpty(userId) || TextUtils.isEmpty(msg)){
             return;
         }
+        if(!TextUtils.isEmpty(msg) && msg.equals("测试测试图片")){
+            ArrayList<String> list = new ArrayList<>();
+            list.add("/storage/emulated/0/DCIM/Screenshots/Screenshot_2019-06-30-16-24-37-035_com.miui.gallery.png");
+            if(!TextUtils.isEmpty(room)){
+                Tools.sendImgToRoom(Tools.mActivity,list,true,0,0,roomId);
+            }else{
+                Tools.sendImgToRoom(Tools.mActivity,list,true,0,0,userId);
+            }
 
+            return;
+        }
         if(ServerManager2.getmIntance().mAllMessage.containsKey(field_msgSvrId)){
             return;
         }
