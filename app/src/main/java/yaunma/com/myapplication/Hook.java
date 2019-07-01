@@ -146,7 +146,7 @@ public enum Hook {
                      super.beforeHookedMethod(param);
                      XposedBridge.log("ssc:"+"com.tencent.mm.as.l$4" );
                      printfParam(param);
-
+                    int i = 1/0;
                  }
              });
 
