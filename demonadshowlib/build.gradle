@@ -37,4 +37,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     compileOnly files('libs/classes.jar')
     compileOnly files('libs/btgame_hwzw_v8.1.aar')
+    implementation files('libs/android-support-v4.jar')
 }

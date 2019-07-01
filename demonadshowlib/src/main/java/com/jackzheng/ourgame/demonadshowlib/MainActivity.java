@@ -46,14 +46,8 @@ public class MainActivity extends UnityPlayerActivity {
             public void onInitSuccess() {
                 Log.d(TAG,"onInitSuccess");
                 Toast.makeText(MainActivity.this, "初始化成功", Toast.LENGTH_SHORT).show();
-                BTGameTWSDKApi.getInstance().registerReLoginCallBack(new ReLoginCallBack(){
-
-                    @Override
-                    public void onReLogin() {
-                        Log.e(TAG, "RELOGIN");
-                        login();
-                    }
-                });
+                login();
+                BTGameTWSDKApi.getInstance().registerReLoginCallBack(reLoginCallBack);
 
             }
 
@@ -64,6 +58,13 @@ public class MainActivity extends UnityPlayerActivity {
             }
         });
     }
+    ReLoginCallBack reLoginCallBack = new ReLoginCallBack() {
+        @Override
+        public void onReLogin() {//切换账号 cp 需要在这里再次调用登录接口
+            Log.e(TAG, "RELOGIN");
+            login();
+        }
+    };
     private String strUsername ;
     private String strToken ;
     public void login() {
@@ -86,7 +87,7 @@ public class MainActivity extends UnityPlayerActivity {
         });
     }
 
-    public void pay(String userID,String userName,final String productSku,String productName,String money) {
+    public String pay(String userID,String userName,final String productSku,String productName,String money) {
         PayParams payParams = new PayParams();
         payParams.extendsinfo = productSku+"_"+ System.currentTimeMillis();
         final String  info = payParams.extendsinfo;
@@ -98,6 +99,15 @@ public class MainActivity extends UnityPlayerActivity {
         payParams.role_name = userName;
         payParams.product_name = productName;
         payParams.servername = "逃出深渊BtGame服";
+        Log.d(TAG," pay payParams.username="+payParams.username);
+        Log.d(TAG," pay  payParams.token="+ payParams.token);
+        Log.d(TAG," pay payParams.serverid="+payParams.serverid);
+        Log.d(TAG," pay payParams.amount="+payParams.amount);
+        Log.d(TAG," pay payParams.role_id="+payParams.role_id);
+        Log.d(TAG," pay payParams.role_name="+payParams.role_name);
+        Log.d(TAG," pay payParams.product_name="+payParams.product_name);
+        Log.d(TAG," pay payParams.servername="+payParams.servername);
+
 
         BTGameTWSDKApi.getInstance().pay(this, payParams, new PayCallBack() {
             @Override
@@ -116,8 +126,9 @@ public class MainActivity extends UnityPlayerActivity {
                 onBuyFault(info);
             }
         });
+        return "";
     }
-    public void reFreshGameData(String userID,String userName,String eventType,String level) {
+    public String reFreshGameData(String userID,String userName,String eventType,String level) {
         GameDataParams gdp = new GameDataParams();
         gdp.setUsername(strUsername);
         gdp.setToken(strToken);
@@ -127,6 +138,16 @@ public class MainActivity extends UnityPlayerActivity {
         gdp.setRole_name(userName);
         gdp.setOp(Integer.parseInt(eventType));
         gdp.setGame_level(Integer.parseInt(level));
+        Log.d(TAG," reFreshGameData getUsername="+gdp.getUsername());
+        Log.d(TAG," reFreshGameData getToken="+gdp.getToken());
+        Log.d(TAG," reFreshGameData getServerid="+gdp.getServerid());
+        Log.d(TAG," reFreshGameData getServername="+gdp.getServername());
+        Log.d(TAG," reFreshGameData getRole_id="+gdp.getRole_id());
+        Log.d(TAG," reFreshGameData getRole_name="+gdp.getRole_name());
+        Log.d(TAG," reFreshGameData getOp="+gdp.getOp());
+        Log.d(TAG," reFreshGameData getGame_level="+gdp.getGame_level());
+
+
         BTGameTWSDKApi.getInstance().reFreshGameData(this, gdp, new GameDataReFreshCallBack() {
             @Override
             public void reFreshOk() {
@@ -137,6 +158,7 @@ public class MainActivity extends UnityPlayerActivity {
                 Log.d(TAG," reFreshGameData reFreshFailure message="+message);
             }
         });
+        return "";
     }
 
     public void exit() {
