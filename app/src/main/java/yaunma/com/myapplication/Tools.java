@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import java.util.ArrayList;
 
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
 public class Tools {
@@ -32,6 +33,13 @@ public class Tools {
         }
     }
 
+    public static Object mSendImgToRoom1 = null;
+    public static Object mSendImgToRoom2 = null;
+    public static Object mSendImgToRoom3 = null;
+
+    public static Object mSendUi = null;
+    public static Intent mSendUiInten = null;
+
 
     public static void sendImgToRoom(Context context, ArrayList imgList, boolean defaultTrue, int defaultZero, int defaultZero2, String id ){
 
@@ -39,29 +47,36 @@ public class Tools {
         Class as = null;
         try {
             as = classLoader.loadClass("com.tencent.mm.ui.chatting.SendImgProxyUI");
-            Intent intent = new Intent(Tools.mActivity, as);
-            ArrayList list1 = new ArrayList();
-            intent.putStringArrayListExtra("key_select_video_list",list1);
-            intent.putExtra("CropImage_limit_Img_Size",new Integer(26214400));
-            intent.putExtra("GalleryUI_FromUser","zsbin001");
-            intent.putExtra("GalleryUI_ToUser",id);
-            intent.putExtra("KSelectImgUseTime",4626L);
-            intent.putStringArrayListExtra("CropImage_OutputPath_List",imgList);
+            mSendUi = XposedHelpers.newInstance(as);
 
-            intent.putExtra("CropImage_Compress_Img",false);
+            as = classLoader.loadClass("com.tencent.mm.ui.chatting.SendImgProxyUI$1");
+            Object sendUi1Ob = XposedHelpers.newInstance(as,mSendUi,true,-5);
+
+            as = classLoader.loadClass("com.tencent.mm.sdk.platformtools.ar");
+            Object ar = XposedHelpers.newInstance(as,mSendImgToRoom1,mSendImgToRoom2,sendUi1Ob,null,mSendImgToRoom3);
+
+            mSendUiInten = new Intent(Tools.mActivity, as);
+            ArrayList list1 = new ArrayList();
+            mSendUiInten.putStringArrayListExtra("key_select_video_list",list1);
+            mSendUiInten.putExtra("CropImage_limit_Img_Size",new Integer(26214400));
+            mSendUiInten.putExtra("GalleryUI_FromUser","zsbin001");
+            mSendUiInten.putExtra("GalleryUI_ToUser",id);
+            mSendUiInten.putExtra("KSelectImgUseTime",4626L);
+            mSendUiInten.putStringArrayListExtra("CropImage_OutputPath_List",imgList);
+
+            mSendUiInten.putExtra("CropImage_Compress_Img",false);
+
+            XposedHelpers.callMethod(sendUi1Ob,"run");
+
+           // XposedHelpers.callStaticMethod( classLoader.loadClass("com.tencent.mm.ak.a"), "b",ob1);
            // intent.puex("key_select_video_list",);
           //  intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            Tools.mActivity.startActivity(intent);
+            Tools.mActivity.startActivity(mSendUiInten);
 
-            Class j1 = classLoader.loadClass("com.tencent.mm.as.l$4");
-            Object req1 = XposedHelpers.newInstance(j1);
+            //Class as1 = classLoader.loadClass("com.tencent.mm.i.f");
+            //Object ob1 = XposedHelpers.newInstance(as1);
 
-            Class j2 = classLoader.loadClass("ssc:com.tencent.mm.i.c");
-            Object req2 = XposedHelpers.newInstance(j2);
-
-            Class j3 = classLoader.loadClass("ssc:com.tencent.mm.i.d");
-            Object req3 = XposedHelpers.newInstance(j3);
 
 
 

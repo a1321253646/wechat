@@ -3,6 +3,8 @@ package yaunma.com.myapplication;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -10,6 +12,7 @@ import android.os.Message;
 import org.json.JSONArray;
 import org.jsoup.select.Evaluator;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -67,15 +70,15 @@ public enum Hook {
             XposedBridge.log("ssc:"+" printfParam size ="+os.length );
             for(int i = 0 ; i< os.length;i++){
                 Object ob = os[i];
+
                 if(ob != null){
+                    XposedBridge.log("ssc:"+" printfParam os ["+i+"] ob type ="+ob.getClass().getName());
                     if(ob instanceof List){
-                        XposedBridge.log("ssc:"+" printfParam os ["+i+"] param=list");
                         XposedBridge.log("ssc:"+"printfParam ob size ="+((List) ob).size());
                         for(int ii = 0 ;ii< ((List) ob).size();ii++){
                             XposedBridge.log("ssc:"+" printfParam os ["+i+"] param["+ii+"]="+((List) ob).get(ii).toString());
                         }
                     }else if(ob instanceof Intent){
-                        XposedBridge.log("ssc:"+" printfParam os ["+i+"] param=Intent");
                         XposedBridge.log("ssc:"+" printfParam os ["+i+"] ob="+ob.toString());
                         XposedBridge.log("ssc:"+" printfParam os ["+i+"] ob="+((Intent) ob).getFlags());
                         XposedBridge.log("ssc:"+" printfParam os ["+i+"] ob="+((Intent) ob).getAction());
@@ -89,7 +92,27 @@ public enum Hook {
                             }
                         }else{
                             XposedBridge.log("ssc:"+" printfParam os ["+i+"] Bundle =null");
+
                         }
+                    }else if(ob instanceof Message){
+                        Message me = ((Message)ob);
+                        XposedBridge.log("ssc:"+"printfParam os ["+i+"] Message="+me.toString());
+                        XposedBridge.log("ssc:"+"printfParam os ["+i+"] what="+me.what);
+                        XposedBridge.log("ssc:"+"printfParam os ["+i+"] arg1="+me.arg1);
+                        XposedBridge.log("ssc:"+"printfParam os ["+i+"] arg2="+me.arg2);
+                        XposedBridge.log("ssc:"+"printfParam os ["+i+"] obj="+me.obj);
+                        XposedBridge.log("ssc:"+"printfParam os ["+i+"] param="+me.getCallback());
+                        Bundle extras = me.getData();
+                        if(extras != null){
+                            for(String key : extras.keySet()){
+                                XposedBridge.log("ssc:"+" printfParam os ["+i+"] Bundle["+key+"]="+extras.get(key).getClass().getName());
+                                XposedBridge.log("ssc:"+" printfParam os ["+i+"] Bundle["+key+"]="+extras.get(key));
+                            }
+                        }else{
+                            XposedBridge.log("ssc:"+" printfParam os ["+i+"] Message Bundle =null");
+
+                        }
+
                     }else{
                         XposedBridge.log("ssc:"+"printfParam os ["+i+"] param="+ob.toString());
                     }
@@ -105,7 +128,7 @@ public enum Hook {
      public static  void hookImgSend(final ClassLoader classLoader){
 
          try {
-             Class a = classLoader.loadClass("com.tencent.mm.i.c");
+    /*         Class a = classLoader.loadClass("com.tencent.mm.i.c");
              XposedBridge.hookAllConstructors(a, new XC_MethodHook() {
                  @Override
                  protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -131,6 +154,32 @@ public enum Hook {
                      printfParam(param);
                  }
              });
+             XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.ak.b"),new XC_MethodHook() {
+                 @Override
+                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                     super.beforeHookedMethod(param);
+                     XposedBridge.log("ssc:"+"com.tencent.mm.ak.b new" );
+                     printfParam(param);
+                 }
+             });
+             XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.i.f"),new XC_MethodHook() {
+                 @Override
+                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                     super.beforeHookedMethod(param);
+                     XposedBridge.log("ssc:"+"com.tencent.mm.i.f new" );
+                     printfParam(param);
+
+                 }
+             });
+             XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.ak.b$7"),new XC_MethodHook() {
+                         @Override
+                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                             super.beforeHookedMethod(param);
+                             XposedBridge.log("ssc:"+"com.tencent.mm.ak.b$7 new" );
+                             printfParam(param);
+
+                         }
+                     });
              XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.as.l"), new XC_MethodHook() {
                  @Override
                  protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -146,10 +195,63 @@ public enum Hook {
                      super.beforeHookedMethod(param);
                      XposedBridge.log("ssc:"+"com.tencent.mm.as.l$4" );
                      printfParam(param);
-                    int i = 1/0;
+
                  }
              });
+             XposedHelpers.findAndHookMethod(classLoader.loadClass("com.tencent.mm.sdk.platformtools.ar"),"b",
+                     classLoader.loadClass("com.tencent.mm.i.f"),new XC_MethodHook() {
+                         @Override
+                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                             super.beforeHookedMethod(param);
+                             XposedBridge.log("ssc:"+"com.tencent.mm.ak.a.b" );
+                             printfParam(param);
+                         }
+                     });
 
+           XposedHelpers.findAndHookMethod(classLoader.loadClass("com.tencent.mm.sdk.platformtools.am"),"dispatchMessage", Message.class, new XC_MethodHook() {
+                         @Override
+                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                             super.beforeHookedMethod(param);
+                             XposedBridge.log("ssc:"+"com.tencent.mm.sdk.platformtools.am" );
+                             printfParam(param);
+
+                         }
+                     });*/
+             XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.sdk.platformtools.ar"), new XC_MethodHook() {
+                 @Override
+                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                     super.beforeHookedMethod(param);
+                     XposedBridge.log("ssc:" + "com.tencent.mm.sdk.platformtools.ar new");
+               //      printfParam(param);
+
+                     if(Tools.mSendImgToRoom1 == null){
+                         if(param.args != null && param.args.length == 5 && param.args[2] != null){
+                             XposedBridge.log("ssc:" + "com.tencent.mm.sdk.platformtools.ar param.args[2 = "+param.args[2].getClass().getName());
+                                if( param.args[2].getClass().getName().equals("com.tencent.mm.ui.chatting.SendImgProxyUI$1@c1")){
+                                    Tools.mSendImgToRoom1 = param.args[0];
+                                    Tools.mSendImgToRoom2 = param.args[1];
+                                    Tools.mSendImgToRoom3 = param.args[4];
+                                }
+                         }
+                     }
+                 }
+             });
+             XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.ui.chatting.SendImgProxyUI$1"), new XC_MethodHook() {
+                 @Override
+                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                     super.beforeHookedMethod(param);
+                     XposedBridge.log("ssc:" + "com.tencent.mm.ui.chatting.SendImgProxyUI$1 new");
+                     printfParam(param);
+                 }
+             });
+             XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.ui.chatting.SendImgProxyUI"), new XC_MethodHook() {
+                 @Override
+                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                     super.beforeHookedMethod(param);
+                     XposedBridge.log("ssc:" + "com.tencent.mm.ui.chatting.SendImgProxyUI new");
+                     printfParam(param);
+                 }
+             });
 
          } catch (ClassNotFoundException e) {
              e.printStackTrace();
@@ -169,7 +271,12 @@ public enum Hook {
                  super.beforeHookedMethod(param);
                  XposedBridge.log("ssc:"+"com.tencent.mm.ui.chatting.SendImgProxyUI.a" );
                  printfParam(param);
-
+                if(param != null && param.args != null && param.args.length == 2){
+                    if(param.args[0] != null  && param.args[0]== Tools.mSendUi ){
+                        param.args[1] = Tools.mSendUiInten;
+                        Tools.mSendImgToRoom1 = null;
+                    }
+                }
              }
          });
 
