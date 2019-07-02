@@ -242,6 +242,7 @@ public enum Hook {
                      super.beforeHookedMethod(param);
                      XposedBridge.log("ssc:" + "com.tencent.mm.ui.chatting.SendImgProxyUI$1 new");
                      printfParam(param);
+
                  }
              });
              XposedBridge.hookAllConstructors(classLoader.loadClass("com.tencent.mm.ui.chatting.SendImgProxyUI"), new XC_MethodHook() {

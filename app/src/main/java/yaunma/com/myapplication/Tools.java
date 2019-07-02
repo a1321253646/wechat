@@ -52,6 +52,8 @@ public class Tools {
             as = classLoader.loadClass("com.tencent.mm.ui.chatting.SendImgProxyUI$1");
             Object sendUi1Ob = XposedHelpers.newInstance(as,mSendUi,true,-5);
 
+            Object xYx = XposedHelpers.getObjectField(sendUi1Ob, "xYx");
+            XposedBridge.log("com.tencent.mm.ui.chatting.SendImgProxyUI$1.xYx="+ xYx.getClass().getName());
             as = classLoader.loadClass("com.tencent.mm.sdk.platformtools.ar");
             Object ar = XposedHelpers.newInstance(as,mSendImgToRoom1,mSendImgToRoom2,sendUi1Ob,null,mSendImgToRoom3);
 
@@ -72,7 +74,7 @@ public class Tools {
            // intent.puex("key_select_video_list",);
           //  intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            Tools.mActivity.startActivity(mSendUiInten);
+         //   Tools.mActivity.startActivity(mSendUiInten);
 
             //Class as1 = classLoader.loadClass("com.tencent.mm.i.f");
             //Object ob1 = XposedHelpers.newInstance(as1);
