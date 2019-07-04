@@ -96,6 +96,7 @@ public class MainActivity extends MainActivityBase {
                 public void onAdShow() {
                     Log.d("jackzheng","mInterAd onAdShow" );
                     startGameOrPause(false);
+                    mInterAd.load();
                 }
 
                 @Override
@@ -128,6 +129,7 @@ public class MainActivity extends MainActivityBase {
             mInterAd.load();
         }else{
             mInterAd.showAd();
+            isReadyInsert = false;
         }
 
 
@@ -219,6 +221,7 @@ public class MainActivity extends MainActivityBase {
                     Log.d("jackzheng","startShowBannerDeal onAdClosed" );
                     mAdContainer.setVisibility(View.GONE);
                     mBannerPreShow = System.currentTimeMillis();
+                    mVivoBanner = null;
                 }
             });
 

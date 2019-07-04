@@ -57,6 +57,7 @@ public abstract class MainActivityBase extends UnityPlayerActivity {
                     }
 
                 }else if(msg.what == 3){
+                    isShowSplash = true;
                     mHandler.removeMessages(3);
                     if(isAdInit("")){
                         playSplashAdDeal();
