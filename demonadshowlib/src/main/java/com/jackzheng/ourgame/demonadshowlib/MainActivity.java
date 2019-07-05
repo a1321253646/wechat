@@ -1,6 +1,7 @@
 package com.jackzheng.ourgame.demonadshowlib;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Toast;
@@ -34,11 +35,12 @@ public class MainActivity extends UnityPlayerActivity {
 
     public void onLoginSuccessBack(){
 
-        UnityPlayer.UnitySendMessage("Main Camera", "onLoginSuccess", "");
+        UnityPlayer.UnitySendMessage("Main Camera", "saveNameAndToken", strUsername+"&"+strToken);
     }
-    @Override
-    protected void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
+
+    public String btgameInit(String name ,String token) {
+        strUsername = name;
+        strToken = token;
         BTGameTWSDKApi.getInstance().init(this,3154,"4db29607556f3637ae8c00e6623ffe1a",new InitCallBack(){
 
 
@@ -46,7 +48,9 @@ public class MainActivity extends UnityPlayerActivity {
             public void onInitSuccess() {
                 Log.d(TAG,"onInitSuccess");
                 Toast.makeText(MainActivity.this, "初始化成功", Toast.LENGTH_SHORT).show();
-                login();
+                if(TextUtils.isEmpty(strUsername)){
+                    login();
+                }
                 BTGameTWSDKApi.getInstance().registerReLoginCallBack(reLoginCallBack);
 
             }
@@ -57,6 +61,7 @@ public class MainActivity extends UnityPlayerActivity {
                 Toast.makeText(MainActivity.this, "初始化失败\n 失败原因：" + s, Toast.LENGTH_SHORT).show();
             }
         });
+        return "";
     }
     ReLoginCallBack reLoginCallBack = new ReLoginCallBack() {
         @Override
