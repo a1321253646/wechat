@@ -55,7 +55,7 @@ public enum Hook {
             Class cd = classLoader.loadClass(Constance.className_cg);//672
             XposedHelpers.findAndHookMethod(cd, Constance.methodName_cg_vP, new Av_P());//672
             hookDB(classLoader);
-            hookImgSend(classLoader);
+           // hookImgSend(classLoader);
 
         } catch (Exception e) {
 

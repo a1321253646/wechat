@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="jackzheng.study.com.wechat">
+    package="qwe.rew.qwe.tre">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -24,7 +24,7 @@
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
-        <activity android:name=".MainActivity">
+        <activity android:name="jackzheng.study.com.wechat.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
